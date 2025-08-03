@@ -1,0 +1,25 @@
+Image Analysis Summary
+==================================================
+
+Identification:
+- Filename: B465_ARC _C3_slice7-Ort.czi
+- Channels Used: gal
+- Region Analyzed: Upper
+
+Key Metrics:
+- Total objects detected: 230
+- Mean area: 83.05 pixels
+- Mean intensity: 185.69
+- Mean integrated density: 16720.28
+
+Processing Parameters:
+- Threshold method: otsu
+- Threshold value: 102.0
+- Object count: 230
+
+Output Files:
+- original: B465_ARC _C3_slice7-Ort_01_original.tif
+- mask: B465_ARC _C3_slice7-Ort_02_binary_mask.tif
+- labels: B465_ARC _C3_slice7-Ort_03_segmented_labels.tif
+- overlay: B465_ARC _C3_slice7-Ort_04_boundaries_overlay.tif
+- boundaries: B465_ARC _C3_slice7-Ort_05_boundaries_mask.tif

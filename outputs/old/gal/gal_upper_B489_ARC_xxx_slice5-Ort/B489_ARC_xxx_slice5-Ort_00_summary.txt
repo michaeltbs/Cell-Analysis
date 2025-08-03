@@ -1,0 +1,25 @@
+Image Analysis Summary
+==================================================
+
+Identification:
+- Filename: B489_ARC_xxx_slice5-Ort.czi
+- Channels Used: gal
+- Region Analyzed: Upper
+
+Key Metrics:
+- Total objects detected: 314
+- Mean area: 111.20 pixels
+- Mean intensity: 218.10
+- Mean integrated density: 25332.42
+
+Processing Parameters:
+- Threshold method: otsu
+- Threshold value: 125.0
+- Object count: 314
+
+Output Files:
+- original: B489_ARC_xxx_slice5-Ort_01_original.tif
+- mask: B489_ARC_xxx_slice5-Ort_02_binary_mask.tif
+- labels: B489_ARC_xxx_slice5-Ort_03_segmented_labels.tif
+- overlay: B489_ARC_xxx_slice5-Ort_04_boundaries_overlay.tif
+- boundaries: B489_ARC_xxx_slice5-Ort_05_boundaries_mask.tif

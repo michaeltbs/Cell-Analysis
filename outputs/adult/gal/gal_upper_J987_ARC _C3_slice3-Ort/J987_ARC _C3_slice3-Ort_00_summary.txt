@@ -1,0 +1,25 @@
+Image Analysis Summary
+==================================================
+
+Identification:
+- Filename: J987_ARC _C3_slice3-Ort.czi
+- Channels Used: gal
+- Region Analyzed: Upper
+
+Key Metrics:
+- Total objects detected: 187
+- Mean area: 47.16 pixels
+- Mean intensity: 169.02
+- Mean integrated density: 8923.85
+
+Processing Parameters:
+- Threshold method: otsu
+- Threshold value: 92.0
+- Object count: 187
+
+Output Files:
+- original: J987_ARC _C3_slice3-Ort_01_original.tif
+- mask: J987_ARC _C3_slice3-Ort_02_binary_mask.tif
+- labels: J987_ARC _C3_slice3-Ort_03_segmented_labels.tif
+- overlay: J987_ARC _C3_slice3-Ort_04_boundaries_overlay.tif
+- boundaries: J987_ARC _C3_slice3-Ort_05_boundaries_mask.tif

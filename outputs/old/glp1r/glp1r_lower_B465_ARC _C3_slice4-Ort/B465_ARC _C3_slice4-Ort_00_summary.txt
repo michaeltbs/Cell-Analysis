@@ -1,0 +1,25 @@
+Image Analysis Summary
+==================================================
+
+Identification:
+- Filename: B465_ARC _C3_slice4-Ort.czi
+- Channels Used: glp1r
+- Region Analyzed: Lower
+
+Key Metrics:
+- Total objects detected: 57
+- Mean area: 53.47 pixels
+- Mean intensity: 127.93
+- Mean integrated density: 7153.30
+
+Processing Parameters:
+- Threshold method: otsu
+- Threshold value: 66.0
+- Object count: 57
+
+Output Files:
+- original: B465_ARC _C3_slice4-Ort_01_original.tif
+- mask: B465_ARC _C3_slice4-Ort_02_binary_mask.tif
+- labels: B465_ARC _C3_slice4-Ort_03_segmented_labels.tif
+- overlay: B465_ARC _C3_slice4-Ort_04_boundaries_overlay.tif
+- boundaries: B465_ARC _C3_slice4-Ort_05_boundaries_mask.tif

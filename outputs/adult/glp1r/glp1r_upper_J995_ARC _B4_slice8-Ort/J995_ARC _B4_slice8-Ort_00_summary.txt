@@ -1,0 +1,25 @@
+Image Analysis Summary
+==================================================
+
+Identification:
+- Filename: J995_ARC _B4_slice8-Ort.czi
+- Channels Used: glp1r
+- Region Analyzed: Upper
+
+Key Metrics:
+- Total objects detected: 2
+- Mean area: 1523.50 pixels
+- Mean intensity: 77.58
+- Mean integrated density: 119066.00
+
+Processing Parameters:
+- Threshold method: otsu
+- Threshold value: 42.0
+- Object count: 2
+
+Output Files:
+- original: J995_ARC _B4_slice8-Ort_01_original.tif
+- mask: J995_ARC _B4_slice8-Ort_02_binary_mask.tif
+- labels: J995_ARC _B4_slice8-Ort_03_segmented_labels.tif
+- overlay: J995_ARC _B4_slice8-Ort_04_boundaries_overlay.tif
+- boundaries: J995_ARC _B4_slice8-Ort_05_boundaries_mask.tif

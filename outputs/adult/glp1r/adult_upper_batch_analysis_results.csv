@@ -1,0 +1,2029 @@
+label,area,mean_intensity,integrated_density,filename,age,channel,region
+1,19.0,118.26315789473684,2247.0,J995_AR _B4_slice6-Ort.czi,adult,glp1r,upper
+2,30.0,168.76666666666668,5063.0,J995_AR _B4_slice6-Ort.czi,adult,glp1r,upper
+3,27.0,170.8148148148148,4612.0,J995_AR _B4_slice6-Ort.czi,adult,glp1r,upper
+4,41.0,116.14634146341463,4762.0,J995_AR _B4_slice6-Ort.czi,adult,glp1r,upper
+5,95.0,159.10526315789474,15115.0,J995_AR _B4_slice6-Ort.czi,adult,glp1r,upper
+6,67.0,143.46268656716418,9612.0,J995_AR _B4_slice6-Ort.czi,adult,glp1r,upper
+7,88.0,180.54545454545453,15887.999999999998,J995_AR _B4_slice6-Ort.czi,adult,glp1r,upper
+1,47.0,7.659574468085107,360.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+2,14.0,10.642857142857142,149.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+3,34.0,6.676470588235294,227.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+4,1.0,20.0,20.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+5,25.0,7.2,180.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+6,19.0,8.473684210526315,161.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+7,9.0,8.88888888888889,80.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+8,106.0,8.11320754716981,860.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+9,14.0,8.857142857142858,124.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+10,7.0,7.142857142857143,50.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+11,2.0,6.0,12.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+12,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+13,1.0,7.0,7.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+14,10.0,7.7,77.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+15,3.0,11.666666666666666,35.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+16,65.0,8.2,533.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+17,32.0,8.59375,275.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+18,91.0,8.780219780219781,799.0000000000001,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+19,17.0,9.470588235294118,161.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+20,5.0,23.8,119.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+21,27.0,7.0,189.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+22,3.0,11.333333333333334,34.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+23,8.0,8.375,67.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+24,54.0,8.0,432.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+25,89.0,12.640449438202246,1125.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+26,4.0,9.0,36.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+27,7.0,7.428571428571429,52.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+28,4.0,8.5,34.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+29,33.0,10.666666666666666,352.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+30,17.0,14.235294117647058,242.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+31,37.0,6.4324324324324325,238.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+32,10.0,14.4,144.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+33,12.0,7.25,87.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+34,18.0,10.722222222222221,193.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+35,8.0,12.875,103.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+36,23.0,7.434782608695652,171.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+37,50.0,6.44,322.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+38,64.0,8.640625,553.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+39,34.0,9.0,306.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+40,122.0,8.336065573770492,1017.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+41,6.0,5.5,33.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+42,24.0,9.041666666666666,217.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+43,10.0,11.6,116.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+44,25.0,6.92,173.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+45,49.0,9.816326530612244,480.99999999999994,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+46,2.0,11.0,22.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+47,28.0,8.357142857142858,234.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+48,1.0,9.0,9.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+49,6.0,7.166666666666667,43.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+50,35.0,7.2,252.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+51,6.0,9.833333333333334,59.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+52,27.0,8.962962962962964,242.00000000000003,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+53,8.0,13.25,106.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+54,30.0,9.166666666666666,275.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+55,7.0,14.285714285714286,100.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+56,110.0,9.8,1078.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+57,9.0,8.88888888888889,80.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+58,16.0,13.5,216.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+59,16.0,8.4375,135.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+60,45.0,8.933333333333334,402.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+61,7.0,12.142857142857142,85.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+62,5.0,25.8,129.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+63,154.0,24.896103896103895,3834.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+64,7.0,12.571428571428571,88.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+65,7.0,11.142857142857142,78.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+66,2.0,5.5,11.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+67,4.0,13.75,55.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+68,4.0,9.5,38.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+69,8.0,7.5,60.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+70,295.0,13.976271186440679,4123.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+71,29.0,7.9655172413793105,231.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+72,6.0,12.0,72.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+73,7.0,7.857142857142857,55.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+74,23.0,7.956521739130435,183.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+75,10.0,15.7,157.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+76,30.0,12.1,363.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+77,3.0,5.666666666666667,17.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+78,14.0,7.428571428571429,104.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+79,12.0,7.75,93.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+80,3.0,7.0,21.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+81,10.0,6.7,67.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+82,7.0,12.285714285714286,86.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+83,12.0,7.5,90.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+84,110.0,8.027272727272727,883.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+85,2.0,7.0,14.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+86,117.0,13.136752136752136,1537.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+87,40.0,7.6,304.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+88,37.0,6.513513513513513,241.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+89,16.0,8.625,138.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+90,14.0,10.428571428571429,146.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+91,3.0,6.333333333333333,19.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+92,11.0,8.818181818181818,97.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+93,13.0,6.923076923076923,90.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+94,30.0,7.7,231.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+95,22.0,7.2272727272727275,159.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+96,3.0,8.0,24.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+97,11.0,7.0,77.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+98,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+99,11.0,9.727272727272727,107.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+100,45.0,7.911111111111111,356.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+101,33.0,10.121212121212121,334.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+102,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+103,19.0,7.2105263157894735,137.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+104,7.0,9.0,63.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+105,4.0,9.75,39.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+106,63.0,7.920634920634921,499.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+107,48.0,7.3125,351.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+108,34.0,7.911764705882353,269.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+109,17.0,10.764705882352942,183.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+110,2.0,9.0,18.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+111,24.0,6.875,165.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+112,116.0,18.93103448275862,2196.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+113,5.0,5.2,26.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+114,39.0,9.205128205128204,359.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+115,22.0,8.5,187.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+116,6.0,7.0,42.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+117,13.0,7.076923076923077,92.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+118,27.0,6.481481481481482,175.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+119,2.0,7.0,14.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+120,34.0,10.088235294117647,343.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+121,18.0,6.555555555555555,118.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+122,34.0,8.5,289.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+123,2.0,7.0,14.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+124,34.0,8.352941176470589,284.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+125,1.0,9.0,9.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+126,5.0,7.8,39.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+127,12.0,6.083333333333333,73.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+128,2.0,8.0,16.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+129,19.0,7.368421052631579,140.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+130,44.0,7.681818181818182,338.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+131,15.0,11.533333333333333,173.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+132,25.0,6.72,168.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+133,30.0,10.666666666666666,320.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+134,7.0,7.857142857142857,55.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+135,1.0,3.0,3.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+136,1.0,4.0,4.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+137,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+138,88.0,8.954545454545455,788.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+139,32.0,8.59375,275.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+140,1.0,9.0,9.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+141,18.0,7.222222222222222,130.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+142,88.0,9.045454545454545,796.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+143,34.0,9.823529411764707,334.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+144,5.0,9.2,46.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+145,72.0,9.527777777777779,686.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+146,5.0,17.4,87.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+147,91.0,9.45054945054945,860.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+148,77.0,9.38961038961039,723.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+149,18.0,8.222222222222221,148.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+150,48.0,6.770833333333333,325.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+151,58.0,10.086206896551724,585.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+152,146.0,16.205479452054796,2366.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+153,27.0,7.518518518518518,203.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+154,46.0,7.304347826086956,336.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+155,1.0,9.0,9.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+156,8.0,9.0,72.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+157,15.0,8.0,120.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+158,14.0,6.785714285714286,95.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+159,162.0,8.814814814814815,1428.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+160,85.0,6.576470588235294,559.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+161,45.0,8.11111111111111,365.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+162,27.0,8.851851851851851,238.99999999999997,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+163,3.0,6.666666666666667,20.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+164,13.0,8.153846153846153,106.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+165,22.0,7.590909090909091,167.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+166,1.0,5.0,5.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+167,70.0,7.714285714285714,540.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+168,94.0,9.180851063829786,862.9999999999999,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+169,13.0,7.538461538461538,98.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+170,90.0,7.133333333333334,642.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+171,44.0,6.909090909090909,304.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+172,1.0,5.0,5.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+173,4.0,6.5,26.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+174,30.0,7.666666666666667,230.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+175,33.0,7.696969696969697,254.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+176,45.0,8.488888888888889,382.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+177,23.0,11.826086956521738,272.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+178,15.0,8.933333333333334,134.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+179,12.0,7.583333333333333,91.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+180,24.0,10.375,249.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+181,30.0,8.033333333333333,241.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+182,3.0,7.666666666666667,23.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+183,4.0,12.75,51.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+184,1.0,7.0,7.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+185,5.0,11.0,55.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+186,19.0,6.368421052631579,121.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+187,11.0,12.090909090909092,133.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+188,241.0,22.90871369294606,5521.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+189,192.0,7.026041666666667,1349.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+190,1.0,10.0,10.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+191,11.0,8.818181818181818,97.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+192,84.0,8.5,714.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+193,143.0,8.44055944055944,1207.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+194,26.0,9.076923076923077,236.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+195,134.0,12.186567164179104,1633.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+196,28.0,6.571428571428571,184.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+197,55.0,7.454545454545454,410.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+198,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+199,1.0,5.0,5.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+200,1.0,10.0,10.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+201,31.0,9.483870967741936,294.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+202,53.0,11.679245283018869,619.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+203,38.0,12.657894736842104,480.99999999999994,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+204,115.0,6.869565217391305,790.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+205,2.0,7.5,15.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+206,16.0,9.0625,145.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+207,12.0,11.833333333333334,142.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+208,1.0,12.0,12.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+209,158.0,9.417721518987342,1488.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+210,5.0,8.8,44.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+211,74.0,11.378378378378379,842.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+212,52.0,8.653846153846153,450.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+213,10.0,6.9,69.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+214,1.0,9.0,9.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+215,8.0,6.375,51.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+216,115.0,8.91304347826087,1025.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+217,78.0,9.512820512820513,742.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+218,94.0,8.75531914893617,823.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+219,4.0,6.25,25.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+220,8.0,9.25,74.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+221,7.0,12.0,84.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+222,1.0,2.0,2.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+223,23.0,8.0,184.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+224,22.0,10.090909090909092,222.00000000000003,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+225,16.0,6.3125,101.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+226,23.0,8.782608695652174,202.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+227,1.0,8.0,8.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+228,73.0,9.863013698630137,720.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+229,22.0,7.2272727272727275,159.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+230,33.0,9.393939393939394,310.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+231,20.0,6.7,134.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+232,65.0,8.76923076923077,570.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+233,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+234,41.0,9.097560975609756,373.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+235,7.0,8.857142857142858,62.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+236,33.0,9.696969696969697,320.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+237,99.0,17.434343434343436,1726.0000000000002,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+238,10.0,6.4,64.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+239,18.0,10.666666666666666,192.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+240,10.0,8.5,85.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+241,55.0,8.0,440.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+242,2.0,17.0,34.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+243,9.0,7.111111111111111,64.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+244,7.0,11.857142857142858,83.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+245,41.0,9.439024390243903,387.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+246,30.0,7.2,216.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+247,16.0,8.0,128.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+248,16.0,6.3125,101.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+249,38.0,7.2631578947368425,276.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+250,1.0,8.0,8.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+251,1.0,8.0,8.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+252,18.0,6.5,117.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+253,660.0,7.493939393939394,4946.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+254,629.0,8.500794912559618,5347.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+255,189.0,8.60846560846561,1627.0000000000002,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+256,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+257,22.0,8.0,176.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+258,17.0,6.764705882352941,115.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+259,7.0,11.428571428571429,80.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+260,8.0,8.75,70.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+261,170.0,13.952941176470588,2372.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+262,8.0,10.5,84.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+263,16.0,8.6875,139.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+264,1.0,12.0,12.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+265,3.0,8.0,24.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+266,52.0,6.884615384615385,358.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+267,88.0,7.284090909090909,641.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+268,20.0,10.55,211.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+269,58.0,15.206896551724139,882.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+270,27.0,7.444444444444445,201.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+271,25.0,7.16,179.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+272,70.0,10.114285714285714,708.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+273,6.0,9.0,54.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+274,52.0,8.942307692307692,464.99999999999994,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+275,13.0,6.3076923076923075,82.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+276,66.0,7.7727272727272725,513.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+277,19.0,9.842105263157896,187.00000000000003,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+278,15.0,11.2,168.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+279,2.0,5.5,11.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+280,19.0,8.947368421052632,170.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+281,4.0,6.5,26.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+282,87.0,13.71264367816092,1193.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+283,22.0,8.045454545454545,177.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+284,275.0,7.6036363636363635,2091.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+285,1.0,1.0,1.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+286,46.0,7.456521739130435,343.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+287,30.0,12.566666666666666,377.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+288,24.0,6.958333333333333,167.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+289,1565.0,8.788498402555911,13754.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+290,22.0,8.5,187.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+291,1.0,5.0,5.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+292,1.0,16.0,16.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+293,26.0,18.153846153846153,472.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+294,202.0,18.564356435643564,3750.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+295,39.0,11.35897435897436,443.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+296,60.0,7.433333333333334,446.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+297,9.0,6.555555555555555,59.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+298,41.0,7.0,287.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+299,15.0,8.6,129.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+300,21.0,6.476190476190476,136.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+301,39.0,7.333333333333333,286.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+302,7.0,6.428571428571429,45.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+303,361.0,9.199445983379501,3321.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+304,1.0,10.0,10.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+305,3.0,5.0,15.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+306,2.0,9.5,19.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+307,120.0,31.45,3774.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+308,34.0,7.411764705882353,252.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+309,4.0,7.5,30.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+310,468.0,9.98076923076923,4671.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+311,4.0,6.75,27.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+312,14.0,9.428571428571429,132.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+313,6.0,14.333333333333334,86.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+314,335.0,7.811940298507463,2617.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+315,10.0,10.6,106.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+316,5.0,5.4,27.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+317,2.0,13.0,26.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+318,6.0,7.666666666666667,46.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+319,4.0,6.25,25.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+320,18.0,6.166666666666667,111.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+321,43.0,7.674418604651163,330.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+322,52.0,9.48076923076923,492.99999999999994,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+323,1.0,8.0,8.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+324,1.0,11.0,11.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+325,22.0,9.590909090909092,211.00000000000003,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+326,7.0,9.857142857142858,69.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+327,1.0,11.0,11.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+328,1143.0,10.31058617672791,11785.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+329,2.0,8.0,16.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+330,20.0,7.6,152.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+331,1063.0,8.173095014111007,8688.000000000002,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+332,120.0,7.116666666666666,854.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+333,77.0,11.103896103896103,854.9999999999999,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+334,304.0,9.075657894736842,2759.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+335,872.0,8.751146788990825,7630.999999999999,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+336,1503.0,8.489687292082502,12760.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+337,1.0,7.0,7.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+338,17.0,10.117647058823529,172.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+339,26.0,7.384615384615385,192.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+340,34.0,8.647058823529411,294.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+341,25.0,7.24,181.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+342,17.0,8.764705882352942,149.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+343,5.0,6.2,31.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+344,18.0,7.444444444444445,134.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+345,53.0,8.735849056603774,463.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+346,59.0,7.033898305084746,415.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+347,12.0,7.25,87.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+348,33.0,7.575757575757576,250.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+349,21.0,6.666666666666667,140.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+350,16.0,6.5,104.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+351,12.0,8.75,105.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+352,9.0,6.0,54.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+353,176.0,6.926136363636363,1219.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+354,12.0,7.083333333333333,85.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+355,1.0,5.0,5.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+356,75.0,9.066666666666666,680.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+357,1.0,9.0,9.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+358,11.0,11.545454545454545,127.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+359,8.0,9.375,75.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+360,1.0,5.0,5.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+361,23.0,10.08695652173913,232.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+362,29.0,7.758620689655173,225.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+363,1.0,3.0,3.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+364,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+365,1.0,11.0,11.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+366,21.0,7.428571428571429,156.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+367,33.0,7.9393939393939394,262.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+368,4.0,9.5,38.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+369,2.0,8.5,17.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+370,17.0,9.294117647058824,158.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+371,113.0,15.831858407079647,1789.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+372,1.0,2.0,2.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+373,15.0,7.466666666666667,112.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+374,5.0,6.2,31.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+375,16.0,6.9375,111.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+376,5.0,15.6,78.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+377,41.0,8.365853658536585,343.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+378,9.0,6.777777777777778,61.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+379,19.0,13.631578947368421,259.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+380,1.0,25.0,25.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+381,24.0,6.916666666666667,166.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+382,12.0,14.416666666666666,173.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+383,4.0,5.5,22.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+384,5.0,5.8,29.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+385,18.0,8.61111111111111,155.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+386,22.0,6.5,143.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+387,5.0,9.0,45.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+388,41.0,9.121951219512194,373.99999999999994,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+389,13.0,8.76923076923077,114.00000000000001,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+390,20.0,7.25,145.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+391,26.0,7.730769230769231,201.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+392,8.0,12.375,99.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+393,22.0,6.5,143.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+394,109.0,9.458715596330276,1031.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+395,106.0,10.132075471698114,1074.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+396,13.0,7.769230769230769,101.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+397,88.0,11.238636363636363,989.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+398,10.0,7.1,71.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+399,92.0,10.456521739130435,962.0000000000001,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+400,29.0,12.413793103448276,360.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+401,374.0,8.882352941176471,3322.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+402,174.0,16.810344827586206,2925.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+403,1.0,4.0,4.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+404,48.0,10.020833333333334,481.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+405,2.0,5.5,11.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+406,7.0,12.857142857142858,90.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+407,56.0,8.964285714285714,501.99999999999994,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+408,80.0,9.2625,741.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+409,23.0,7.304347826086956,168.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+410,60.0,8.916666666666666,535.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+411,49.0,11.224489795918368,550.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+412,1.0,5.0,5.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+413,28.0,6.428571428571429,180.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+414,16.0,9.125,146.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+415,41.0,8.048780487804878,330.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+416,7.0,6.428571428571429,45.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+417,2.0,7.0,14.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+418,2.0,5.0,10.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+419,17.0,9.117647058823529,155.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+420,247.0,9.96761133603239,2462.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+421,370.0,8.9,3293.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+422,50.0,12.14,607.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+423,7.0,7.714285714285714,54.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+424,28.0,7.178571428571429,201.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+425,37.0,12.08108108108108,447.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+426,15.0,7.066666666666666,106.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+427,33.0,7.03030303030303,232.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+428,112.0,8.4375,945.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+429,49.0,7.857142857142857,385.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+430,152.0,7.9144736842105265,1203.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+431,20.0,8.65,173.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+432,45.0,8.444444444444445,380.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+433,10.0,9.1,91.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+434,3.0,7.0,21.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+435,11.0,7.909090909090909,87.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+436,20.0,7.55,151.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+437,125.0,8.472,1059.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+438,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+439,19.0,11.210526315789474,213.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+440,11.0,9.181818181818182,101.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+441,121.0,9.388429752066116,1136.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+442,2.0,6.0,12.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+443,255.0,7.015686274509804,1789.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+444,8.0,14.125,113.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+445,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+446,7.0,5.714285714285714,40.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+447,20.0,8.05,161.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+448,60.0,7.083333333333333,425.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+449,264.0,10.261363636363637,2709.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+450,17.0,8.764705882352942,149.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+451,63.0,10.238095238095237,645.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+452,10.0,14.7,147.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+453,54.0,8.87037037037037,479.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+454,17.0,9.941176470588236,169.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+455,15.0,7.266666666666667,109.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+456,80.0,6.9875,559.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+457,29.0,7.275862068965517,211.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+458,14.0,6.857142857142857,96.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+459,127.0,7.496062992125984,952.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+460,294.0,10.312925170068027,3032.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+461,2.0,6.5,13.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+462,77.0,7.805194805194805,601.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+463,60.0,10.233333333333333,614.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+464,29.0,7.275862068965517,211.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+465,168.0,9.285714285714286,1560.0000000000002,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+466,45.0,7.822222222222222,352.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+467,10.0,8.1,81.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+468,101.0,7.0495049504950495,712.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+469,2.0,8.0,16.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+470,28.0,10.357142857142858,290.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+471,1.0,9.0,9.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+472,11.0,8.636363636363637,95.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+473,18.0,9.055555555555555,163.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+474,19.0,7.2105263157894735,137.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+475,31.0,7.612903225806452,236.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+476,42.0,7.238095238095238,304.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+477,7.0,6.714285714285714,47.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+478,16.0,7.625,122.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+479,19.0,6.684210526315789,127.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+480,36.0,10.86111111111111,391.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+481,15.0,9.733333333333333,146.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+482,11.0,6.7272727272727275,74.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+483,119.0,8.957983193277311,1066.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+484,11.0,7.7272727272727275,85.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+485,1.0,17.0,17.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+486,303.0,11.465346534653465,3474.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+487,11.0,7.818181818181818,86.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+488,32.0,7.21875,231.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+489,81.0,8.518518518518519,690.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+490,46.0,7.913043478260869,364.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+491,24.0,8.916666666666666,214.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+492,333.0,7.534534534534535,2509.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+493,2.0,5.5,11.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+494,25.0,7.88,197.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+495,47.0,7.574468085106383,356.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+496,11.0,6.636363636363637,73.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+497,3.0,6.333333333333333,19.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+498,113.0,10.380530973451327,1173.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+499,7.0,8.714285714285714,60.99999999999999,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+500,9.0,6.222222222222222,56.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+501,1.0,4.0,4.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+502,60.0,7.05,423.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+503,24.0,7.583333333333333,182.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+504,22.0,7.2727272727272725,160.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+505,53.0,7.7924528301886795,413.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+506,13.0,8.538461538461538,111.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+507,76.0,9.092105263157896,691.0000000000001,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+508,53.0,10.226415094339623,542.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+509,65.0,10.861538461538462,706.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+510,64.0,7.28125,466.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+511,89.0,7.157303370786517,637.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+512,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+513,1.0,14.0,14.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+514,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+515,173.0,10.797687861271676,1868.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+516,72.0,9.458333333333334,681.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+517,1.0,8.0,8.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+518,153.0,13.901960784313726,2127.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+519,80.0,8.725,698.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+520,41.0,8.658536585365853,355.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+521,1.0,10.0,10.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+522,40.0,10.275,411.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+523,126.0,19.1984126984127,2419.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+524,12.0,9.333333333333334,112.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+525,298.0,10.926174496644295,3256.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+526,1.0,7.0,7.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+527,1.0,9.0,9.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+528,35.0,12.457142857142857,436.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+529,6.0,8.5,51.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+530,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+531,5.0,8.8,44.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+532,7.0,6.428571428571429,45.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+533,7.0,5.142857142857143,36.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+534,20.0,6.9,138.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+535,5.0,6.6,33.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+536,15.0,10.8,162.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+537,153.0,8.928104575163399,1366.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+538,283.0,10.773851590106007,3049.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+539,15.0,7.2,108.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+540,4.0,4.5,18.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+541,1.0,4.0,4.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+542,41.0,8.24390243902439,338.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+543,28.0,10.357142857142858,290.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+544,59.0,10.05084745762712,593.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+545,65.0,14.892307692307693,968.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+546,37.0,6.891891891891892,255.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+547,71.0,8.43661971830986,599.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+548,73.0,7.013698630136986,512.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+549,22.0,7.909090909090909,174.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+550,48.0,8.354166666666666,401.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+551,9.0,6.444444444444445,58.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+552,8.0,6.75,54.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+553,26.0,10.038461538461538,261.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+554,1.0,8.0,8.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+555,5.0,6.8,34.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+556,3.0,8.0,24.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+557,83.0,8.240963855421686,684.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+558,52.0,10.211538461538462,531.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+559,2.0,7.5,15.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+560,65.0,8.861538461538462,576.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+561,45.0,8.355555555555556,376.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+562,20.0,8.4,168.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+563,17.0,7.411764705882353,126.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+564,1.0,8.0,8.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+565,179.0,8.938547486033519,1600.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+566,21.0,9.476190476190476,199.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+567,39.0,10.076923076923077,393.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+568,66.0,8.227272727272727,543.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+569,194.0,9.412371134020619,1826.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+570,128.0,8.4921875,1087.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+571,34.0,10.088235294117647,343.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+572,48.0,6.875,330.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+573,47.0,7.1063829787234045,334.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+574,26.0,8.73076923076923,226.99999999999997,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+575,140.0,10.821428571428571,1515.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+576,25.0,7.52,188.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+577,29.0,10.0,290.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+578,5.0,7.2,36.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+579,59.0,7.8474576271186445,463.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+580,1.0,11.0,11.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+581,45.0,13.466666666666667,606.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+582,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+583,305.0,7.862295081967213,2398.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+584,53.0,7.60377358490566,403.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+585,142.0,7.507042253521127,1066.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+586,5.0,7.8,39.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+587,6.0,8.833333333333334,53.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+588,158.0,8.0,1264.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+589,2.0,5.5,11.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+590,9.0,6.333333333333333,57.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+591,2.0,7.0,14.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+592,273.0,11.787545787545788,3218.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+593,5.0,7.4,37.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+594,34.0,11.117647058823529,378.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+595,108.0,7.25,783.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+596,22.0,6.863636363636363,151.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+597,11.0,10.545454545454545,116.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+598,9.0,8.0,72.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+599,196.0,7.887755102040816,1546.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+600,35.0,10.914285714285715,382.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+601,94.0,7.9361702127659575,746.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+602,28.0,6.928571428571429,194.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+603,431.0,9.795823665893272,4222.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+604,56.0,8.517857142857142,477.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+605,20.0,9.85,197.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+606,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+607,109.0,8.513761467889909,928.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+608,21.0,5.619047619047619,117.99999999999999,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+609,10.0,8.8,88.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+610,77.0,7.571428571428571,583.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+611,101.0,9.01980198019802,911.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+612,48.0,9.354166666666666,449.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+613,11.0,6.0,66.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+614,20.0,7.1,142.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+615,7.0,8.0,56.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+616,32.0,8.34375,267.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+617,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+618,189.0,9.100529100529101,1720.0000000000002,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+619,112.0,9.026785714285714,1010.9999999999999,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+620,34.0,11.088235294117647,377.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+621,33.0,7.212121212121212,238.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+622,18.0,7.944444444444445,143.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+623,41.0,9.902439024390244,406.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+624,29.0,12.551724137931034,364.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+625,1.0,4.0,4.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+626,45.0,6.888888888888889,310.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+627,158.0,8.449367088607595,1335.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+628,55.0,9.581818181818182,527.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+629,200.0,8.06,1612.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+630,43.0,6.976744186046512,300.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+631,24.0,7.875,189.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+632,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+633,4.0,6.25,25.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+634,183.0,10.40983606557377,1905.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+635,31.0,6.870967741935484,213.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+636,10.0,6.5,65.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+637,41.0,8.829268292682928,362.00000000000006,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+638,94.0,8.436170212765957,792.9999999999999,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+639,132.0,8.43939393939394,1114.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+640,97.0,7.855670103092783,762.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+641,57.0,6.912280701754386,394.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+642,58.0,8.293103448275861,480.99999999999994,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+643,1.0,4.0,4.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+644,10.0,7.0,70.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+645,9.0,7.444444444444445,67.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+646,8.0,8.25,66.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+647,16.0,7.25,116.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+648,327.0,9.55045871559633,3123.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+649,19.0,7.578947368421052,144.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+650,4.0,7.0,28.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+651,22.0,7.409090909090909,163.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+652,32.0,7.15625,229.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+653,108.0,7.611111111111111,822.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+654,32.0,7.78125,249.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+655,3.0,10.666666666666666,32.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+656,143.0,8.48951048951049,1214.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+657,29.0,11.517241379310345,334.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+658,54.0,6.87037037037037,371.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+659,29.0,7.413793103448276,215.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+660,116.0,7.887931034482759,915.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+661,1.0,12.0,12.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+662,12.0,8.083333333333334,97.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+663,35.0,7.771428571428571,272.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+664,4.0,6.5,26.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+665,33.0,6.848484848484849,226.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+666,35.0,7.0,245.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+667,40.0,11.95,478.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+668,118.0,8.440677966101696,996.0000000000001,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+669,37.0,6.621621621621622,245.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+670,84.0,7.916666666666667,665.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+671,82.0,8.24390243902439,676.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+672,94.0,8.180851063829786,768.9999999999999,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+673,89.0,7.696629213483146,685.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+674,20.0,6.65,133.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+675,63.0,8.920634920634921,562.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+676,49.0,6.938775510204081,340.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+677,13.0,10.692307692307692,139.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+678,16.0,7.25,116.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+679,122.0,8.80327868852459,1074.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+680,27.0,7.407407407407407,200.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+681,68.0,8.735294117647058,594.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+682,99.0,7.666666666666667,759.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+683,47.0,9.297872340425531,436.99999999999994,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+684,215.0,9.325581395348838,2005.0000000000002,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+685,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+686,17.0,6.764705882352941,115.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+687,110.0,7.9818181818181815,878.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+688,21.0,7.142857142857143,150.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+689,11.0,7.181818181818182,79.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+690,59.0,10.016949152542374,591.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+691,31.0,9.483870967741936,294.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+692,201.0,9.368159203980099,1883.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+693,58.0,8.224137931034482,476.99999999999994,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+694,127.0,7.464566929133858,948.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+695,8.0,7.0,56.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+696,110.0,7.4818181818181815,823.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+697,4.0,5.25,21.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+698,132.0,6.916666666666667,913.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+699,21.0,8.19047619047619,172.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+700,2.0,6.5,13.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+701,34.0,8.029411764705882,273.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+702,28.0,7.428571428571429,208.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+703,20.0,8.65,173.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+704,23.0,6.478260869565218,149.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+705,138.0,7.72463768115942,1066.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+706,10.0,7.5,75.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+707,148.0,9.013513513513514,1334.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+708,101.0,8.247524752475247,832.9999999999999,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+709,222.0,7.9324324324324325,1761.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+710,3.0,10.666666666666666,32.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+711,4.0,11.25,45.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+712,1.0,7.0,7.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+713,35.0,6.9714285714285715,244.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+714,2.0,8.0,16.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+715,1.0,7.0,7.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+716,115.0,9.208695652173914,1059.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+717,1.0,6.0,6.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+718,20.0,7.25,145.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+719,167.0,11.023952095808383,1841.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+720,88.0,7.625,671.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+721,4.0,6.75,27.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+722,21.0,7.142857142857143,150.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+723,35.0,9.0,315.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+724,4.0,8.0,32.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+725,2.0,6.5,13.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+726,11.0,7.909090909090909,87.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+727,30.0,9.4,282.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+728,70.0,10.185714285714285,713.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+729,53.0,6.90566037735849,366.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+730,40.0,8.75,350.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+731,55.0,11.090909090909092,610.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+732,50.0,7.48,374.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+733,20.0,10.3,206.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+734,123.0,7.479674796747967,920.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+735,22.0,7.590909090909091,167.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+736,19.0,6.578947368421052,124.99999999999999,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+737,123.0,8.910569105691057,1096.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+738,107.0,8.504672897196262,910.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+739,199.0,7.9798994974874375,1588.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+740,47.0,7.0638297872340425,332.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+741,104.0,9.990384615384615,1039.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+742,1.0,13.0,13.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+743,37.0,7.918918918918919,293.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+744,198.0,7.318181818181818,1449.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+745,241.0,7.75103734439834,1868.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+746,1.0,3.0,3.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+747,1.0,9.0,9.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+748,126.0,8.587301587301587,1082.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+749,24.0,7.708333333333333,185.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+750,106.0,11.556603773584905,1225.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+751,9.0,6.888888888888889,62.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+752,51.0,7.901960784313726,403.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+753,23.0,9.434782608695652,217.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+754,56.0,8.5,476.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+755,600.0,12.151666666666667,7291.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+756,34.0,6.882352941176471,234.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+757,44.0,7.7727272727272725,342.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+758,22.0,6.454545454545454,142.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+759,221.0,13.226244343891402,2923.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+760,57.0,9.0,513.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+761,40.0,6.375,255.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+762,9.0,9.444444444444445,85.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+763,110.0,10.436363636363636,1148.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+764,41.0,8.512195121951219,349.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+765,1.0,9.0,9.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+766,85.0,7.905882352941177,672.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+767,40.0,10.375,415.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+768,33.0,8.93939393939394,295.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+769,63.0,7.190476190476191,453.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+770,2.0,7.5,15.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+771,34.0,9.117647058823529,310.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+772,100.0,10.39,1039.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+773,58.0,6.896551724137931,400.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+774,41.0,6.170731707317073,253.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+775,56.0,8.375,469.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+776,271.0,7.380073800738008,2000.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+777,115.0,9.382608695652173,1079.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+778,133.0,7.774436090225564,1034.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+779,49.0,9.46938775510204,464.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+780,50.0,8.28,413.99999999999994,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+781,61.0,11.245901639344263,686.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+782,8.0,6.625,53.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+783,102.0,8.715686274509803,888.9999999999999,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+784,28.0,8.285714285714286,232.00000000000003,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+785,67.0,7.3283582089552235,491.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+786,141.0,6.921985815602837,976.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+787,5.0,8.8,44.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+788,1.0,5.0,5.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+789,14.0,8.285714285714286,116.00000000000001,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+790,156.0,6.801282051282051,1061.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+791,75.0,8.76,657.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+792,97.0,11.845360824742269,1149.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+793,68.0,7.661764705882353,521.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+794,42.0,6.4523809523809526,271.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+795,13.0,7.923076923076923,103.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+796,49.0,7.26530612244898,356.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+797,50.0,6.74,337.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+798,6.0,10.0,60.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+799,40.0,10.75,430.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+800,12.0,7.083333333333333,85.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+801,83.0,8.457831325301205,702.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+802,187.0,10.443850267379679,1953.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+803,50.0,6.82,341.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+804,5.0,8.4,42.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+805,6.0,7.333333333333333,44.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+806,223.0,8.242152466367713,1838.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+807,91.0,7.868131868131868,716.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+808,18.0,6.944444444444445,125.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+809,14.0,10.285714285714286,144.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+810,1.0,7.0,7.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+811,39.0,8.23076923076923,320.99999999999994,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+812,25.0,15.68,392.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+813,43.0,6.651162790697675,286.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+814,69.0,7.884057971014493,544.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+815,7.0,7.142857142857143,50.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+816,1071.0,8.070028011204482,8643.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+817,21.0,6.857142857142857,144.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+818,152.0,12.039473684210526,1830.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+819,8.0,8.625,69.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+820,674.0,7.8664688427299705,5302.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+821,455.0,7.389010989010989,3362.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+822,20.0,7.2,144.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+823,104.0,8.067307692307692,838.9999999999999,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+824,539.0,8.018552875695732,4322.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+825,10.0,9.4,94.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+826,65.0,7.769230769230769,505.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+827,69.0,7.927536231884058,547.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+828,28.0,7.392857142857143,207.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+829,18.0,7.166666666666667,129.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+830,43.0,7.0,301.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+831,23.0,6.565217391304348,151.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+832,1004.0,8.25398406374502,8287.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+833,2.0,7.0,14.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+834,338.0,7.011834319526627,2370.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+835,154.0,7.357142857142857,1133.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+836,23.0,7.521739130434782,173.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+837,137.0,7.262773722627737,995.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+838,105.0,6.533333333333333,686.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+839,137.0,11.766423357664234,1612.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+840,1857.0,7.222401723209478,13412.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+841,87.0,6.7701149425287355,589.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+842,8.0,7.375,59.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+843,24.0,7.458333333333333,179.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+844,4.0,7.75,31.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+845,85.0,8.811764705882354,749.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+846,43.0,7.511627906976744,323.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+847,18.0,11.5,207.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+848,13.0,13.615384615384615,177.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+849,6.0,7.5,45.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+850,16.0,6.1875,99.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+851,383.0,7.556135770234987,2894.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+852,36.0,6.805555555555555,245.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+853,31.0,8.193548387096774,254.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+854,43.0,6.372093023255814,274.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+855,386.0,8.27461139896373,3193.9999999999995,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+856,18.0,11.277777777777779,203.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+857,22.0,8.0,176.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+858,18.0,11.555555555555555,208.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+859,3.0,7.333333333333333,22.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+860,214.0,7.9672897196261685,1705.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+861,28.0,7.285714285714286,204.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+862,623.0,8.56661316211878,5337.000000000001,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+863,281.0,8.839857651245552,2484.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+864,40.0,12.275,491.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+865,157.0,7.471337579617835,1173.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+866,283.0,8.420494699646643,2383.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+867,2.0,5.0,10.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+868,15.0,7.533333333333333,113.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+869,35.0,6.514285714285714,228.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+870,43.0,7.372093023255814,317.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+871,52.0,6.884615384615385,358.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+872,35.0,7.3428571428571425,257.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+873,208.0,8.951923076923077,1862.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+874,25.0,10.24,256.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+875,16.0,6.625,106.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+876,97.0,7.134020618556701,692.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+877,404.0,9.878712871287128,3990.9999999999995,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+878,14.0,7.142857142857143,100.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+879,1.0,5.0,5.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+880,11.0,8.636363636363637,95.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+881,19.0,6.315789473684211,120.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+882,19.0,7.578947368421052,144.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+883,10.0,7.1,71.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+884,7.0,8.142857142857142,57.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+885,52.0,7.3076923076923075,380.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+886,1.0,5.0,5.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+887,62.0,7.548387096774194,468.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+888,70.0,7.628571428571429,534.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+889,1.0,7.0,7.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+890,22.0,8.954545454545455,197.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+891,26.0,11.384615384615385,296.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+892,301.0,8.574750830564785,2581.0000000000005,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+893,41.0,8.414634146341463,345.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+894,910.0,8.324175824175825,7575.000000000001,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+895,1.0,4.0,4.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+896,2.0,4.0,8.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+897,207.0,9.729468599033817,2014.0000000000002,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+898,2.0,10.0,20.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+899,351.0,8.47008547008547,2973.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+900,187.0,8.518716577540108,1593.0000000000002,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+901,53.0,9.320754716981131,493.99999999999994,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+902,135.0,8.311111111111112,1122.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+903,120.0,6.75,810.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+904,14.0,7.714285714285714,108.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+905,16.0,8.5625,137.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+906,744.0,9.888440860215054,7357.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+907,7.0,6.428571428571429,45.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+908,45.0,8.155555555555555,367.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+909,215.0,9.827906976744186,2113.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+910,40.0,6.5,260.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+911,84.0,7.416666666666667,623.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+912,131.0,7.763358778625954,1017.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+913,76.0,9.263157894736842,704.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+914,351.0,7.655270655270655,2687.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+915,413.0,8.789346246973366,3630.0000000000005,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+916,148.0,7.601351351351352,1125.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+917,116.0,7.612068965517241,883.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+918,26.0,7.423076923076923,193.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+919,59.0,8.40677966101695,496.00000000000006,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+920,31.0,7.419354838709677,230.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+921,17.0,6.882352941176471,117.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+922,13.0,7.6923076923076925,100.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+923,220.0,7.5227272727272725,1655.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+924,68.0,6.632352941176471,451.0,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+925,210.0,8.257142857142858,1734.0000000000002,K738_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+1,1133.0,75.3486319505737,85370.0,J995_ARC _B4_slice8-Ort.czi,adult,glp1r,upper
+2,1914.0,79.81295715778474,152762.0,J995_ARC _B4_slice8-Ort.czi,adult,glp1r,upper
+1,4.0,49.75,199.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+2,23.0,46.30434782608695,1065.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+3,18.0,76.38888888888889,1375.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+4,6.0,33.333333333333336,200.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+5,19.0,50.21052631578947,954.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+6,42.0,55.07142857142857,2313.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+7,15.0,94.53333333333333,1418.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+8,10.0,45.2,452.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+9,95.0,61.33684210526316,5827.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+10,35.0,73.22857142857143,2563.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+11,8.0,50.0,400.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+12,28.0,68.82142857142857,1927.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+13,102.0,56.71568627450981,5785.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+14,42.0,62.04761904761905,2606.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+15,26.0,48.26923076923077,1255.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+16,21.0,44.142857142857146,927.0000000000001,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+17,6.0,46.5,279.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+18,28.0,72.21428571428571,2021.9999999999998,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+19,13.0,49.53846153846154,644.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+20,47.0,67.61702127659575,3178.0000000000005,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+21,24.0,74.79166666666667,1795.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+22,76.0,59.63157894736842,4532.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+23,44.0,62.70454545454545,2759.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+24,49.0,70.59183673469387,3458.9999999999995,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+25,6.0,86.5,519.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+26,68.0,66.16176470588235,4499.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+27,45.0,54.2,2439.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+28,40.0,46.575,1863.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+29,15.0,49.6,744.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+30,32.0,60.25,1928.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+31,28.0,57.32142857142857,1605.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+32,51.0,58.8235294117647,3000.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+33,19.0,53.473684210526315,1016.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+34,10.0,37.1,371.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+35,49.0,56.816326530612244,2784.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+36,2.0,33.0,66.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+37,4.0,21.75,87.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+38,45.0,66.73333333333333,3003.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+39,34.0,58.05882352941177,1974.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+40,28.0,50.82142857142857,1423.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+41,126.0,50.65873015873016,6383.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+42,19.0,40.78947368421053,775.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+43,100.0,55.23,5523.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+44,34.0,51.55882352941177,1753.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+45,68.0,78.76470588235294,5356.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+46,75.0,52.56,3942.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+47,47.0,60.40425531914894,2839.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+48,12.0,61.666666666666664,740.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+49,8.0,39.875,319.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+50,19.0,55.36842105263158,1052.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+51,4.0,41.25,165.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+52,53.0,73.24528301886792,3882.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+53,1.0,21.0,21.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+54,7.0,44.857142857142854,314.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+55,12.0,68.08333333333333,817.0,J987_ARC _C3_slice5-Ort.czi,adult,glp1r,upper
+1,21.0,130.71428571428572,2745.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+2,5.0,94.6,473.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+3,8.0,88.0,704.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+4,75.0,95.50666666666666,7163.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+5,21.0,101.66666666666667,2135.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+6,16.0,77.25,1236.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+7,49.0,74.28571428571429,3640.0000000000005,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+8,62.0,80.06451612903226,4964.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+9,51.0,79.15686274509804,4037.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+10,4.0,91.0,364.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+11,195.0,92.11794871794872,17963.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+12,10.0,63.8,638.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+13,3.0,113.66666666666667,341.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+14,17.0,95.41176470588235,1622.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+15,12.0,86.66666666666667,1040.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+16,44.0,87.45454545454545,3848.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+17,6.0,54.333333333333336,326.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+18,31.0,68.64516129032258,2128.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+19,33.0,94.06060606060606,3104.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+20,73.0,143.56164383561645,10480.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+21,1.0,22.0,22.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+22,5.0,52.4,262.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+23,42.0,82.95238095238095,3484.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+24,18.0,93.5,1683.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+25,20.0,75.55,1511.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+26,28.0,104.0,2912.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+27,18.0,54.22222222222222,976.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+28,17.0,59.411764705882355,1010.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+29,61.0,76.68852459016394,4678.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+30,48.0,87.85416666666667,4217.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+31,31.0,74.54838709677419,2311.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+32,39.0,60.17948717948718,2347.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+33,45.0,76.11111111111111,3425.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+34,40.0,85.6,3424.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+35,26.0,84.5,2197.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+36,6.0,80.16666666666667,481.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+37,17.0,140.23529411764707,2384.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+38,13.0,53.07692307692308,690.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+39,11.0,74.36363636363636,818.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+40,2.0,53.5,107.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+41,34.0,89.11764705882354,3030.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+42,39.0,96.33333333333333,3757.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+43,77.0,103.35064935064935,7958.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+44,21.0,111.57142857142857,2343.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+45,22.0,84.81818181818181,1866.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+46,22.0,81.18181818181819,1786.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+47,26.0,66.92307692307692,1740.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+48,7.0,102.28571428571429,716.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+49,41.0,96.90243902439025,3973.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+50,48.0,114.35416666666667,5489.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+51,27.0,66.96296296296296,1808.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+52,10.0,100.0,1000.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+53,17.0,95.76470588235294,1628.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+54,120.0,95.28333333333333,11434.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+55,1.0,22.0,22.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+56,5.0,63.6,318.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+57,40.0,95.1,3804.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+58,18.0,74.94444444444444,1349.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+59,20.0,123.1,2462.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+60,47.0,79.19148936170212,3722.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+61,27.0,80.74074074074075,2180.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+62,9.0,76.77777777777777,691.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+63,21.0,78.85714285714286,1656.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+64,22.0,113.31818181818181,2493.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+65,33.0,75.27272727272727,2484.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+66,26.0,196.42307692307693,5107.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+67,24.0,92.29166666666667,2215.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+68,10.0,107.8,1078.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+69,9.0,102.22222222222223,920.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+70,58.0,109.55172413793103,6354.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+71,44.0,85.75,3773.0,J987_ARC _C3_slice4-Ort.czi,adult,glp1r,upper
+1,20.0,83.75,1675.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+2,50.0,73.24,3661.9999999999995,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+3,17.0,70.11764705882354,1192.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+4,28.0,72.92857142857143,2042.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+5,23.0,55.43478260869565,1275.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+6,15.0,72.26666666666667,1084.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+7,1.0,24.0,24.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+8,11.0,86.72727272727273,954.0000000000001,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+9,66.0,97.9090909090909,6462.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+10,14.0,107.21428571428571,1501.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+11,13.0,59.53846153846154,774.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+12,28.0,72.07142857142857,2018.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+13,73.0,71.32876712328768,5207.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+14,62.0,57.5,3565.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+15,48.0,80.0625,3843.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+16,15.0,54.333333333333336,815.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+17,1.0,121.0,121.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+18,1.0,78.0,78.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+19,34.0,79.6470588235294,2708.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+20,49.0,139.79591836734693,6849.999999999999,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+21,13.0,61.76923076923077,803.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+22,68.0,93.22058823529412,6339.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+23,12.0,68.83333333333333,826.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+24,13.0,46.69230769230769,607.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+25,35.0,77.51428571428572,2713.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+26,64.0,63.546875,4067.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+27,6.0,63.833333333333336,383.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+28,1.0,65.0,65.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+29,68.0,78.25,5321.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+30,2.0,67.0,134.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+31,90.0,92.44444444444444,8320.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+32,5.0,48.6,243.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+33,25.0,82.48,2062.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+34,10.0,75.6,756.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+35,4.0,90.5,362.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+36,62.0,78.11290322580645,4843.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+37,29.0,53.172413793103445,1542.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+38,32.0,59.8125,1914.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+39,28.0,94.25,2639.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+40,14.0,62.42857142857143,874.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+41,6.0,75.66666666666667,454.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+42,73.0,80.6027397260274,5884.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+43,18.0,40.55555555555556,730.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+44,15.0,52.4,786.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+45,34.0,48.411764705882355,1646.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+46,2.0,63.5,127.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+47,1.0,39.0,39.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+48,15.0,66.13333333333334,992.0000000000001,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+49,30.0,80.76666666666667,2423.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+50,38.0,61.05263157894737,2320.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+51,2.0,78.5,157.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+52,43.0,70.48837209302326,3031.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+53,58.0,82.22413793103448,4769.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+54,3.0,39.333333333333336,118.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+55,41.0,85.14634146341463,3491.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+56,11.0,60.09090909090909,661.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+57,58.0,87.17241379310344,5056.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+58,59.0,56.32203389830509,3323.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+59,34.0,86.38235294117646,2937.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+60,58.0,81.20689655172414,4710.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+61,14.0,79.07142857142857,1107.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+62,1.0,62.0,62.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+63,16.0,53.1875,851.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+64,10.0,59.9,599.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+65,9.0,97.77777777777777,880.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+66,39.0,72.61538461538461,2832.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+67,54.0,49.925925925925924,2696.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+68,4.0,77.75,311.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+69,72.0,77.48611111111111,5579.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+70,12.0,61.166666666666664,734.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+71,35.0,58.285714285714285,2040.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+72,184.0,74.5054347826087,13709.000000000002,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+73,3.0,65.0,195.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+74,41.0,74.4390243902439,3052.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+75,14.0,73.35714285714286,1027.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+76,83.0,94.80722891566265,7869.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+77,42.0,48.19047619047619,2024.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+78,44.0,104.0,4576.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+79,50.0,101.7,5085.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+80,87.0,72.32183908045977,6292.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+81,2.0,63.5,127.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+82,81.0,77.96296296296296,6315.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+83,72.0,73.40277777777777,5285.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+84,34.0,62.411764705882355,2122.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+85,41.0,73.07317073170732,2996.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+86,34.0,106.55882352941177,3623.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+87,3.0,74.0,222.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+88,75.0,65.10666666666667,4883.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+89,38.0,70.63157894736842,2684.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+90,8.0,98.0,784.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+91,14.0,67.64285714285714,947.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+92,53.0,68.11320754716981,3610.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+93,57.0,63.473684210526315,3618.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+94,24.0,88.0,2112.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+95,50.0,57.08,2854.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+96,79.0,79.07594936708861,6247.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+97,19.0,63.73684210526316,1211.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+98,53.0,80.71698113207547,4278.0,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+99,43.0,78.72093023255815,3385.0000000000005,J987_ARC _C3_slice1-Ort.czi,adult,glp1r,upper
+1,13.0,20.923076923076923,272.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+2,50.0,182.9,9145.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+3,39.0,30.41025641025641,1186.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+4,7.0,36.285714285714285,254.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+5,5.0,32.0,160.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+6,20.0,24.95,499.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+7,3.0,44.333333333333336,133.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+8,9.0,34.22222222222222,308.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+9,52.0,29.403846153846153,1529.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+10,18.0,30.5,549.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+11,11.0,31.727272727272727,349.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+12,1.0,8.0,8.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+13,24.0,38.708333333333336,929.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+14,10.0,26.0,260.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+15,3.0,50.666666666666664,152.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+16,21.0,38.80952380952381,815.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+17,19.0,29.105263157894736,553.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+18,133.0,26.706766917293233,3552.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+19,1.0,24.0,24.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+20,11.0,23.545454545454547,259.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+21,25.0,31.76,794.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+22,8.0,26.25,210.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+23,15.0,28.066666666666666,421.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+24,25.0,27.68,692.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+25,1.0,53.0,53.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+26,6.0,59.333333333333336,356.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+27,1.0,50.0,50.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+28,24.0,28.291666666666668,679.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+29,10.0,34.0,340.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+30,9.0,16.88888888888889,152.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+31,23.0,33.65217391304348,774.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+32,18.0,31.5,567.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+33,14.0,36.142857142857146,506.00000000000006,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+34,37.0,23.513513513513512,870.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+35,57.0,31.719298245614034,1808.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+36,84.0,28.488095238095237,2393.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+37,35.0,34.2,1197.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+38,23.0,29.608695652173914,681.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+39,20.0,39.35,787.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+40,17.0,28.88235294117647,491.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+41,60.0,28.15,1689.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+42,25.0,40.4,1010.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+43,23.0,44.608695652173914,1026.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+44,31.0,34.516129032258064,1070.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+45,2.0,20.5,41.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+46,10.0,42.2,422.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+47,2.0,25.0,50.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+48,48.0,28.541666666666668,1370.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+49,130.0,29.815384615384616,3876.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+50,49.0,25.53061224489796,1251.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+51,11.0,53.09090909090909,584.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+52,112.0,25.392857142857142,2844.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+53,23.0,35.73913043478261,822.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+54,3.0,38.333333333333336,115.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+55,1.0,12.0,12.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+56,42.0,23.30952380952381,979.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+57,13.0,37.61538461538461,489.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+58,1.0,38.0,38.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+59,1.0,16.0,16.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+60,2.0,61.0,122.0,J987_ARC _C3_slice8-Ort.czi,adult,glp1r,upper
+1,194.0,9.835051546391753,1908.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+2,35.0,6.628571428571429,232.00000000000003,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+3,272.0,8.334558823529411,2267.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+4,20.0,6.0,120.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+5,137.0,9.145985401459853,1253.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+6,74.0,13.378378378378379,990.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+7,14.0,6.5,91.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+8,15.0,5.333333333333333,80.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+9,6.0,5.666666666666667,34.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+10,94.0,12.414893617021276,1167.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+11,2.0,8.0,16.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+12,10.0,8.6,86.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+13,19.0,8.0,152.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+14,506.0,6.345849802371541,3211.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+15,167.0,8.55688622754491,1429.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+16,26.0,6.6923076923076925,174.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+17,15.0,6.266666666666667,94.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+18,13.0,6.615384615384615,86.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+19,15.0,8.2,122.99999999999999,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+20,258.0,7.046511627906977,1818.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+21,4.0,5.25,21.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+22,52.0,5.884615384615385,306.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+23,196.0,6.8061224489795915,1334.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+24,18.0,14.5,261.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+25,27.0,5.888888888888889,159.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+26,372.0,6.21505376344086,2312.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+27,25.0,5.88,147.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+28,40.0,6.325,253.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+29,13.0,13.615384615384615,177.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+30,39.0,8.666666666666666,338.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+31,104.0,6.211538461538462,646.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+32,1.0,8.0,8.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+33,101.0,14.554455445544555,1470.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+34,70.0,5.857142857142857,410.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+35,57.0,5.631578947368421,321.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+36,1.0,4.0,4.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+37,5.0,8.0,40.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+38,71.0,8.126760563380282,577.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+39,75.0,5.706666666666667,428.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+40,13.0,5.846153846153846,76.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+41,86.0,7.883720930232558,678.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+42,89.0,5.921348314606742,527.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+43,17.0,10.117647058823529,172.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+44,79.0,8.759493670886076,692.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+45,20.0,6.0,120.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+46,32.0,6.15625,197.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+47,12.0,5.583333333333333,67.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+48,7.0,7.428571428571429,52.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+49,72.0,7.111111111111111,512.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+50,83.0,6.72289156626506,558.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+51,2.0,7.0,14.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+52,4.0,7.0,28.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+53,10.0,13.2,132.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+54,60.0,6.266666666666667,376.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+55,25.0,5.92,148.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+56,4.0,5.25,21.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+57,19.0,6.2631578947368425,119.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+58,2.0,8.0,16.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+59,20.0,6.25,125.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+60,2.0,8.0,16.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+61,10.0,8.3,83.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+62,18.0,6.444444444444445,116.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+63,6821.0,6.396276205834922,43629.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+64,2.0,6.5,13.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+65,320.0,6.55625,2098.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+66,1.0,7.0,7.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+67,1.0,8.0,8.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+68,6.0,8.5,51.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+69,11.0,9.363636363636363,103.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+70,8.0,7.875,63.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+71,24.0,5.958333333333333,143.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+72,4.0,8.0,32.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+73,287.0,5.874564459930314,1686.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+74,4.0,5.75,23.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+75,1.0,5.0,5.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+76,17.0,6.411764705882353,109.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+77,107.0,12.654205607476635,1354.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+78,53.0,7.981132075471698,423.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+79,6.0,6.0,36.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+80,19.0,5.421052631578948,103.00000000000001,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+81,10.0,11.1,111.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+82,3.0,8.0,24.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+83,13.0,7.153846153846154,93.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+84,3.0,4.333333333333333,13.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+85,39.0,5.794871794871795,226.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+86,16.0,6.1875,99.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+87,87.0,6.287356321839081,547.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+88,8.0,5.625,45.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+89,2.0,3.5,7.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+90,5.0,8.2,41.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+91,7.0,6.285714285714286,44.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+92,28.0,6.178571428571429,173.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+93,21.0,6.666666666666667,140.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+94,142.0,5.415492957746479,769.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+95,40.0,9.45,378.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+96,9.0,8.333333333333334,75.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+97,47.0,9.74468085106383,458.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+98,10.0,8.6,86.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+99,73.0,5.780821917808219,422.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+100,20.0,6.35,127.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+101,62.0,5.419354838709677,336.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+102,15.0,6.133333333333334,92.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+103,8.0,11.125,89.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+104,1.0,7.0,7.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+105,7.0,7.0,49.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+106,29.0,5.896551724137931,171.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+107,1.0,9.0,9.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+108,10.0,6.4,64.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+109,34.0,6.411764705882353,218.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+110,1.0,8.0,8.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+111,168.0,6.6726190476190474,1121.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+112,2.0,6.5,13.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+113,81.0,9.617283950617283,778.9999999999999,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+114,29.0,8.517241379310345,247.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+115,9.0,8.11111111111111,73.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+116,6.0,7.833333333333333,47.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+117,33.0,5.818181818181818,192.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+118,24.0,9.375,225.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+119,89.0,6.213483146067416,553.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+120,14.0,8.5,119.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+121,7.0,5.857142857142857,41.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+122,66.0,5.757575757575758,380.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+123,101.0,6.3861386138613865,645.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+124,20.0,7.4,148.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+125,28.0,7.142857142857143,200.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+126,24.0,6.0,144.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+127,57.0,13.280701754385966,757.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+128,27.0,6.7407407407407405,182.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+129,4.0,7.0,28.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+130,31.0,6.870967741935484,213.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+131,1.0,5.0,5.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+132,138.0,6.021739130434782,831.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+133,57.0,6.105263157894737,348.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+134,19.0,8.421052631578947,160.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+135,55.0,6.418181818181818,353.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+136,10.0,7.6,76.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+137,39.0,6.846153846153846,267.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+138,25.0,5.64,141.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+139,11.0,6.090909090909091,67.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+140,83.0,6.843373493975903,568.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+141,36.0,6.5,234.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+142,29.0,7.827586206896552,227.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+143,3.0,5.333333333333333,16.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+144,24.0,7.333333333333333,176.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+145,16.0,6.375,102.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+146,17.0,5.647058823529412,96.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+147,51.0,6.862745098039215,350.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+148,10.0,5.7,57.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+149,62.0,6.161290322580645,382.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+150,296.0,6.449324324324325,1909.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+151,14.0,8.571428571428571,120.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+152,4.0,7.0,28.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+153,6.0,6.0,36.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+154,14.0,7.285714285714286,102.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+155,31.0,5.903225806451613,183.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+156,221.0,6.479638009049774,1432.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+157,7.0,8.428571428571429,59.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+158,7.0,6.857142857142857,48.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+159,1.0,8.0,8.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+160,79.0,7.632911392405063,603.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+161,44.0,6.7727272727272725,298.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+162,13.0,6.076923076923077,79.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+163,8.0,9.25,74.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+164,5.0,5.2,26.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+165,26.0,6.615384615384615,172.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+166,21.0,6.0,126.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+167,92.0,11.684782608695652,1075.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+168,14.0,6.785714285714286,95.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+169,5.0,5.6,28.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+170,5.0,6.0,30.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+171,56.0,7.089285714285714,397.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+172,28.0,7.0,196.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+173,147.0,6.326530612244898,930.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+174,17.0,5.647058823529412,96.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+175,13.0,11.0,143.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+176,5.0,5.6,28.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+177,8.0,6.125,49.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+178,1.0,12.0,12.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+179,19.0,6.2105263157894735,118.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+180,15.0,8.8,132.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+181,50.0,5.88,294.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+182,26.0,6.769230769230769,176.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+183,47.0,6.574468085106383,309.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+184,24.0,8.041666666666666,193.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+185,1.0,7.0,7.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+186,5.0,9.0,45.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+187,24.0,7.666666666666667,184.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+188,45.0,6.444444444444445,290.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+189,2.0,10.5,21.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+190,24.0,7.75,186.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+191,5.0,5.4,27.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+192,113.0,6.353982300884955,718.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+193,239.0,5.682008368200837,1358.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+194,246.0,6.17479674796748,1519.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+195,9.0,7.222222222222222,65.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+196,18.0,7.333333333333333,132.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+197,2.0,5.5,11.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+198,13.0,10.0,130.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+199,43.0,8.395348837209303,361.00000000000006,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+200,6.0,6.0,36.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+201,7.0,7.285714285714286,51.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+202,5.0,5.4,27.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+203,33.0,10.606060606060606,350.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+204,4.0,7.0,28.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+205,60.0,6.55,393.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+206,35.0,6.514285714285714,228.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+207,8.0,6.25,50.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+208,19.0,11.0,209.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+209,30.0,9.033333333333333,271.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+210,12.0,7.583333333333333,91.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+211,19.0,7.631578947368421,145.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+212,12.0,10.25,123.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+213,1.0,3.0,3.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+214,133.0,5.646616541353383,751.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+215,4.0,5.0,20.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+216,32.0,6.71875,215.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+217,1.0,5.0,5.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+218,27.0,8.0,216.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+219,159.0,7.7924528301886795,1239.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+220,3.0,5.333333333333333,16.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+221,13.0,10.0,130.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+222,8.0,8.5,68.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+223,27.0,6.222222222222222,168.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+224,14.0,6.5,91.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+225,9.0,5.777777777777778,52.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+226,12.0,7.75,93.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+227,24.0,6.375,153.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+228,2.0,6.5,13.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+229,15.0,8.2,122.99999999999999,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+230,14.0,6.928571428571429,97.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+231,41.0,7.024390243902439,288.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+232,2.0,5.0,10.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+233,159.0,5.90566037735849,939.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+234,13.0,7.923076923076923,103.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+235,16.0,5.625,90.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+236,46.0,7.434782608695652,342.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+237,6.0,7.5,45.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+238,61.0,5.983606557377049,365.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+239,24.0,8.583333333333334,206.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+240,7.0,6.142857142857143,43.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+241,12.0,7.5,90.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+242,7.0,6.142857142857143,43.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+243,1.0,5.0,5.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+244,33.0,6.0,198.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+245,21.0,7.285714285714286,153.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+246,78.0,7.243589743589744,565.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+247,1.0,6.0,6.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+248,39.0,6.923076923076923,270.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+249,5.0,8.2,41.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+250,5.0,7.4,37.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+251,40.0,6.275,251.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+252,92.0,6.619565217391305,609.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+253,3.0,9.0,27.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+254,3.0,5.333333333333333,16.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+255,77.0,6.662337662337662,513.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+256,58.0,7.241379310344827,420.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+257,56.0,6.375,357.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+258,254.0,6.169291338582677,1567.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+259,35.0,6.542857142857143,229.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+260,67.0,5.880597014925373,394.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+261,111.0,5.7207207207207205,635.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+262,124.0,6.637096774193548,823.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+263,43.0,6.465116279069767,278.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+264,23.0,7.173913043478261,165.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+265,219.0,6.511415525114155,1426.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+266,81.0,5.987654320987654,485.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+267,44.0,6.7727272727272725,298.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+268,32.0,6.625,212.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+269,1.0,6.0,6.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+270,3.0,6.0,18.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+271,1.0,8.0,8.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+272,11.0,6.454545454545454,71.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+273,24.0,6.375,153.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+274,10.0,12.6,126.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+275,20.0,6.0,120.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+276,129.0,6.434108527131783,830.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+277,176.0,6.454545454545454,1136.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+278,28.0,6.571428571428571,184.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+279,85.0,7.011764705882353,596.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+280,55.0,5.963636363636364,328.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+281,23.0,8.304347826086957,191.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+282,91.0,6.978021978021978,635.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+283,97.0,6.546391752577319,635.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+284,2.0,8.0,16.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+285,21.0,7.9523809523809526,167.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+286,4.0,8.25,33.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+287,16.0,7.5,120.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+288,156.0,7.0576923076923075,1101.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+289,133.0,7.473684210526316,994.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+290,175.0,6.52,1141.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+291,48.0,7.666666666666667,368.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+292,96.0,6.25,600.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+293,4.0,9.0,36.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+294,12.0,5.916666666666667,71.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+295,67.0,8.582089552238806,575.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+296,59.0,5.6440677966101696,333.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+297,1.0,7.0,7.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+298,22.0,7.818181818181818,172.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+299,4.0,6.25,25.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+300,15.0,9.133333333333333,137.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+301,174.0,7.362068965517241,1281.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+302,143249.0,6.981905632849095,1000151.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+303,3772.0,6.455991516436904,24352.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+304,302.0,6.175496688741722,1865.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+305,35.0,6.571428571428571,230.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+306,94.0,7.851063829787234,738.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+307,55.0,10.836363636363636,596.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+308,37.0,6.027027027027027,223.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+309,11.0,7.181818181818182,79.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+310,12.0,6.166666666666667,74.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+311,1420.0,5.842253521126761,8296.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+312,14.0,7.714285714285714,108.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+313,19.0,7.105263157894737,135.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+314,36.0,6.055555555555555,218.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+315,57.0,8.578947368421053,489.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+316,28.0,6.0,168.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+317,174.0,7.396551724137931,1287.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+318,3.0,6.666666666666667,20.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+319,1830.0,5.856830601092896,10718.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+320,142.0,7.908450704225352,1123.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+321,102.0,6.529411764705882,666.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+322,26.0,8.307692307692308,216.00000000000003,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+323,314.0,6.754777070063694,2121.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+324,122.0,5.901639344262295,720.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+325,66.0,6.757575757575758,446.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+326,28.0,6.892857142857143,193.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+327,1.0,7.0,7.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+328,48.0,6.916666666666667,332.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+329,35.0,8.0,280.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+330,213.0,6.934272300469484,1477.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+331,36.0,5.694444444444445,205.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+332,56.0,6.767857142857143,379.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+333,36.0,5.944444444444445,214.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+334,37.0,8.108108108108109,300.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+335,204.0,6.470588235294118,1320.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+336,4.0,4.5,18.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+337,60.0,5.8,348.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+338,22.0,6.590909090909091,145.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+339,155.0,6.496774193548387,1007.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+340,67.0,8.462686567164178,567.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+341,60.0,6.75,405.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+342,180.0,7.5,1350.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+343,110.0,6.072727272727272,668.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+344,87.0,7.275862068965517,633.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+345,46.0,7.369565217391305,339.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+346,1.0,7.0,7.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+347,35.0,6.2,217.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+348,3.0,5.666666666666667,17.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+349,49.0,7.489795918367347,367.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+350,37.0,6.1891891891891895,229.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+351,15.0,6.333333333333333,95.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+352,22426.0,6.030455721038081,135239.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+353,16.0,6.6875,107.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+354,249.0,6.321285140562249,1574.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+355,54.0,6.407407407407407,346.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+356,16.0,7.6875,123.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+357,15.0,7.733333333333333,116.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+358,140.0,6.485714285714286,908.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+359,84.0,7.369047619047619,619.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+360,22882.0,6.016869154794161,137678.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+361,23.0,12.347826086956522,284.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+362,2.0,7.5,15.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+363,37.0,6.351351351351352,235.00000000000003,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+364,41.0,9.512195121951219,390.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+365,19.0,6.526315789473684,124.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+366,60.0,6.05,363.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+367,506.0,18.08695652173913,9152.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+368,129.0,7.333333333333333,946.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+369,105.0,7.352380952380952,772.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+370,27.0,7.296296296296297,197.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+371,36.0,8.63888888888889,311.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+372,130.0,6.369230769230769,828.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+373,1.0,6.0,6.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+374,3.0,6.0,18.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+375,12.0,6.333333333333333,76.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+376,87.0,6.758620689655173,588.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+377,8.0,6.125,49.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+378,7.0,8.571428571428571,60.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+379,181.0,6.524861878453039,1181.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+380,89.0,7.359550561797753,655.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+381,7.0,6.428571428571429,45.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+382,21.0,6.571428571428571,138.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+383,22.0,7.5,165.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+384,58.0,6.586206896551724,382.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+385,8.0,7.75,62.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+386,38.0,7.078947368421052,269.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+387,9.0,7.888888888888889,71.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+388,10.0,7.8,78.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+389,27.0,8.666666666666666,233.99999999999997,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+390,60.0,6.383333333333334,383.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+391,106.0,9.122641509433961,966.9999999999999,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+392,190.0,6.478947368421053,1231.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+393,45.0,6.688888888888889,301.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+394,10.0,8.3,83.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+395,36.0,7.777777777777778,280.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+396,47.0,7.74468085106383,364.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+397,21.0,5.476190476190476,115.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+398,34.0,7.0588235294117645,240.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+399,533.0,6.5046904315197,3467.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+400,58.0,6.431034482758621,373.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+401,1259.0,7.956314535345513,10017.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+402,101.0,6.752475247524752,682.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+403,66.0,7.681818181818182,507.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+404,19.0,9.052631578947368,172.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+405,30.0,5.733333333333333,172.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+406,43.0,9.0,387.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+407,25.0,5.8,145.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+408,496.0,6.415322580645161,3182.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+409,141.0,7.042553191489362,993.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+410,66.0,7.7272727272727275,510.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+411,87.0,6.32183908045977,550.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+412,101.0,6.554455445544554,662.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+413,88.0,6.386363636363637,562.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+414,112.0,6.857142857142857,768.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+415,38.0,6.7631578947368425,257.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+416,10.0,7.5,75.0,J995_ARC _B4_slice7-Ort.czi,adult,glp1r,upper
+1,28.0,185.39285714285714,5191.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+2,74.0,192.8108108108108,14268.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+3,22.0,154.54545454545453,3399.9999999999995,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+4,228.0,233.14473684210526,53157.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+5,24.0,170.5,4092.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+6,139.0,230.84172661870502,32087.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+7,92.0,205.2608695652174,18884.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+8,15.0,130.0,1950.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+9,29.0,164.3448275862069,4766.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+10,9.0,136.66666666666666,1230.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+11,468.0,208.10256410256412,97392.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+12,22.0,178.5,3927.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+13,9.0,151.77777777777777,1366.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+14,94.0,182.0744680851064,17115.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+15,88.0,145.4318181818182,12798.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+16,40.0,189.15,7566.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+17,155.0,225.80645161290323,35000.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+18,192.0,195.08333333333334,37456.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+19,85.0,212.61176470588236,18072.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+20,89.0,234.0,20826.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+21,57.0,232.17543859649123,13234.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+22,36.0,180.41666666666666,6495.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+23,36.0,186.94444444444446,6730.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+24,60.0,182.53333333333333,10952.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+25,45.0,159.9111111111111,7195.999999999999,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+26,136.0,228.52941176470588,31080.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+27,29.0,230.44827586206895,6683.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+28,6.0,205.33333333333334,1232.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+29,4.0,221.5,886.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+30,94.0,203.36170212765958,19116.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+31,9.0,184.77777777777777,1663.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+32,37.0,222.0810810810811,8217.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+33,28.0,227.96428571428572,6383.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+34,2.0,201.0,402.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+35,12.0,186.66666666666666,2240.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+36,22.0,182.72727272727272,4020.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+37,205.0,159.02439024390245,32600.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+38,1.0,47.0,47.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+39,131.0,195.22137404580153,25574.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+40,82.0,239.85365853658536,19668.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+41,15.0,220.53333333333333,3308.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+42,75.0,207.18666666666667,15539.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+43,127.0,204.83464566929135,26014.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+44,127.0,205.8031496062992,26137.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+45,1.0,210.0,210.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+46,27.0,186.88888888888889,5046.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+47,59.0,216.28813559322035,12761.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+48,11.0,158.9090909090909,1748.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+49,63.0,196.23809523809524,12363.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+50,83.0,235.6265060240964,19557.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+51,182.0,192.06043956043956,34955.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+52,15.0,195.6,2934.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+53,94.0,202.17021276595744,19004.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+54,7.0,160.28571428571428,1122.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+55,94.0,245.37234042553192,23065.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+56,44.0,194.9318181818182,8577.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+57,226.0,197.71238938053096,44683.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+58,23.0,188.17391304347825,4328.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+59,19.0,189.31578947368422,3597.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+60,1.0,57.0,57.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+61,117.0,236.36752136752136,27655.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+62,86.0,209.3139534883721,18001.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+63,409.0,192.6479217603912,78793.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+64,75.0,184.81333333333333,13861.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+65,20.0,191.95,3839.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+66,73.0,181.84931506849315,13275.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+67,118.0,205.01694915254237,24192.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+68,72.0,198.23611111111111,14273.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+69,54.0,201.7037037037037,10892.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+70,61.0,219.7377049180328,13404.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+71,29.0,204.27586206896552,5924.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+72,54.0,215.92592592592592,11660.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+73,49.0,158.0612244897959,7744.999999999999,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+74,100.0,236.77,23677.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+75,39.0,203.43589743589743,7934.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+76,147.0,205.14285714285714,30156.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+77,7.0,224.42857142857142,1571.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+78,77.0,176.92207792207793,13623.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+79,61.0,203.2295081967213,12397.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+80,134.0,215.38059701492537,28861.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+81,61.0,213.2622950819672,13009.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+82,29.0,200.0,5800.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+83,26.0,197.57692307692307,5137.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+84,99.0,203.42424242424244,20139.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+85,107.0,222.19626168224298,23775.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+86,8.0,195.5,1564.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+87,33.0,175.33333333333334,5786.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+88,96.0,183.71875,17637.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+89,50.0,182.4,9120.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+90,338.0,169.23076923076923,57200.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+91,7.0,210.71428571428572,1475.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+92,1.0,59.0,59.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+93,31.0,196.70967741935485,6098.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+94,8.0,189.25,1514.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+95,43.0,188.30232558139534,8096.999999999999,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+96,57.0,193.87719298245614,11051.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+97,28.0,175.21428571428572,4906.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+98,65.0,221.41538461538462,14392.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+99,68.0,193.38235294117646,13150.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+100,6.0,206.33333333333334,1238.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+101,9.0,183.33333333333334,1650.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+102,59.0,221.54237288135593,13071.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+103,63.0,203.79365079365078,12839.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+104,100.0,225.56,22556.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+105,57.0,178.96491228070175,10201.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+106,31.0,141.41935483870967,4384.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+107,89.0,224.42696629213484,19974.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+108,46.0,200.97826086956522,9245.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+109,58.0,157.39655172413794,9129.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+110,29.0,189.86206896551724,5506.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+111,52.0,237.21153846153845,12335.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+112,232.0,166.1594827586207,38549.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+113,5.0,110.4,552.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+114,105.0,225.7904761904762,23708.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+115,8.0,146.125,1169.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+116,82.0,219.8048780487805,18024.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+117,45.0,233.06666666666666,10488.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+118,85.0,232.50588235294117,19763.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+119,69.0,227.2753623188406,15682.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+120,6.0,188.16666666666666,1129.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+121,65.0,220.07692307692307,14305.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+122,102.0,216.35294117647058,22068.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+123,38.0,217.78947368421052,8276.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+124,52.0,210.3846153846154,10940.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+125,125.0,199.608,24951.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+126,35.0,160.71428571428572,5625.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+127,30.0,164.5,4935.0,J995_ARC_xxx_slice1-Ort.czi,adult,glp1r,upper
+1,16.0,63.5625,1017.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+2,7.0,70.85714285714286,496.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+3,26.0,102.76923076923077,2672.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+4,75.0,170.41333333333333,12781.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+5,105.0,170.67619047619047,17921.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+6,5.0,57.0,285.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+7,15.0,68.66666666666667,1030.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+8,80.0,100.2125,8017.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+9,2.0,86.5,173.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+10,67.0,117.98507462686567,7905.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+11,44.0,144.1818181818182,6344.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+12,42.0,104.23809523809524,4378.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+13,35.0,110.6,3871.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+14,8.0,125.625,1005.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+15,56.0,173.39285714285714,9710.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+16,14.0,103.07142857142857,1443.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+17,19.0,103.10526315789474,1959.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+18,1.0,50.0,50.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+19,45.0,155.42222222222222,6994.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+20,22.0,125.04545454545455,2751.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+21,8.0,131.0,1048.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+22,18.0,170.61111111111111,3071.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+23,46.0,157.84782608695653,7261.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+24,9.0,117.0,1053.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+25,78.0,151.34615384615384,11805.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+26,1.0,104.0,104.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+27,63.0,100.0,6300.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+28,1.0,151.0,151.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+29,27.0,108.66666666666667,2934.0,K731_ARC _C1_slice2-Ort.czi,adult,glp1r,upper
+1,115.0,85.34782608695652,9815.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+2,40.0,77.225,3089.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+3,14.0,102.14285714285714,1430.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+4,56.0,120.69642857142857,6759.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+5,29.0,82.41379310344827,2390.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+6,48.0,60.375,2898.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+7,46.0,88.41304347826087,4067.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+8,2.0,52.5,105.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+9,11.0,55.90909090909091,615.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+10,22.0,67.54545454545455,1486.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+11,55.0,73.87272727272727,4063.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+12,23.0,60.69565217391305,1396.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+13,82.0,67.98780487804878,5575.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+14,52.0,84.73076923076923,4406.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+15,196.0,93.9795918367347,18420.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+16,73.0,88.27397260273973,6444.000000000001,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+17,153.0,89.20915032679738,13649.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+18,46.0,84.71739130434783,3897.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+19,19.0,77.21052631578948,1467.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+20,51.0,78.84313725490196,4021.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+21,25.0,88.56,2214.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+22,29.0,75.72413793103448,2196.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+23,13.0,96.23076923076923,1251.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+24,38.0,107.02631578947368,4067.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+25,117.0,96.88888888888889,11336.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+26,119.0,84.26890756302521,10028.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+27,59.0,85.61016949152543,5051.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+28,62.0,86.7741935483871,5380.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+29,45.0,68.37777777777778,3077.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+30,68.0,85.04411764705883,5783.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+31,59.0,89.20338983050847,5263.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+32,7.0,113.85714285714286,797.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+33,90.0,110.17777777777778,9916.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+34,5.0,80.2,401.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+35,64.0,84.28125,5394.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+36,33.0,63.57575757575758,2098.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+37,39.0,74.46153846153847,2904.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+38,25.0,107.56,2689.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+39,1.0,108.0,108.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+40,3.0,64.33333333333333,193.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+41,118.0,85.27118644067797,10062.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+42,25.0,105.0,2625.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+43,47.0,84.68085106382979,3980.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+44,177.0,81.98305084745763,14511.000000000002,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+45,1.0,41.0,41.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+46,11.0,128.9090909090909,1418.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+47,23.0,92.56521739130434,2129.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+48,18.0,90.05555555555556,1621.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+49,94.0,80.48936170212765,7565.999999999999,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+50,69.0,118.26086956521739,8160.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+51,130.0,93.01538461538462,12092.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+52,8.0,83.875,671.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+53,77.0,72.96103896103897,5618.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+54,24.0,66.70833333333333,1601.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+55,54.0,98.46296296296296,5317.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+56,46.0,85.02173913043478,3911.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+57,22.0,60.22727272727273,1325.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+58,34.0,67.88235294117646,2308.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+59,4.0,99.0,396.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+60,107.0,76.93457943925233,8232.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+61,18.0,62.333333333333336,1122.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+62,61.0,76.93442622950819,4693.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+63,13.0,100.61538461538461,1308.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+64,29.0,77.48275862068965,2247.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+65,62.0,83.5,5177.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+66,47.0,85.17021276595744,4003.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+67,24.0,90.25,2166.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+68,202.0,73.39108910891089,14825.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+69,133.0,79.41353383458646,10562.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+70,11.0,78.54545454545455,864.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+71,12.0,60.083333333333336,721.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+72,68.0,85.98529411764706,5847.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+73,28.0,52.285714285714285,1464.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+74,14.0,84.71428571428571,1186.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+75,8.0,67.5,540.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+76,242.0,85.35950413223141,20657.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+77,122.0,70.75409836065573,8632.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+78,30.0,74.96666666666667,2249.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+79,51.0,65.58823529411765,3345.0000000000005,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+80,59.0,104.1864406779661,6147.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+81,19.0,68.84210526315789,1308.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+82,3.0,132.33333333333334,397.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+83,172.0,88.29069767441861,15186.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+84,134.0,100.91044776119404,13522.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+85,31.0,86.6774193548387,2687.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+86,13.0,54.76923076923077,712.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+87,57.0,85.35087719298245,4865.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+88,87.0,70.94252873563218,6172.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+89,37.0,53.24324324324324,1970.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+90,18.0,98.0,1764.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+91,49.0,69.91836734693878,3426.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+92,67.0,83.68656716417911,5607.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+93,23.0,94.69565217391305,2178.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+94,25.0,95.48,2387.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+95,10.0,74.7,747.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+96,72.0,84.80555555555556,6106.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+97,39.0,79.84615384615384,3113.9999999999995,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+98,5.0,58.8,294.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+99,15.0,58.46666666666667,877.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+100,20.0,63.5,1270.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+101,14.0,65.92857142857143,923.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+102,4.0,105.25,421.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+103,42.0,96.0,4032.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+104,53.0,100.67924528301887,5336.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+105,12.0,99.66666666666667,1196.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+106,2.0,61.5,123.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+107,34.0,100.41176470588235,3414.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+108,43.0,79.06976744186046,3400.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+109,43.0,90.44186046511628,3889.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+110,1.0,56.0,56.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+111,1.0,103.0,103.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+112,58.0,80.01724137931035,4641.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+113,56.0,71.30357142857143,3993.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+114,18.0,72.88888888888889,1312.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+115,3.0,54.666666666666664,164.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+116,58.0,103.43103448275862,5999.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+117,6.0,60.166666666666664,361.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+118,77.0,86.92207792207792,6693.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+119,21.0,52.523809523809526,1103.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+120,39.0,84.48717948717949,3295.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+121,38.0,90.34210526315789,3433.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+122,25.0,97.52,2438.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+123,100.0,84.89,8489.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+124,71.0,77.67605633802818,5515.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+125,67.0,80.29850746268657,5380.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+126,18.0,86.16666666666667,1551.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+127,3.0,100.33333333333333,301.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+128,26.0,87.76923076923077,2282.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+129,20.0,62.7,1254.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+130,38.0,58.078947368421055,2207.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+131,14.0,102.57142857142857,1436.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+132,134.0,107.8955223880597,14458.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+133,43.0,71.3953488372093,3070.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+134,98.0,87.20408163265306,8546.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+135,59.0,97.15254237288136,5732.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+136,21.0,72.9047619047619,1530.9999999999998,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+137,35.0,69.14285714285714,2420.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+138,29.0,63.58620689655172,1844.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+139,27.0,75.03703703703704,2026.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+140,54.0,92.70370370370371,5006.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+141,89.0,82.46067415730337,7339.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+142,41.0,76.51219512195122,3137.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+143,41.0,78.39024390243902,3214.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+144,17.0,86.52941176470588,1471.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+145,39.0,82.05128205128206,3200.0000000000005,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+146,80.0,106.4375,8515.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+147,28.0,76.39285714285714,2139.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+148,8.0,120.875,967.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+149,4.0,106.75,427.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+150,55.0,92.43636363636364,5084.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+151,35.0,92.85714285714286,3250.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+152,57.0,67.19298245614036,3830.0000000000005,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+153,28.0,86.85714285714286,2432.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+154,30.0,73.1,2193.0,J987_ARC _C3_slice3-Ort.czi,adult,glp1r,upper
+1,50.0,148.64,7431.999999999999,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+2,106.0,227.00943396226415,24063.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+3,59.0,189.5084745762712,11181.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+4,45.0,175.48888888888888,7897.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+5,102.0,200.50980392156862,20452.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+6,1.0,34.0,34.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+7,16.0,157.625,2522.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+8,76.0,194.14473684210526,14755.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+9,69.0,160.84057971014494,11098.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+10,22.0,198.04545454545453,4357.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+11,53.0,168.35849056603774,8923.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+12,146.0,183.3972602739726,26776.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+13,22.0,162.27272727272728,3570.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+14,28.0,180.42857142857142,5052.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+15,17.0,174.7058823529412,2970.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+16,28.0,138.96428571428572,3891.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+17,149.0,179.61073825503357,26762.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+18,126.0,224.20634920634922,28250.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+19,48.0,197.04166666666666,9458.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+20,3.0,73.66666666666667,221.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+21,80.0,193.8,15504.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+22,47.0,157.29787234042553,7393.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+23,26.0,107.84615384615384,2804.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+24,81.0,206.679012345679,16741.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+25,25.0,135.32,3383.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+26,31.0,195.61290322580646,6064.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+27,79.0,194.31645569620252,15351.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+28,16.0,181.0,2896.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+29,20.0,188.7,3774.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+30,64.0,156.171875,9995.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+31,19.0,139.31578947368422,2647.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+32,106.0,159.83962264150944,16943.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+33,100.0,218.23,21823.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+34,134.0,154.6865671641791,20728.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+35,56.0,232.94642857142858,13045.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+36,196.0,167.48469387755102,32827.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+37,119.0,176.38655462184875,20990.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+38,68.0,185.69117647058823,12627.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+39,6.0,125.0,750.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+40,60.0,155.53333333333333,9332.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+41,55.0,184.1090909090909,10126.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+42,4.0,97.75,391.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+43,141.0,166.87234042553192,23529.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+44,52.0,191.0,9932.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+45,61.0,199.62295081967213,12177.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+46,75.0,195.70666666666668,14678.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+47,52.0,226.75,11791.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+48,27.0,156.40740740740742,4223.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+49,21.0,151.95238095238096,3191.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+50,13.0,200.15384615384616,2602.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+51,282.0,168.2836879432624,47456.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+52,2.0,55.5,111.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+53,28.0,199.85714285714286,5596.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+54,12.0,234.75,2817.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+55,12.0,193.58333333333334,2323.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+56,52.0,201.80769230769232,10494.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+57,103.0,160.5242718446602,16534.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+58,11.0,143.36363636363637,1577.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+59,59.0,154.8135593220339,9134.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+60,7.0,184.71428571428572,1293.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+61,13.0,175.76923076923077,2285.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+62,25.0,146.92,3672.9999999999995,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+63,7.0,113.0,791.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+64,46.0,137.80434782608697,6339.000000000001,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+65,13.0,178.0,2314.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+66,24.0,145.54166666666666,3493.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+67,12.0,199.25,2391.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+68,8.0,128.375,1027.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+69,51.0,153.01960784313727,7804.000000000001,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+70,92.0,196.34782608695653,18064.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+71,56.0,170.64285714285714,9556.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+72,9.0,165.0,1485.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+73,48.0,139.375,6690.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+74,3.0,211.0,633.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+75,68.0,231.19117647058823,15721.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+76,73.0,181.13698630136986,13223.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+77,109.0,191.94495412844037,20922.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+78,7.0,131.71428571428572,922.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+79,3.0,252.0,756.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+80,8.0,132.0,1056.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+81,1.0,47.0,47.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+82,27.0,196.85185185185185,5315.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper
+83,31.0,135.61290322580646,4204.0,J995_ARC_B4_slice3-Ort.czi,adult,glp1r,upper

@@ -1,0 +1,25 @@
+Image Analysis Summary
+==================================================
+
+Identification:
+- Filename: J995_AR _B4_slice6-Ort.czi
+- Channels Used: pomc
+- Region Analyzed: Lower
+
+Key Metrics:
+- Total objects detected: 122
+- Mean area: 96.71 pixels
+- Mean intensity: 229.01
+- Mean integrated density: 22459.40
+
+Processing Parameters:
+- Threshold method: otsu
+- Threshold value: 117.0
+- Object count: 122
+
+Output Files:
+- original: J995_AR _B4_slice6-Ort_01_original.tif
+- mask: J995_AR _B4_slice6-Ort_02_binary_mask.tif
+- labels: J995_AR _B4_slice6-Ort_03_segmented_labels.tif
+- overlay: J995_AR _B4_slice6-Ort_04_boundaries_overlay.tif
+- boundaries: J995_AR _B4_slice6-Ort_05_boundaries_mask.tif

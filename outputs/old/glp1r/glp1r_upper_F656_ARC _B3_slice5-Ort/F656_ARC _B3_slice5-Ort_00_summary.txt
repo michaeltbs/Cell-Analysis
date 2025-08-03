@@ -1,0 +1,25 @@
+Image Analysis Summary
+==================================================
+
+Identification:
+- Filename: F656_ARC _B3_slice5-Ort.czi
+- Channels Used: glp1r
+- Region Analyzed: Upper
+
+Key Metrics:
+- Total objects detected: 741
+- Mean area: 58.17 pixels
+- Mean intensity: 11.22
+- Mean integrated density: 630.36
+
+Processing Parameters:
+- Threshold method: otsu
+- Threshold value: 7.0
+- Object count: 741
+
+Output Files:
+- original: F656_ARC _B3_slice5-Ort_01_original.tif
+- mask: F656_ARC _B3_slice5-Ort_02_binary_mask.tif
+- labels: F656_ARC _B3_slice5-Ort_03_segmented_labels.tif
+- overlay: F656_ARC _B3_slice5-Ort_04_boundaries_overlay.tif
+- boundaries: F656_ARC _B3_slice5-Ort_05_boundaries_mask.tif

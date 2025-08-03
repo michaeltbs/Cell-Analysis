@@ -1,0 +1,25 @@
+Image Analysis Summary
+==================================================
+
+Identification:
+- Filename: F656_ARC _B3_slice7-Ort.czi
+- Channels Used: pomc
+- Region Analyzed: Upper
+
+Key Metrics:
+- Total objects detected: 1145
+- Mean area: 91.98 pixels
+- Mean intensity: 46.91
+- Mean integrated density: 4379.19
+
+Processing Parameters:
+- Threshold method: otsu
+- Threshold value: 39.0
+- Object count: 1145
+
+Output Files:
+- original: F656_ARC _B3_slice7-Ort_01_original.tif
+- mask: F656_ARC _B3_slice7-Ort_02_binary_mask.tif
+- labels: F656_ARC _B3_slice7-Ort_03_segmented_labels.tif
+- overlay: F656_ARC _B3_slice7-Ort_04_boundaries_overlay.tif
+- boundaries: F656_ARC _B3_slice7-Ort_05_boundaries_mask.tif

@@ -1,0 +1,25 @@
+Image Analysis Summary
+==================================================
+
+Identification:
+- Filename: K738_ARC _B4_slice7-Ort.czi
+- Channels Used: pomc
+- Region Analyzed: Lower
+
+Key Metrics:
+- Total objects detected: 134
+- Mean area: 145.40 pixels
+- Mean intensity: 237.07
+- Mean integrated density: 34790.19
+
+Processing Parameters:
+- Threshold method: otsu
+- Threshold value: 131.0
+- Object count: 134
+
+Output Files:
+- original: K738_ARC _B4_slice7-Ort_01_original.tif
+- mask: K738_ARC _B4_slice7-Ort_02_binary_mask.tif
+- labels: K738_ARC _B4_slice7-Ort_03_segmented_labels.tif
+- overlay: K738_ARC _B4_slice7-Ort_04_boundaries_overlay.tif
+- boundaries: K738_ARC _B4_slice7-Ort_05_boundaries_mask.tif

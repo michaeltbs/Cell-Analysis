@@ -1,0 +1,25 @@
+Image Analysis Summary
+==================================================
+
+Identification:
+- Filename: K731_ARC _C1_slice2-Ort.czi
+- Channels Used: glp1r
+- Region Analyzed: Lower
+
+Key Metrics:
+- Total objects detected: 87
+- Mean area: 37.17 pixels
+- Mean intensity: 145.63
+- Mean integrated density: 5708.38
+
+Processing Parameters:
+- Threshold method: otsu
+- Threshold value: 71.0
+- Object count: 87
+
+Output Files:
+- original: K731_ARC _C1_slice2-Ort_01_original.tif
+- mask: K731_ARC _C1_slice2-Ort_02_binary_mask.tif
+- labels: K731_ARC _C1_slice2-Ort_03_segmented_labels.tif
+- overlay: K731_ARC _C1_slice2-Ort_04_boundaries_overlay.tif
+- boundaries: K731_ARC _C1_slice2-Ort_05_boundaries_mask.tif

@@ -1,0 +1,25 @@
+Image Analysis Summary
+==================================================
+
+Identification:
+- Filename: B489_ARC_xxx_slice6-Ort.czi
+- Channels Used: pomc
+- Region Analyzed: Upper
+
+Key Metrics:
+- Total objects detected: 1465
+- Mean area: 82.97 pixels
+- Mean intensity: 1.88
+- Mean integrated density: 152.51
+
+Processing Parameters:
+- Threshold method: otsu
+- Threshold value: 1.0
+- Object count: 1465
+
+Output Files:
+- original: B489_ARC_xxx_slice6-Ort_01_original.tif
+- mask: B489_ARC_xxx_slice6-Ort_02_binary_mask.tif
+- labels: B489_ARC_xxx_slice6-Ort_03_segmented_labels.tif
+- overlay: B489_ARC_xxx_slice6-Ort_04_boundaries_overlay.tif
+- boundaries: B489_ARC_xxx_slice6-Ort_05_boundaries_mask.tif

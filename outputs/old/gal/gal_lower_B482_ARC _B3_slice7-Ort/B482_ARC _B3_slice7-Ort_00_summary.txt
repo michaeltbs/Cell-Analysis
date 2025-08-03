@@ -1,0 +1,25 @@
+Image Analysis Summary
+==================================================
+
+Identification:
+- Filename: B482_ARC _B3_slice7-Ort.czi
+- Channels Used: gal
+- Region Analyzed: Lower
+
+Key Metrics:
+- Total objects detected: 62
+- Mean area: 48.81 pixels
+- Mean intensity: 124.63
+- Mean integrated density: 6917.82
+
+Processing Parameters:
+- Threshold method: otsu
+- Threshold value: 71.0
+- Object count: 62
+
+Output Files:
+- original: B482_ARC _B3_slice7-Ort_01_original.tif
+- mask: B482_ARC _B3_slice7-Ort_02_binary_mask.tif
+- labels: B482_ARC _B3_slice7-Ort_03_segmented_labels.tif
+- overlay: B482_ARC _B3_slice7-Ort_04_boundaries_overlay.tif
+- boundaries: B482_ARC _B3_slice7-Ort_05_boundaries_mask.tif
