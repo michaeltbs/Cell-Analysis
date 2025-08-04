@@ -3,5 +3,5 @@ scipy
 scikit-image
 matplotlib
 pandas
-aicsimageio
+aicsimageio==4.14.0
 tifffile
