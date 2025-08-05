@@ -5,7 +5,8 @@ __pycache__/
 
 # C extensions
 *.so
-
+*.tiff
+*.czi
 # Distribution / packaging
 .Python
 build/
@@ -209,3 +210,4 @@ __marimo__/
 
 *.czi
 *.tif
+*.sh
