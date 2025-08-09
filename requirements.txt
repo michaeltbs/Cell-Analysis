@@ -1,7 +1,9 @@
-numpy
-scipy
-scikit-image
-matplotlib
-pandas
-aicsimageio==4.14.0
-tifffile
+cellpose>=3.0.0
+torch>=2.1
+numpy>=1.24
+pandas>=2.1
+scikit-image>=0.21
+tqdm>=4.66
+pyyaml>=6.0
+pyarrow>=14.0
+matplotlib>=3.5.0

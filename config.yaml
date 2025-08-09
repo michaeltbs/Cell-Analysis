@@ -1,0 +1,37 @@
+paths:
+  input_pos: "data/projected_tiffs/Input_pos"
+  input_neg: "data/projected_tiffs/Input_neg"
+  output_root: "results"
+
+cellpose:
+  model_name: "cpsam"
+  batch_size: 8
+  resize_max: 2048
+  niter: 500
+  flow_threshold: 0.1
+  cellprob_threshold: 0.0
+  save_masks: false  # Keine Masken speichern
+  channel: 1  # Welcher Kanal verwendet werden soll (0-3)
+
+# Neue Sektion: Zell-Filter
+filters:
+  min_area: 10      # Minimale Zellgröße (Pixel)
+  max_area: 5000        # Maximale Zellgröße (Pixel)
+  min_circularity: 0.1  # Minimale Rundheit (0=linear, 1=perfekt rund)
+  max_circularity: 1  # Maximale Rundheit
+  min_solidity: 0.0     # Minimale Kompaktheit (Verhältnis Area/ConvexArea)
+  max_solidity: 1.0     # Maximale Kompaktheit
+
+cpu:
+  num_workers: 4
+
+# Overlay-Einstellungen
+overlays:
+  show_all_cells: true      # Alle Zellen zeigen (nicht nur erste 100)
+  high_resolution: true     # Hohe Auflösung (150 DPI)
+  circle_color: "red"       # Farbe der Kreise
+  circle_alpha: 0.8         # Transparenz der Kreise
+  line_width: 0.8           # Linienstärke der Kreise
+
+outputs:
+  base_name: "analysis_results2"
