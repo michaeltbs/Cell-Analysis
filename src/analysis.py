@@ -2,6 +2,11 @@ import os
 import re
 import pandas as pd
 from typing import Optional
+import numpy as np
+from skimage.color import gray2rgb
+from skimage.measure import regionprops
+from matplotlib.patches import Circle
+import matplotlib.pyplot as plt
 
 # Schema validation constants
 REQUIRED_BASE_COLS = ["filename", "condition", "region", "channel"]
@@ -137,22 +142,39 @@ def create_summary_report(animal_averages: pd.DataFrame, condition_averages: pd.
 		f.write(f"- Tier-Mittelwerte: {len(animal_averages)} Einträge\n")
 		f.write(f"- Bedingungsmittelwerte: {len(condition_averages)} Einträge\n\n")
 		
-		f.write("## POS vs. NEG (Zellzahl) je Kanal\n")
-		for channel in sorted(condition_averages['channel'].unique()):
-			pos_d = condition_averages[
-				(condition_averages['condition'] == 'pos') & 
-				(condition_averages['channel'] == channel)
-			]
-			neg_d = condition_averages[
-				(condition_averages['condition'] == 'neg') & 
-				(condition_averages['channel'] == channel)
-			]
+		# Group by region and channel for better organization
+		regions = sorted(condition_averages['region'].unique())
+		channels = sorted(condition_averages['channel'].unique())
+		
+		for region in regions:
+			f.write(f"## Region: {region}\n\n")
+			f.write("### POS vs. NEG (Zellzahl) je Kanal\n")
 			
-			if not pos_d.empty and not neg_d.empty:
-				pos_c = pos_d['condition_avg_cell_count'].values[0]
-				neg_c = neg_d['condition_avg_cell_count'].values[0]
-				diff = ((pos_c - neg_c) / neg_c * 100) if neg_c != 0 else float('inf')
-				f.write(f"- Kanal {channel}: POS={pos_c:.2f}, NEG={neg_c:.2f}, Δ={diff:.1f}%\n")
+			for channel in channels:
+				pos_d = condition_averages[
+					(condition_averages['condition'] == 'pos') & 
+					(condition_averages['channel'] == channel) &
+					(condition_averages['region'] == region)
+				]
+				neg_d = condition_averages[
+					(condition_averages['condition'] == 'neg') & 
+					(condition_averages['channel'] == channel) &
+					(condition_averages['region'] == region)
+				]
+				
+				if not pos_d.empty and not neg_d.empty:
+					pos_c = pos_d['condition_avg_cell_count'].values[0]
+					neg_c = neg_d['condition_avg_cell_count'].values[0]
+					diff = ((pos_c - neg_c) / neg_c * 100) if neg_c != 0 else float('inf')
+					f.write(f"- Kanal {channel}: POS={pos_c:.2f}, NEG={neg_c:.2f}, Δ={diff:.1f}%\n")
+				elif not pos_d.empty:
+					pos_c = pos_d['condition_avg_cell_count'].values[0]
+					f.write(f"- Kanal {channel}: POS={pos_c:.2f}, NEG=0, Δ=∞%\n")
+				elif not neg_d.empty:
+					neg_c = neg_d['condition_avg_cell_count'].values[0]
+					f.write(f"- Kanal {channel}: POS=0, NEG={neg_c:.2f}, Δ=-100%\n")
+			
+			f.write("\n")
 
 def create_summary_csv(csv_path: str, base_output_name: str = "analysis_results", write_markdown: bool = True) -> None:
 	"""Wrapper function to create summary CSV and optional markdown report"""
@@ -166,3 +188,41 @@ def create_summary_csv(csv_path: str, base_output_name: str = "analysis_results"
 	if write_markdown:
 		md = os.path.join(out_dir, f"{base_output_name}_summary.md")
 		create_summary_report(animal, cond, md)
+
+def create_overlay_image(image: np.ndarray, masks: np.ndarray, 
+                        output_path: str, overlay_config: dict) -> None:
+    """Create overlay image with detected cells"""
+    if not MATPLOTLIB_AVAILABLE:
+        return
+    
+    # Convert to RGB if grayscale
+    if image.ndim == 2:
+        display_img = gray2rgb(image)
+    else:
+        display_img = image.copy()
+    
+    # Normalize display image
+    display_img = display_img / display_img.max() * 255
+    display_img = display_img.astype(np.uint8)
+    
+    fig, ax = plt.subplots(1, 1, figsize=overlay_config.get('figsize', (10, 10)))
+    ax.imshow(display_img, cmap='gray' if len(display_img.shape) == 2 else None)
+    
+    # Add circles for each detected cell
+    props = regionprops(masks)
+    for prop in props:
+        y, x = prop.centroid
+        circle = Circle((x, y), 
+                       radius=overlay_config.get('circle_radius', 5),
+                       color=overlay_config.get('circle_color', 'red'),
+                       fill=False,
+                       linewidth=overlay_config.get('line_width', 2))
+        ax.add_patch(circle)
+    
+    ax.set_title(f"Detected cells: {len(props)}", fontsize=14, color='white')
+    ax.axis('off')
+    
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=overlay_config.get('dpi', 300), 
+                bbox_inches='tight', pad_inches=0.1, facecolor='black')
+    plt.close(fig)

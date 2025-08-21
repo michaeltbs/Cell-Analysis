@@ -1,37 +1,54 @@
 paths:
-  input_pos: "data/projected_tiffs/Input_pos"
-  input_neg: "data/projected_tiffs/Input_neg"
-  output_root: "results"
+  input_pos: "data/projected_tiffs/Input_old"    # Old samples (positive condition)
+  input_neg: "data/projected_tiffs/Input_adult"  # Adult samples (negative condition)
+  output_root: "results_old_vs_adult_ch2"
 
 cellpose:
   model_name: "cpsam"
   batch_size: 8
   resize_max: 2048
-  niter: 500
-  flow_threshold: 0.1
-  cellprob_threshold: 0.0
-  save_masks: false  # Keine Masken speichern
-  channel: 1  # Welcher Kanal verwendet werden soll (0-3)
+  niter: 750
+  flow_threshold: 0.6
+  cellprob_threshold: 0.5
+  diameter: 25
+  save_masks: false
+  channel: 2
+  split_regions: true
 
-# Neue Sektion: Zell-Filter
 filters:
-  min_area: 10      # Minimale Zellgröße (Pixel)
-  max_area: 5000        # Maximale Zellgröße (Pixel)
-  min_circularity: 0.1  # Minimale Rundheit (0=linear, 1=perfekt rund)
-  max_circularity: 1  # Maximale Rundheit
-  min_solidity: 0.0     # Minimale Kompaktheit (Verhältnis Area/ConvexArea)
-  max_solidity: 1.0     # Maximale Kompaktheit
+  min_area: 120
+  max_area: 8000
+  min_circularity: 0.2
+  max_circularity: 1.0
+  max_hole_ratio: 0.5
+  intensity_threshold_factor: 0.2
 
-cpu:
-  num_workers: 4
+enable_advanced_filtering: true
 
-# Overlay-Einstellungen
+advanced_filtering:
+  snr_min: 1.1                 # STARK GESENKT von 1 auf 0.3
+  abs_floor_percentile: 70     # STARK GESENKT von 75 auf 30
+  foreground_block_size: 501    # STARK GESENKT von 201 auf 51
+  foreground_offset: 10       # STARK NEGATIV von -10 auf -30
+
+processing:
+  # Preprocessing
+  tophat: true            # Enable white-tophat preprocessing
+  tophat_radius: 15       # Radius for white-tophat (10–20 typical)
+  contrast_stretch: true  # Enable robust contrast stretching
+  stretch_percentiles: [1, 99]  # Percentiles for contrast stretching
+
+  # Postprocessing
+  merge_adjacent_cells: false
+  remove_edge_cells: false
+  intensity_threshold: 5     # GESENKT von 10 auf 5
+
 overlays:
-  show_all_cells: true      # Alle Zellen zeigen (nicht nur erste 100)
-  high_resolution: true     # Hohe Auflösung (150 DPI)
-  circle_color: "red"       # Farbe der Kreise
-  circle_alpha: 0.8         # Transparenz der Kreise
-  line_width: 0.8           # Linienstärke der Kreise
+  overlay_mode: contours
+  contour_color: 'blue'        # Bessere Sichtbarkeit
+  line_width: 1                # Dicker für bessere Sichtbarkeit
+  dpi: 300                     # Niedriger für kleinere Dateien
+  figsize: [12, 12]            # Kleiner
 
 outputs:
-  base_name: "analysis_results2"
+  base_name: "cell_analysis"

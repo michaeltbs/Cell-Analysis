@@ -38,6 +38,10 @@ def main():
 	final_save_masks = cfg.get("cellpose", {}).get("save_masks", True) and not args.no_masks
 	print(f"   Finale save_masks: {final_save_masks}")
 	
+	# Region splitting check
+	split_regions = cfg.get("cellpose", {}).get("split_regions", False)
+	print(f"   split_regions: {split_regions}")
+	
 	# Overlay-Logik verbessern
 	if args.no_overlays:
 		create_overlays_final = False
@@ -53,8 +57,8 @@ def main():
 		print(f"   create_overlays: False (Standard)")
 
 	master_csv = segment_dirs(
-		input_pos=cfg["paths"]["input_pos"],
-		input_neg=cfg["paths"]["input_neg"],
+		input_pos=cfg["paths"].get("input_pos", cfg["paths"].get("input_old", "")),
+		input_neg=cfg["paths"].get("input_neg", cfg["paths"].get("input_adult", "")),
 		output_root=cfg["paths"]["output_root"],
 		batch_size=cfg.get("cellpose", {}).get("batch_size", 8),
 		resize_max=cfg.get("cellpose", {}).get("resize_max", 1000),
@@ -68,6 +72,11 @@ def main():
 		channel=cfg.get("cellpose", {}).get("channel", 0),
 		filters=cfg.get("filters", {}),  # Neue Filter-Parameter
 		overlay_config=cfg.get("overlays", {}),  # Neue Overlay-Konfiguration
+		split_regions=split_regions,  # Fehlender Parameter hinzugefügt
+		# NEW: advanced filtering
+		enable_advanced_filtering=cfg.get("enable_advanced_filtering", False),
+		advanced_filtering=cfg.get("advanced_filtering", {}),
+		processing=cfg.get("processing", {}),  # Pass processing options
 	)
 
 	out_dir = os.path.dirname(master_csv)

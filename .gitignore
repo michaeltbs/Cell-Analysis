@@ -216,5 +216,5 @@ results_parallel/
 *.czi
 *.tif
 *.sh
-
+*.png
 results/
