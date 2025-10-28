@@ -15,7 +15,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential gcc git curl ca-certificates \
     libglib2.0-0 libgl1 libsm6 libxext6 libxrender1 \
-    libjpeg62-turbo libtiff5 libopenjp2-7 zlib1g \
+    libjpeg-turbo8 libtiff5 libopenjp2-7 zlib1g \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/requirements.txt
@@ -57,7 +57,7 @@ WORKDIR /app
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     python3 python3-pip python3-dev build-essential gcc git curl ca-certificates \
     libglib2.0-0 libgl1 libsm6 libxext6 libxrender1 \
-    libjpeg62-turbo libtiff5 libopenjp2-7 zlib1g \
+    libjpeg-turbo8 libtiff5 libopenjp2-7 zlib1g \
     && rm -rf /var/lib/apt/lists/*
 
 # Ensure pip refers to python3
