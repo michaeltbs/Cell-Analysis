@@ -7,6 +7,12 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - .:/app
+      # Optional: set HOST_DATA on the host to mount a data folder to /data inside the container.
+      # Example: HOST_DATA=/home/user/data docker-compose up -d
+      - ${HOST_DATA:-.}:/data:rw
+      - .:/app:rw
     environment:
       - FLASK_ENV=production
+      # Optional: forward host uid/gid to avoid permission problems when writing into mounted volumes
+      - HOST_UID=${HOST_UID}
+      - HOST_GID=${HOST_GID}

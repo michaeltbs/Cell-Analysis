@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  cellanalysis:
+    build:
+      context: .
+      target: gpu
+      args:
+        USER_ID: ${HOST_UID:-1000}
+        GROUP_ID: ${HOST_GID:-1000}
+    image: cellanalysis:gpu
+    container_name: cellanalysis_gpu
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video,graphics
+    # Requires Docker engine with nvidia-container-toolkit installed on the host
+    gpus: all
+    volumes:
+      - ${HOST_DATA:-.}:/data:rw
+      - .:/app:rw

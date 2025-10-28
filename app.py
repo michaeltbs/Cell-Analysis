@@ -870,8 +870,12 @@ def _candidate_dirs_from_config():
         pass
     # add common anchors
     cands += [
-        os.getcwd(), '/app', '/', '/host_mnt', '/host_mnt/c', '/mnt', '/mnt/c'
+        os.getcwd(), '/app', '/', '/host_mnt', '/host_mnt/c', '/mnt', '/mnt/c', '/data'
     ]
+    # If user set HOST_DATA (recommendation for remote runs), prefer that anchor too
+    host_data = os.environ.get('HOST_DATA')
+    if host_data:
+        cands.append(host_data)
     # map Windows/WSL variants for each candidate
     mapped = []
     for p in cands:
