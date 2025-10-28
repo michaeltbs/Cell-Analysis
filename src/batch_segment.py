@@ -1,639 +1,759 @@
+﻿#!/usr/bin/env python3
+"""
+batch_segment_v4.py â€” Detection with Cellpose v4 (CellposeModel) + multi-channel TIFF support
+
+- Works with Cellpose 4+ (falls back to older API if needed)
+- Accepts multi-channel images; you can select which channel to segment
+- Reads config from YAML (similar to your previous config_det_cpsam.yaml)
+- Saves *_mask.tif and optional overlays + a simple All_Counts_Master.csv
+- English-only logs
+
+YAML (example)
+--------------
+paths:
+  input_pos: "./data/processed_tiffs/Input_pos"
+  input_neg: "./data/processed_tiffs/Input_neg"   # optional
+  output_root: "./results_det"
+
+regions_enabled: []  # optional, tokens matched in path
+
+cellpose:
+  model_name: "cyto2"        # cyto2|cyto3|cyto|nuclei|cpsam(alias->cyto2)
+  use_gpu: false
+  channel: 0                 # which image channel to segment on multi-channel inputs
+  diameter: 20               # null/0 -> auto
+  flow_threshold: 0.4
+  cellprob_threshold: 0.0
+
+overlays:
+  overlay_mode: "contours"   # contours|masks|both
+  contour_color: "lime"
+  line_width: 1
+  dpi: 300
+  figsize: [12, 12]
+
+outputs:
+  overlay_suffix: "_overlay.png"
+  resume: true
+  overwrite: false
+
+Notes
+-----
+- Multi-channel handling: if image is (Y, X, C) we extract img[..., channel].
+  If (C, Y, X) we extract img[channel, ...]. If single-channel, we use it directly.
+- Cellpose channels param is set to [0, 0] for grayscale input (cellpose convention).
+- A minimal All_Counts_Master.csv is written per condition (pos/neg) + region folder.
+"""
+from __future__ import annotations
+
 import os
-import glob
+import sys
+import csv
+import yaml
+import math
+import time
+import random
+import traceback
+from pathlib import Path
+from typing import Iterable, Tuple, Optional, List, Dict, Any, Set
+
 import numpy as np
-import pandas as pd
-from typing import List, Tuple, Dict, Optional
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import tifffile as tiff
 
-from skimage import io as skio
-from skimage.transform import resize as skresize
-from tqdm import tqdm
-
-import torch
-from cellpose import models
+from scipy import ndimage as ndi
+from skimage import (
+    exposure,
+    feature,
+    measure,
+    morphology,
+    segmentation,
+)
 
 try:
-    import matplotlib.pyplot as plt
-    from matplotlib.patches import Circle
-    from skimage.measure import regionprops
-    from skimage.color import gray2rgb
-    MATPLOTLIB_AVAILABLE = True
-except ImportError:
-    MATPLOTLIB_AVAILABLE = False
-    print("⚠️ Matplotlib nicht verfügbar - Overlays werden übersprungen")
+    from tqdm import tqdm
+except Exception:
+    def tqdm(x, **kwargs): return x  # no-op fallback
 
-from skimage.filters import gaussian, threshold_local
-from skimage.morphology import binary_dilation, disk, white_tophat
-from scipy.ndimage import binary_fill_holes
+# -----------------------------
+# Config I/O
+# -----------------------------
+def _load_yaml(path: Path) -> dict:
+    with open(path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f) or {}
 
-def _ensure_dir(p: str):
-	os.makedirs(p, exist_ok=True)
+# -----------------------------
+# Cellpose v4 model loader
+# -----------------------------
+def _load_cellpose_model(model_name: str, use_gpu: bool = False):
+    """Return a Cellpose model that works on v4+, with fallback for older versions."""
+    try:
+        from cellpose import models as _models
+    except Exception as e:
+        raise RuntimeError("Cellpose is not installed. Please `pip install cellpose`.") from e
 
-def _list_tiffs(folder: str) -> List[str]:
-	patterns = ["*.tif", "*.tiff", "*.TIF", "*.TIFF", "*.czi"]
-	paths = []
-	for pat in patterns:
-		paths.extend(glob.glob(os.path.join(folder, pat)))
-	return sorted(set(paths), key=lambda p: (os.path.basename(p).lower(), p))
+    name = (model_name or "cyto2").lower()
+    mtype = name if name in ("cyto3", "cyto2", "cyto", "nuclei") else "cyto2"
 
-def load_image(image_path: str) -> np.ndarray:
-    """Load image based on file format (TIFF, CZI, etc.)"""
-    if image_path.lower().endswith('.czi'):
+    # prefer v4 API
+    try:
+        return _models.CellposeModel(gpu=bool(use_gpu), model_type=mtype)
+    except AttributeError:
+        # fallback for older versions
+        return _models.Cellpose(gpu=bool(use_gpu), model_type=mtype)
+
+# -----------------------------
+# Image helpers
+# -----------------------------
+def _read_image(path: Path) -> np.ndarray:
+    img = tiff.imread(str(path))
+    if img.ndim <= 3:
+        return np.squeeze(img)
+    squeezed = np.squeeze(img)
+    if squeezed.ndim <= 3:
+        return squeezed
+    while squeezed.ndim > 3:
+        squeezed = squeezed[0]
+    return squeezed
+
+_CHANNEL_AXIS_CACHE: Dict[Tuple[Tuple[int, ...], int], Tuple[int, int, bool]] = {}
+_CHANNEL_WARNED: Set[Tuple[Tuple[int, ...], int]] = set()
+
+
+def _resolve_channel_selection(shape: Tuple[int, ...], requested_index: int) -> Tuple[int, int, bool]:
+    """
+    Determine which axis is the channel axis and return a safe index.
+    Returns (axis, resolved_index, adjusted) where 'adjusted' is True if the index was corrected
+    (e.g. converting 1-based to 0-based).
+    """
+    channel_axes = [ax for ax, size in enumerate(shape) if size <= 8]
+    if not channel_axes:
+        channel_axes = [len(shape) - 1]
+
+    for ax in channel_axes:
+        size = shape[ax]
+        if size <= 0:
+            continue
+        idx = requested_index
+        if idx < 0:
+            idx += size
+        if 0 <= idx < size:
+            return ax, idx, False
+        # tolerate 1-based indices from UI
+        if 0 < idx <= size:
+            return ax, idx - 1, True
+        # no valid index on this axis, keep checking other candidates
+
+    raise ValueError(f"Channel index {requested_index} out of range for image shape {shape}.")
+
+
+def _extract_channel(img: np.ndarray, channel_index: int) -> np.ndarray:
+    """Return a 2D array selecting the desired channel from multi-channel arrays."""
+    if img.ndim == 2:
+        return img
+    if img.ndim != 3:
+        raise ValueError(f"Unsupported image ndim={img.ndim}; expected 2D or 3D.")
+
+    shape = tuple(int(x) for x in img.shape)
+    cache_key = (shape, int(channel_index))
+    if cache_key not in _CHANNEL_AXIS_CACHE:
+        axis, resolved_idx, adjusted = _resolve_channel_selection(shape, int(channel_index))
+        _CHANNEL_AXIS_CACHE[cache_key] = (axis, resolved_idx, adjusted)
+    else:
+        axis, resolved_idx, adjusted = _CHANNEL_AXIS_CACHE[cache_key]
+
+    if adjusted and cache_key not in _CHANNEL_WARNED:
+        print(f"[WARN] channel index {channel_index} adjusted to {resolved_idx} for image shape {shape}.")
+        _CHANNEL_WARNED.add(cache_key)
+
+    return np.take(img, indices=resolved_idx, axis=axis)
+
+# -----------------------------
+# Image preprocessing helpers
+# -----------------------------
+def _normalize_image(arr: np.ndarray) -> np.ndarray:
+    arr = np.asarray(arr, dtype=np.float32)
+    if arr.size == 0:
+        return arr
+    max_val = float(np.nanmax(arr))
+    if not np.isfinite(max_val) or max_val <= 0.0:
+        return np.zeros_like(arr, dtype=np.float32)
+    return arr / max_val
+
+def _preprocess_image(img: np.ndarray, proc_cfg: Dict[str, Any]) -> np.ndarray:
+    """Apply optional preprocessing (tophat, contrast stretch)."""
+    if not isinstance(proc_cfg, dict) or not proc_cfg:
+        return img
+
+    processed = img.astype(np.float32, copy=True)
+    if proc_cfg.get("tophat"):
+        radius = int(proc_cfg.get("tophat_radius", 15) or 15)
+        radius = max(radius, 1)
+        selem = morphology.disk(radius)
         try:
-            from aicspylibczi import CziFile
-            czi = CziFile(image_path)
-            image_array = czi.read_image()
-            
-            # Handle different CZI dimensions and create Z-projection
-            print(f"CZI Shape: {image_array.shape}")
-            if image_array.ndim == 5:  # (T, C, Z, Y, X)
-                projected = np.max(image_array[0, 0], axis=0)  # First time, first channel
-            elif image_array.ndim == 4:  # (C, Z, Y, X)
-                projected = np.max(image_array[0], axis=0)     # First channel
-            elif image_array.ndim == 3:  # (Z, Y, X)
-                projected = np.max(image_array, axis=0)        # Z-projection
+            processed = morphology.white_tophat(processed, selem)
+        except Exception:
+            # fallback with safe structuring element if original radius fails
+            processed = morphology.white_tophat(processed, morphology.disk(max(1, min(radius, 64))))
+
+    if proc_cfg.get("contrast_stretch"):
+        percs = proc_cfg.get("stretch_percentiles") or [1, 99]
+        try:
+            if len(percs) != 2:
+                percs = [1, 99]
+            p0, p1 = sorted(float(x) for x in percs)
+            p0 = float(np.clip(p0, 0.0, 100.0))
+            p1 = float(np.clip(p1, 0.0, 100.0))
+            if p1 <= p0:
+                p0, p1 = 1.0, 99.0
+            v0, v1 = np.percentile(processed, (p0, p1))
+            if np.isfinite(v0) and np.isfinite(v1) and v1 > v0:
+                processed = exposure.rescale_intensity(processed, in_range=(v0, v1))
+        except Exception:
+            pass
+
+    return processed
+
+def _touches_border(bbox: Tuple[int, ...], shape: Tuple[int, ...]) -> bool:
+    """Return True if region bounding box touches image border."""
+    if len(bbox) < 4 or len(shape) < 2:
+        return False
+    min_r, min_c, max_r, max_c = bbox[:4]
+    return min_r <= 0 or min_c <= 0 or max_r >= shape[0] or max_c >= shape[1]
+
+def _split_touching_cells(mask: np.ndarray, proc_cfg: Dict[str, Any], min_area: int) -> np.ndarray:
+    """Split merged masks using watershed if enabled."""
+    if not isinstance(proc_cfg, dict) or not proc_cfg.get("split_touching_cells", True):
+        return mask
+
+    binary = mask > 0
+    if not np.any(binary):
+        return mask
+
+    min_area = int(min_area or 0)
+    area_factor = float(proc_cfg.get("split_area_multiplier", 2.5))
+    split_min_area = int(proc_cfg.get("split_min_area", 0) or 0)
+    if split_min_area <= 0 and min_area > 0:
+        split_min_area = int(min_area * area_factor)
+    min_distance = max(2, int(proc_cfg.get("split_min_distance", 5) or 5))
+    rel_peak_threshold = float(proc_cfg.get("split_rel_peak_threshold", 0.2) or 0.2)
+    keep_ridge = bool(proc_cfg.get("split_keep_ridge", True))
+    min_area_ratio = float(proc_cfg.get("split_min_area_ratio", 0.0) or 0.0)
+    if min_area_ratio < 0:
+        min_area_ratio = 0.0
+
+    new_mask = np.zeros_like(mask, dtype=np.int32)
+    next_label = 1
+    for lbl in np.unique(mask):
+        if lbl == 0:
+            continue
+        component = mask == lbl
+        area = int(component.sum())
+        if area == 0:
+            continue
+        if split_min_area > 0 and area <= split_min_area:
+            new_mask[component] = next_label
+            next_label += 1
+            continue
+
+        distance = ndi.distance_transform_edt(component)
+        max_dist = float(distance.max(initial=0.0))
+        if max_dist < max(1.5, min_distance / 2):
+            new_mask[component] = next_label
+            next_label += 1
+            continue
+
+        local_maxi = feature.peak_local_max(
+            distance,
+            labels=component,
+            footprint=np.ones((min_distance, min_distance), dtype=bool),
+            exclude_border=False,
+        )
+
+        if local_maxi.size == 0:
+            new_mask[component] = next_label
+            next_label += 1
+            continue
+
+        peaks = np.asarray(local_maxi, dtype=int)
+        if peaks.ndim != 2 or peaks.shape[1] != 2:
+            peaks = peaks.reshape(-1, 2)
+        if peaks.shape[0] == 0:
+            new_mask[component] = next_label
+            next_label += 1
+            continue
+        peaks = np.unique(peaks, axis=0)
+        peak_vals = distance[peaks[:, 0], peaks[:, 1]]
+        if rel_peak_threshold > 0:
+            keep = peak_vals >= rel_peak_threshold * max_dist
+            peaks = peaks[keep]
+            peak_vals = peak_vals[keep]
+
+        if peaks.shape[0] <= 1:
+            new_mask[component] = next_label
+            next_label += 1
+            continue
+
+        if min_area > 0:
+            expected_cells = max(1, int(round(area / max(min_area, 1))))
+            if peaks.shape[0] > expected_cells:
+                order = np.argsort(peak_vals)[-expected_cells:]
+                peaks = peaks[order]
+
+        markers = np.zeros_like(distance, dtype=np.int32)
+        markers[peaks[:, 0], peaks[:, 1]] = np.arange(1, peaks.shape[0] + 1, dtype=np.int32)
+        ws = segmentation.watershed(-distance, markers, mask=component, watershed_line=keep_ridge)
+        unique_ws, counts_ws = np.unique(ws, return_counts=True)
+        segments = [(lab, cnt) for lab, cnt in zip(unique_ws, counts_ws) if lab > 0]
+        if not segments:
+            new_mask[component] = next_label
+            next_label += 1
+            continue
+
+        min_allowed = split_min_area
+        if min_area_ratio > 0:
+            min_allowed = max(min_allowed, int(area * min_area_ratio))
+        if min_allowed > 0:
+            if any(cnt < min_allowed for _, cnt in segments):
+                new_mask[component] = next_label
+                next_label += 1
+                continue
+
+        for ws_lbl, _ in segments:
+            new_mask[(ws == ws_lbl) & component] = next_label
+            next_label += 1
+
+    if next_label == 1:
+        return mask
+    return new_mask.astype(np.uint16)
+
+def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_shape: Tuple[int, int]) -> Tuple[np.ndarray, Dict[str, Any]]:
+    """Apply geometric and intensity filters to mask labels based on config."""
+    filters_cfg = cfg.get("filters", {}) or {}
+    proc_cfg = cfg.get("processing", {}) or {}
+    adv_cfg = cfg.get("advanced_filtering", {}) or {}
+    enable_adv = bool(cfg.get("enable_advanced_filtering", False))
+
+    min_area = int(filters_cfg.get("min_area") or 0)
+    max_area = int(filters_cfg.get("max_area") or 0)
+    min_circ = float(filters_cfg.get("min_circularity") or 0.0)
+    max_circ = float(filters_cfg.get("max_circularity") or 0.0)
+    max_hole = filters_cfg.get("max_hole_ratio")
+    max_hole = float(max_hole) if max_hole is not None else None
+    intensity_factor = float(filters_cfg.get("intensity_threshold_factor") or 1.0)
+    intensity_factor = max(intensity_factor, 1e-3)
+
+    intensity_thresh = proc_cfg.get("intensity_threshold")
+    if intensity_thresh is None:
+        intensity_thresh = 0.0
+    intensity_thresh = float(intensity_thresh) / 100.0
+    mean_intensity_threshold = min(1.0, intensity_thresh / intensity_factor) if intensity_thresh > 0 else 0.0
+
+    remove_edge = bool(proc_cfg.get("remove_edge_cells", False))
+
+    flat = gray_norm[np.isfinite(gray_norm)]
+    if flat.size == 0:
+        return mask.astype(np.uint16), {"initial": 0, "kept": 0, "removed": 0}
+
+    bg_percentile = float(adv_cfg.get("abs_floor_percentile", 85.0) or 85.0)
+    bg_percentile = float(np.clip(bg_percentile, 0.0, 100.0))
+    bg_floor = float(np.percentile(flat, bg_percentile))
+    bg_vals = flat[flat <= bg_floor]
+    if bg_vals.size == 0:
+        bg_vals = flat
+    bg_mean = float(np.mean(bg_vals))
+    bg_std = float(np.std(bg_vals)) if bg_vals.size else float(np.std(flat))
+    if not np.isfinite(bg_std) or bg_std < 1e-6:
+        bg_std = 1e-6
+
+    snr_min = float(adv_cfg.get("snr_min", 0.0) or 0.0)
+
+    props = measure.regionprops(mask.astype(np.int32), intensity_image=gray_norm.astype(np.float32, copy=False))
+    keep_labels: List[int] = []
+    stats = {
+        "initial": len(props),
+        "removed": 0,
+        "removed_area": 0,
+        "kept": 0,
+    }
+
+    for region in props:
+        keep = True
+        area = int(region.area)
+        if min_area and area < min_area:
+            keep = False
+        if keep and max_area and area > max_area:
+            keep = False
+
+        perimeter = float(region.perimeter or 0.0)
+        if keep and perimeter > 0.0 and (min_circ or max_circ):
+            circularity = (4.0 * math.pi * area) / (perimeter ** 2) if perimeter > 0 else 1.0
+            if min_circ and circularity < min_circ:
+                keep = False
+            if max_circ and circularity > max_circ:
+                keep = False
+
+        filled_area = int(getattr(region, "filled_area", area))
+        hole_ratio = 0.0
+        if filled_area > 0:
+            hole_ratio = float(filled_area - area) / float(filled_area)
+        if keep and max_hole is not None and hole_ratio > max_hole:
+            keep = False
+
+        if keep and remove_edge and _touches_border(region.bbox, image_shape):
+            keep = False
+
+        mean_intensity = float(region.mean_intensity or 0.0)
+        if keep and mean_intensity_threshold > 0.0 and mean_intensity < mean_intensity_threshold:
+            keep = False
+
+        if keep and enable_adv:
+            if mean_intensity <= bg_floor:
+                keep = False
             else:
-                projected = image_array.squeeze()
-                
-            return projected.astype(np.uint16)
-        except ImportError:
-            raise ImportError("aicspylibczi is not installed. Run: pip install aicspylibczi")
-        except Exception as e:
-            print(f"Error loading {image_path}: {e}")
-            return None
-    else:
-        # Default to TIFF/PNG loading
-        return skio.imread(image_path)
-
-def _preprocess_image(image: np.ndarray, processing: Dict) -> np.ndarray:
-    """Robust 8/16-bit normalization, optional contrast stretch, and white-tophat."""
-    orig_dtype = image.dtype
-    img = image.astype(np.float32, copy=False)
-
-    # Scale based on dtype or value range
-    if np.issubdtype(orig_dtype, np.integer):
-        maxv = float(np.iinfo(orig_dtype).max)  # 255 or 65535
-    else:
-        vmax = float(np.nanmax(img)) if img.size else 1.0
-        maxv = 65535.0 if vmax > 4096 else (255.0 if vmax > 1.5 else 1.0)
-
-    if maxv > 1.0:
-        img = img / maxv
-
-    # Optional: robust contrast stretch (1-99 percentile by default)
-    if processing.get("contrast_stretch", True):
-        p_low, p_high = processing.get("stretch_percentiles", [1.0, 99.0])
-        p1, p99 = np.percentile(img, (p_low, p_high))
-        if np.isfinite(p1) and np.isfinite(p99) and p99 > p1:
-            img = np.clip((img - p1) / (p99 - p1), 0.0, 1.0)
-        else:
-            img = np.clip(img, 0.0, 1.0)
-
-    # Optional: white-tophat for background suppression
-    if processing.get("tophat", False):
-        radius = int(processing.get("tophat_radius", 15))
-        if radius > 0:
-            selem = disk(radius)
-            img = white_tophat(img, selem)
-            img = np.clip(img, 0.0, 1.0)
-
-    return img
-
-def _load_and_preprocess(path: str, target_max: int, channel: int = 0, processing: Dict = None) -> Tuple[str, np.ndarray]:
-    processing = processing or {}
-    img = load_image(path)
-    
-    # Channel extraction for multi-channel images
-    if img.ndim == 3 and img.shape[2] > 1:
-        print(f"🔍 Multi-channel image detected: {img.shape}, using channel {channel}")
-        if channel < img.shape[2]:
-            img = img[:, :, channel]
-        else:
-            print(f"⚠️ Channel {channel} not available, using channel 0")
-            img = img[:, :, 0]
-    
-    # Apply preprocessing
-    img = _preprocess_image(img, processing)
-    
-    # Resize if necessary
-    h, w = img.shape[:2]
-    scale = target_max / max(h, w) if max(h, w) > 0 else 1.0
-    if scale != 1.0:
-        new_h, new_w = int(round(h * scale)), int(round(w * scale))
-        img = skresize(img, (new_h, new_w), preserve_range=True, anti_aliasing=True).astype(np.float32)
-    return path, img
-
-def _parallel_load(paths: List[str], target_max: int, num_workers: int, channel: int = 0) -> List[Tuple[str, np.ndarray]]:
-	results = []
-	with ThreadPoolExecutor(max_workers=max(1, num_workers)) as ex:
-		futs = {ex.submit(_load_and_preprocess, p, target_max, channel): p for p in paths}
-		for fut in tqdm(as_completed(futs), total=len(futs), desc="Load/resize", unit="img"):
-			results.append(fut.result())
-	order = {p: i for i, p in enumerate(paths)}
-	results.sort(key=lambda x: order[x[0]])
-	return results
-
-def apply_advanced_filtering(masks: np.ndarray, image: np.ndarray, 
-                           advanced_config: dict) -> np.ndarray:
-    """Apply advanced filtering based on SNR, intensity, and foreground detection"""
-    if masks.max() == 0:
-        return masks
-    
-    props = regionprops(masks, intensity_image=image)
-    filtered_masks = masks.copy()
-    
-    # Get advanced filtering parameters
-    snr_min = advanced_config.get('snr_min', 1.2)
-    abs_floor_percentile = advanced_config.get('abs_floor_percentile', 75)
-    foreground_block_size = advanced_config.get('foreground_block_size', 51)
-    foreground_offset = advanced_config.get('foreground_offset', -10)
-    
-    # Calculate intensity floor from percentile
-    intensity_floor = np.percentile(image, abs_floor_percentile)
-    
-    # Foreground detection using local thresholding
-    from skimage.filters import threshold_local
-    local_thresh = threshold_local(image, foreground_block_size, offset=foreground_offset)
-    foreground_mask = image > local_thresh
-    
-    # Filter cells
-    cells_to_remove = []
-    for prop in props:
-        cell_id = prop.label
-        
-        # SNR calculation
-        cell_mask = masks == cell_id
-        background_region = np.logical_and(~cell_mask, foreground_mask)
-        if background_region.sum() > 0:
-            bg_std = np.std(image[background_region])
-            if bg_std > 0:
-                snr = prop.mean_intensity / bg_std
+                snr = (mean_intensity - bg_mean) / (bg_std + 1e-6)
                 if snr < snr_min:
-                    cells_to_remove.append(cell_id)
-                    continue
-        
-        # Intensity floor check
-        if prop.mean_intensity < intensity_floor:
-            cells_to_remove.append(cell_id)
-            continue
-        
-        # Foreground overlap check
-        cell_foreground_overlap = np.logical_and(cell_mask, foreground_mask).sum()
-        cell_total = cell_mask.sum()
-        if cell_foreground_overlap / cell_total < 0.5:  # Require 50% overlap
-            cells_to_remove.append(cell_id)
-    
-    # Remove filtered cells
-    for cell_id in cells_to_remove:
-        filtered_masks[filtered_masks == cell_id] = 0
-    
-    # Renumber masks
-    unique_labels = np.unique(filtered_masks)
-    unique_labels = unique_labels[unique_labels > 0]
-    renumbered_masks = np.zeros_like(filtered_masks)
-    for new_id, old_id in enumerate(unique_labels, 1):
-        renumbered_masks[filtered_masks == old_id] = new_id
-    
-    return renumbered_masks
+                    keep = False
 
-def apply_filters(masks: np.ndarray, image: np.ndarray, 
-                 filters_config: dict, enable_advanced: bool = False,
-                 advanced_config: dict = None) -> np.ndarray:
-    """Apply all filters to segmentation masks"""
-    if masks.max() == 0:
-        return masks
-    
-    # DEBUG: Print filter settings
-    print(f"🔍 DEBUG apply_filters:")
-    print(f"   Input masks: {masks.max()} cells")
-    print(f"   Filters: {filters_config}")
-    print(f"   Advanced enabled: {enable_advanced}")
-    
-    # Apply advanced filtering if enabled
-    if enable_advanced and advanced_config:
-        masks = apply_advanced_filtering(masks, image, advanced_config)
-        print(f"   After advanced filtering: {masks.max()} cells")
-        if masks.max() == 0:
-            return masks
-    
-    # Apply basic filters
-    props = regionprops(masks, intensity_image=image)
-    filtered_masks = masks.copy()
-    
-    # Get basic filter parameters
-    min_area = filters_config.get('min_area', 0)
-    max_area = filters_config.get('max_area', float('inf'))
-    min_circularity = filters_config.get('min_circularity', 0.0)
-    max_circularity = filters_config.get('max_circularity', 1.0)
-    max_hole_ratio = filters_config.get('max_hole_ratio', 1.0)
-    intensity_threshold_factor = filters_config.get('intensity_threshold_factor', 0.0)
-    
-    print(f"   Basic filters: area={min_area}-{max_area}, circ={min_circularity}-{max_circularity}")
-    
-    # Calculate intensity threshold
-    mean_intensity = np.mean(image[image > 0])
-    intensity_threshold = mean_intensity * intensity_threshold_factor
-    print(f"   Intensity: mean={mean_intensity:.3f}, threshold={intensity_threshold:.3f}")
-    
-    cells_to_remove = []
-    area_filtered = 0
-    circ_filtered = 0
-    intensity_filtered = 0
-    
-    for prop in props:
-        # Area filter
-        if not (min_area <= prop.area <= max_area):
-            cells_to_remove.append(prop.label)
-            area_filtered += 1
-            continue
-        
-        # Circularity filter
-        perimeter = prop.perimeter
-        if perimeter > 0:
-            circularity = 4 * np.pi * prop.area / (perimeter ** 2)
-            if not (min_circularity <= circularity <= max_circularity):
-                cells_to_remove.append(prop.label)
-                circ_filtered += 1
-                continue
-        
-        # Hole ratio filter
-        if prop.solidity < (1 - max_hole_ratio):
-            cells_to_remove.append(prop.label)
-            continue
-        
-        # Intensity filter
-        if prop.mean_intensity < intensity_threshold:
-            cells_to_remove.append(prop.label)
-            intensity_filtered += 1
-            continue
-    
-    print(f"   Filtered: {area_filtered} area, {circ_filtered} circularity, {intensity_filtered} intensity")
-    print(f"   Remaining: {len(props) - len(cells_to_remove)}/{len(props)} cells")
-    
-    # Remove filtered cells
-    for cell_id in cells_to_remove:
-        filtered_masks[filtered_masks == cell_id] = 0
-    
-    # Renumber masks
-    unique_labels = np.unique(filtered_masks)
-    unique_labels = unique_labels[unique_labels > 0]
-    renumbered_masks = np.zeros_like(filtered_masks)
-    for new_id, old_id in enumerate(unique_labels, 1):
-        renumbered_masks[filtered_masks == old_id] = new_id
-    
-    return renumbered_masks
+        if keep:
+            keep_labels.append(region.label)
+        else:
+            stats["removed"] += 1
+            stats["removed_area"] += area
 
-def calculate_metrics(image: np.ndarray, masks: np.ndarray, 
-                     filters: dict = None) -> Tuple[dict, List[int]]:
-    """Calculate cell metrics and return valid labels based on basic filters."""
-    if masks.max() == 0:
-        return {
-            'cell_count': 0,
-            'mean_area_per_cell': 0.0,
-            'mean_intensity_per_cell': 0.0,
-            'mean_integrated_density_per_cell': 0.0
-        }, []
-    
-    props = regionprops(masks, intensity_image=image)
+    if not keep_labels:
+        return np.zeros_like(mask, dtype=np.uint16), stats
 
-    valid_props: List = []
-    valid_labels: List[int] = []
+    filtered = np.zeros_like(mask, dtype=np.uint16)
+    for new_idx, lbl in enumerate(keep_labels, start=1):
+        filtered[mask == lbl] = new_idx
+    stats["kept"] = len(keep_labels)
+    return filtered, stats
 
-    for prop in props:
-        if filters:
-            # Area
-            if prop.area < filters.get('min_area', 0) or prop.area > filters.get('max_area', float('inf')):
-                continue
-            # Circularity
-            perim = prop.perimeter
-            circ = (4 * np.pi * prop.area / (perim ** 2)) if perim > 0 else 0.0
-            if circ < filters.get('min_circularity', 0.0) or circ > filters.get('max_circularity', 1.0):
-                continue
-        valid_props.append(prop)
-        valid_labels.append(prop.label)
+# -----------------------------
+# Region + file discovery
+# -----------------------------
+IMG_EXTS = (".tif", ".tiff", ".png", ".jpg", ".jpeg")
 
-    if not valid_props:
-        return {
-            'cell_count': 0,
-            'mean_area_per_cell': 0.0,
-            'mean_intensity_per_cell': 0.0,
-            'mean_integrated_density_per_cell': 0.0
-        }, []
+def _iter_images(root: Path) -> Iterable[Path]:
+    for p in root.rglob("*"):
+        if p.is_file() and p.suffix.lower() in IMG_EXTS:
+            yield p
 
-    areas = [p.area for p in valid_props]
-    intensities = [p.mean_intensity for p in valid_props]
-    integrated = [p.area * p.mean_intensity for p in valid_props]
+def _region_from_path(p: Path, region_tokens: List[str]) -> str:
+    if not region_tokens:
+        name = p.name.strip()
+        if name:
+            return name
+        parent = p.parent.name.strip()
+        return parent or "ALL"
+    # simple token search in parts
+    parts = [s.lower() for s in p.parts]
+    for tok in region_tokens:
+        t = tok.lower()
+        if any(t in part for part in parts):
+            return tok
+    return "ALL"
 
-    return {
-        'cell_count': len(valid_props),
-        'mean_area_per_cell': float(np.mean(areas)),
-        'mean_intensity_per_cell': float(np.mean(intensities)),
-        'mean_integrated_density_per_cell': float(np.mean(integrated)),
-    }, valid_labels
+# -----------------------------
+# Overlays
+# -----------------------------
+def _save_overlay(base_img: np.ndarray, mask: np.ndarray, out_png: Path, color: str = "lime",
+                  line_width: int = 1, dpi: int = 300, figsize: Tuple[int,int] = (12,12),
+                  mode: str = "contours") -> None:
+    import matplotlib.pyplot as plt
+    from skimage import measure, color as skcolor
 
-def create_overlay_image(image: np.ndarray, masks: np.ndarray, 
-                        output_path: str, overlay_config: dict,
-                        valid_labels: List[int] = None) -> None:
-    """Create overlay using config; only draw valid_labels if provided."""
-    if not MATPLOTLIB_AVAILABLE:
-        return
-
-    display_img = gray2rgb(image) if image.ndim == 2 else image.copy()
-    vmax = float(display_img.max())
-    if vmax > 0:
-        display_img = (display_img / vmax * 255).astype(np.uint8)
-
-    overlay_mode = overlay_config.get('overlay_mode', 'circles')
-    figsize = tuple(overlay_config.get('figsize', (10, 10)))
-    dpi = overlay_config.get('dpi', 200)
-    line_width = overlay_config.get('line_width', 2)
-    circle_radius = overlay_config.get('circle_radius', 5)
-    circle_color = overlay_config.get('circle_color', 'red')
-    contour_color = overlay_config.get('contour_color', 'blue')
-
-    fig, ax = plt.subplots(1, 1, figsize=figsize)
-    ax.imshow(display_img, cmap='gray')
-
-    props = regionprops(masks)
-    if valid_labels is not None:
-        props = [p for p in props if p.label in valid_labels]
-
-    if overlay_mode == 'contours':
-        from skimage.measure import find_contours
-        for p in props:
-            cmask = (masks == p.label).astype(np.uint8)
-            for contour in find_contours(cmask, 0.5):
-                ax.plot(contour[:, 1], contour[:, 0],
-                        color=contour_color, linewidth=line_width)
+    fig = plt.figure(figsize=figsize, dpi=dpi)
+    ax = plt.gca()
+    # grayscale background
+    if base_img.ndim == 2:
+        ax.imshow(base_img, cmap="gray", interpolation="nearest")
     else:
-        for p in props:
-            y, x = p.centroid
-            circ = Circle((x, y), radius=circle_radius, color=circle_color,
-                          fill=False, linewidth=line_width)
-            ax.add_patch(circ)
+        # if someone passes 3D, try to show first channel
+        show = base_img[..., 0] if base_img.ndim == 3 else base_img
+        ax.imshow(show, cmap="gray", interpolation="nearest")
 
-    ax.set_title(f"Valid cells: {len(props)}")
-    ax.axis('off')
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=dpi, bbox_inches='tight', pad_inches=0.1)
+    if mode in ("masks", "both"):
+        ax.imshow(np.ma.masked_where(mask == 0, mask), alpha=0.3, interpolation="nearest")
+
+    if mode in ("contours", "both"):
+        unique_labels = np.unique(mask)
+        for lbl in unique_labels:
+            if lbl == 0:
+                continue
+            contours = measure.find_contours(mask == lbl, 0.5)
+            for c in contours:
+                ax.plot(c[:, 1], c[:, 0], color=color, linewidth=line_width)
+
+    ax.set_axis_off()
+    fig.tight_layout(pad=0)
+    fig.savefig(out_png, bbox_inches="tight", pad_inches=0)
     plt.close(fig)
 
-def segment_dirs(
-	input_pos: str,
-	input_neg: str,
-	output_root: str = "results",
-	batch_size: int = 8,
-	resize_max: int = 1000,
-	niter: int = 250,
-	flow_threshold: float = 0.4,
-	cellprob_threshold: float = 0.75,
-	num_workers: int = 4,
-	model_name: str = "cpsam",
-	save_masks: bool = True,
-	create_overlays: bool = False,
-	channel: int = 0,
-	filters: dict = None,
-	overlay_config: dict = None,
-	split_regions: bool = False,
-	diameter: int = 30,
-	enable_advanced_filtering: bool = False,
-	advanced_filtering: dict = None,
-	processing: dict = None  # Add processing parameter
-) -> str:
-	pos_files = _list_tiffs(input_pos) if os.path.isdir(input_pos) else []
-	neg_files = _list_tiffs(input_neg) if os.path.isdir(input_neg) else []
-	all_files = [(p, "pos") for p in pos_files] + [(p, "neg") for p in neg_files]
-	if not all_files:
-		raise FileNotFoundError("No TIFF files found.")
+# -----------------------------
+# Main segmentation routine
+# -----------------------------
+def _segment_dir(
+    root: Path,
+    out_root: Path,
+    cfg: dict,
+    condition: str,
+    regions_enabled: List[str],
+    testing_cfg: Optional[Dict[str, Any]],
+) -> None:
+    cp = cfg.get("cellpose", {}) or {}
+    ov = cfg.get("overlays", {}) or {}
+    outp = cfg.get("outputs", {}) or {}
+    filters_cfg = cfg.get("filters", {}) or {}
+    proc_cfg = cfg.get("processing", {}) or {}
 
-	# Setup output directories
-	if save_masks:
-		masks_dir = os.path.join(output_root, "masks")
-		_ensure_dir(masks_dir)
-	
-	if create_overlays and MATPLOTLIB_AVAILABLE:
-		overlays_dir = os.path.join(output_root, "overlays")
-		_ensure_dir(overlays_dir)
-	
-	_ensure_dir(output_root)
-	master_csv = os.path.join(output_root, "All_Counts_Master.csv")
+    model_name = cp.get("model_name", "cyto2")
+    use_gpu = bool(cp.get("use_gpu", False))
+    ch_index = int(cp.get("channel", 0))
+    diameter = cp.get("diameter") or None
+    if isinstance(diameter, (int, float)) and diameter == 0:
+        diameter = None
+    flow_thr = float(cp.get("flow_threshold", 0.4))
+    cell_thr = float(cp.get("cellprob_threshold", 0.0))
 
-	model = models.CellposeModel(gpu=torch.cuda.is_available(), pretrained_model=model_name)
+    overlay_suffix = ov.get("overlay_suffix") or cfg.get("outputs", {}).get("overlay_suffix", "_overlay.png")
+    mode = ov.get("overlay_mode", "contours")
+    color = ov.get("contour_color", "lime")
+    line_w = int(ov.get("line_width", 1))
+    dpi = int(ov.get("dpi", 300))
+    figsize = tuple(ov.get("figsize", [12, 12]))
 
-	rows = []
-	
-	# Local region splitter to avoid NameError
-	def _split_regions_local(image: np.ndarray) -> Dict[str, np.ndarray]:
-		h = image.shape[0]
-		mid = h // 2
-		return {"DMH": image[:mid, :], "ARC": image[mid:, :]}
+    resume = bool(outp.get("resume", True))
+    overwrite = bool(outp.get("overwrite", False))
 
-	# Process each image
-	for path, cond in tqdm(all_files, desc="Processing images", unit="img"):
-		base = os.path.splitext(os.path.basename(path))[0]
-		
-		try:
-			# Load and preprocess image with processing options
-			_, img = _load_and_preprocess(path, resize_max, channel, processing)
-			
-			if split_regions:
-				# Process image regions separately (DMH and ARC)
-				regions = _split_regions_local(img)
-				
-				for region_name, region_img in regions.items():
-					# Run cellpose segmentation on region
-					with torch.inference_mode():
-						masks, flows, styles = model.eval(
-							[region_img],
-							diameter=diameter,
-							channels=[0, 0],
-							flow_threshold=flow_threshold,
-							cellprob_threshold=cellprob_threshold,
-							do_3D=False,
-							normalize=True,
-							resample=False,
-							niter=niter,
-							batch_size=1,
-							augment=False,
-						)
-					
-					# Handle mask format
-					if isinstance(masks, list):
-						mask = masks[0]
-					else:
-						mask = masks
-					
-					# Apply filters and advanced filtering ONCE
-					filtered_mask = apply_filters(
-						mask, 
-						region_img, 
-						filters or {}, 
-						enable_advanced_filtering,
-						advanced_filtering
-					)
-					
-					# Calculate metrics WITHOUT additional filtering (filters=None)
-					metrics, valid_labels = calculate_metrics(region_img, filtered_mask, None)
-					
-					# Save mask if requested
-					if save_masks:
-						out_mask_path = os.path.join(masks_dir, f"{base}_{region_name}_mask.tiff")
-						skio.imsave(out_mask_path, filtered_mask.astype(np.uint16), check_contrast=False)
-					
-					# Create overlay if requested
-					if create_overlays:
-						overlay_path = os.path.join(overlays_dir, f"{base}_{region_name}_overlay.png")
-						create_overlay_image(region_img, filtered_mask, overlay_path, overlay_config, valid_labels)
-					
-					# Add to results
-					rows.append({
-						"filename": os.path.basename(path),
-						"condition": cond,
-						"region": region_name,
-						"channel": f"channel_{channel}",
-						"cell_count": metrics['cell_count'],
-						"mean_area_per_cell": metrics['mean_area_per_cell'],
-						"mean_intensity_per_cell": metrics['mean_intensity_per_cell'],
-						"mean_integrated_density_per_cell": metrics['mean_integrated_density_per_cell'],
-					})
-			
-			else:
-				# Process whole image as MBH
-				with torch.inference_mode():
-					masks, flows, styles = model.eval(
-						[img],
-						diameter=diameter,
-						channels=[0, 0],
-						flow_threshold=flow_threshold,
-						cellprob_threshold=cellprob_threshold,
-						do_3D=False,
-						normalize=True,
-						resample=False,
-						niter=niter,
-						batch_size=1,
-						augment=False,
-					)
-				
-				if isinstance(masks, list):
-					mask = masks[0]
-				else:
-					mask = masks
-				
-				# Apply filters and advanced filtering ONCE
-				filtered_mask = apply_filters(
-					mask, 
-					img, 
-					filters or {}, 
-					enable_advanced_filtering,
-					advanced_filtering
-				)
-				
-				# Calculate metrics WITHOUT additional filtering (filters=None)
-				metrics, valid_labels = calculate_metrics(img, filtered_mask, None)
-				
-				# Save mask if requested
-				if save_masks:
-					out_mask_path = os.path.join(masks_dir, f"{base}_MBH_mask.tiff")
-					skio.imsave(out_mask_path, filtered_mask.astype(np.uint16), check_contrast=False)
-				
-				# Create overlay if requested
-				if create_overlays:
-					overlay_path = os.path.join(overlays_dir, f"{base}_MBH_overlay.png")
-					create_overlay_image(img, filtered_mask, overlay_path, overlay_config, valid_labels)
-				
-				# Add to results
-				rows.append({
-					"filename": os.path.basename(path),
-					"condition": cond,
-					"region": "MBH",
-					"channel": f"channel_{channel}",
-					"cell_count": metrics['cell_count'],
-					"mean_area_per_cell": metrics['mean_area_per_cell'],
-					"mean_intensity_per_cell": metrics['mean_intensity_per_cell'],
-					"mean_integrated_density_per_cell": metrics['mean_integrated_density_per_cell'],
-				})
-		
-		except Exception as e:
-			print(f"❌ Error processing {path}: {e}")
-			continue
+    model = _load_cellpose_model(model_name, use_gpu=use_gpu)
+    cp_channels = [0, 0]
 
-	# Always write headers even if no rows
-	df = pd.DataFrame(
-		rows,
-		columns=[
-			"filename",
-			"condition",
-			"region",
-			"channel",
-			"cell_count",
-			"mean_area_per_cell",
-			"mean_intensity_per_cell",
-			"mean_integrated_density_per_cell",
-		],
-	)
-	df.to_csv(master_csv, index=False)
-	return master_csv
+    summary_rows: List[Dict[str, Any]] = []
+    min_area_for_split = int(filters_cfg.get("min_area") or 0)
 
-def main():
-	import argparse
-	import yaml
-	
-	def _load_cfg(path):
-		with open(path, 'r', encoding='utf-8') as f:
-			return yaml.safe_load(f)
-	
-	parser = argparse.ArgumentParser(description="Cell Analysis Pipeline")
-	parser.add_argument("--config", type=str, default="config.yaml")
-	parser.add_argument("--no-masks", action="store_true")
-	parser.add_argument("--no-summary", action="store_true")
-	parser.add_argument("--create-overlays", action="store_true")
-	parser.add_argument("--no-overlays", action="store_true")
-	args = parser.parse_args()
+    paths = list(_iter_images(root))
+    if not paths:
+        print(f"[WARN] No input images found under {root}")
+        return
 
-	cfg = _load_cfg(args.config)
-	
-	final_save_masks = cfg.get("cellpose", {}).get("save_masks", True) and not args.no_masks
-	split_regions = cfg.get("cellpose", {}).get("split_regions", False)
-	enable_advanced_filtering = cfg.get("cellpose", {}).get("enable_advanced_filtering", False)
-	advanced_filtering = cfg.get("advanced_filtering", {})
+    testing_cfg = testing_cfg or {}
+    test_enabled = bool(testing_cfg.get("enabled"))
+    test_limit = int(testing_cfg.get("samples_per_channel") or 0)
+    test_seed = testing_cfg.get("seed")
+    total_paths = len(paths)
+    if test_enabled and test_limit > 0:
+        region_buckets: Dict[str, List[Path]] = {}
+        for img_path in paths:
+            rel_tmp = img_path.relative_to(root)
+            region_tmp = _region_from_path(img_path.parent, regions_enabled or [])
+            if (not region_tmp or region_tmp.upper() == "ALL") and rel_tmp.parts:
+                region_tmp = rel_tmp.parts[0]
+            region_buckets.setdefault(region_tmp, []).append(img_path)
 
-	if args.no_overlays:
-		create_overlays_final = False
-	elif args.create_overlays:
-		create_overlays_final = True
-	elif not final_save_masks:
-		create_overlays_final = True
-	else:
-		create_overlays_final = False
+        sampled_paths: List[Path] = []
+        for region_name, region_paths in region_buckets.items():
+            region_paths_sorted = sorted(region_paths, key=lambda p: p.as_posix())
+            if len(region_paths_sorted) > test_limit:
+                rng = random.Random()
+                if test_seed is not None:
+                    try:
+                        rng.seed(f"{test_seed}:{condition}:{region_name}")
+                    except Exception:
+                        rng.seed()
+                sample = rng.sample(region_paths_sorted, test_limit)
+                print(
+                    f"[TEST] {condition}/{region_name}: limiting to {len(sample)} of {len(region_paths_sorted)} images "
+                    f"(samples_per_channel={test_limit})"
+                )
+            else:
+                sample = region_paths_sorted
+                print(
+                    f"[TEST] {condition}/{region_name}: {len(sample)} image(s) ≤ limit "
+                    f"(samples_per_channel={test_limit})"
+                )
+            sampled_paths.extend(sample)
 
-	master_csv = segment_dirs(
-		input_pos=cfg["paths"]["input_pos"],
-		input_neg=cfg["paths"]["input_neg"],
-		output_root=cfg["paths"]["output_root"],
-		batch_size=cfg.get("cellpose", {}).get("batch_size", 8),
-		resize_max=cfg.get("cellpose", {}).get("resize_max", 1000),
-		niter=cfg.get("cellpose", {}).get("niter", 250),
-		flow_threshold=cfg.get("cellpose", {}).get("flow_threshold", 0.4),
-		cellprob_threshold=cfg.get("cellpose", {}).get("cellprob_threshold", 0.0),
-		num_workers=cfg.get("cpu", {}).get("num_workers", 4),
-		model_name=cfg.get("cellpose", {}).get("model_name", "cpsam"),
-		save_masks=final_save_masks,
-		create_overlays=create_overlays_final,
-		channel=cfg.get("cellpose", {}).get("channel", 0),
-		filters=cfg.get("filters", {}),
-		overlay_config=cfg.get("overlays", {}),
-		split_regions=split_regions,
-		diameter=cfg.get("cellpose", {}).get("diameter", 30),
-		enable_advanced_filtering=enable_advanced_filtering,
-		advanced_filtering=advanced_filtering,
-		processing=cfg.get("processing", {})  # Add processing parameter
-	)
+        if sampled_paths:
+            paths = sorted(sampled_paths, key=lambda p: p.as_posix())
+        else:
+            print(f"[TEST] {condition}: no images selected (check configuration).")
+    elif test_enabled and total_paths > 0:
+        print(f"[TEST] {condition}: test mode enabled but samples_per_channel={test_limit}, skipping limit.")
 
-	if not args.no_summary:
-		df = pd.read_csv(master_csv)
-		print(f"\n📊 ZUSAMMENFASSUNG:")
-		print(f"   Bilder verarbeitet: {df['filename'].nunique()}")
-		print(f"   Regionen analysiert: {len(df)}")
+    total_to_process = len(paths)
+    print(f"\\n==> Condition: {condition} | root={root}")
+    for img_path in tqdm(paths, desc=f"{condition}/ALL"):
+        try:
+            region = _region_from_path(img_path.parent, regions_enabled or [])
+            rel = img_path.relative_to(root)
+            if (not region or region.upper() == "ALL") and rel.parts:
+                region = rel.parts[0]
+            parent_parts = list(rel.parts[:-1])
+            if parent_parts and parent_parts[0] == region:
+                parent_parts = parent_parts[1:]
+            out_dir = out_root / condition / region
+            for part in parent_parts:
+                out_dir /= part
+            out_dir.mkdir(parents=True, exist_ok=True)
+
+            mask_tif = out_dir / f"{img_path.stem}_mask.tif"
+            overlay_png = out_dir / f"{img_path.stem}{overlay_suffix}"
+
+            masks_arr = None
+            cached_mask = False
+            if mask_tif.exists() and resume and not overwrite:
+                try:
+                    masks_arr = np.squeeze(tiff.imread(str(mask_tif)))
+                    cached_mask = True
+                except Exception:
+                    masks_arr = None
+                    cached_mask = False
+
+            img = _read_image(img_path)
+            gray_raw = _extract_channel(img, ch_index).astype(np.float32)
+            gray_proc = _preprocess_image(gray_raw, proc_cfg)
+            gray_norm = _normalize_image(gray_proc)
+
+            if masks_arr is None:
+                masks_arr, _, _ = model.eval(
+                    gray_norm,
+                    channels=cp_channels,
+                    diameter=diameter,
+                    flow_threshold=flow_thr,
+                    cellprob_threshold=cell_thr,
+                )
+                masks_arr = masks_arr.astype(np.uint16, copy=False)
+
+            masks_arr = masks_arr.astype(np.uint16, copy=False)
+            needs_processing = overwrite or not cached_mask
+
+            if masks_arr.size and needs_processing:
+                orig_count = int(np.max(masks_arr))
+                split_mask = _split_touching_cells(masks_arr, proc_cfg, min_area_for_split)
+                if split_mask is not None and split_mask.shape == masks_arr.shape:
+                    new_count = int(np.max(split_mask))
+                    if new_count > orig_count:
+                        print(f"[INFO] {img_path.name}: split touching cells {orig_count}->{new_count}")
+                    masks_arr = split_mask
+
+                filtered_mask, filter_stats = _apply_filters(masks_arr, gray_norm, cfg, gray_norm.shape)
+                if filter_stats.get("removed"):
+                    print(f"[INFO] {img_path.name}: filtered {filter_stats['removed']} cells (kept {filter_stats.get('kept', 0)})")
+                masks_arr = filtered_mask
+
+            if needs_processing or not mask_tif.exists():
+                tiff.imwrite(str(mask_tif), masks_arr, photometric="minisblack")
+
+            if overwrite or not overlay_png.exists() or not cached_mask:
+                try:
+                    _save_overlay(gray_norm, masks_arr, overlay_png, color=color, line_width=line_w, dpi=dpi, figsize=figsize, mode=mode)
+                except Exception as e:
+                    print(f"[WARN] overlay failed for {img_path.name}: {e}")
+
+            labeled = measure.label(masks_arr > 0)
+            regions = measure.regionprops(labeled, intensity_image=gray_raw)
+            cell_count = len(regions)
+            if cell_count > 0:
+                areas = np.array([r.area for r in regions], dtype=np.float64)
+                mean_ints = np.array([r.mean_intensity for r in regions], dtype=np.float64)
+                integ = areas * mean_ints
+                mean_area = float(areas.mean())
+                mean_intensity = float(mean_ints.mean())
+                mean_integrated = float(integ.mean())
+            else:
+                mean_area = mean_intensity = mean_integrated = 0.0
+
+            summary_rows.append({
+                "filename": str(rel).replace("\\", "/"),
+                "condition": condition,
+                "region": region,
+                "channel": f"ch{ch_index}",
+                "cell_count": int(cell_count),
+                "mean_area_per_cell": mean_area,
+                "mean_intensity_per_cell": mean_intensity,
+                "mean_integrated_density_per_cell": mean_integrated,
+            })
+
+        except Exception as e:
+            print(f"[ERROR] {img_path.name}: {e}")
+            continue
+
+    master_csv = out_root / condition / "All_Counts_Master.csv"
+    master_csv.parent.mkdir(parents=True, exist_ok=True)
+    with master_csv.open("w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow([
+            "filename",
+            "condition",
+            "region",
+            "channel",
+            "cell_count",
+            "mean_area_per_cell",
+            "mean_intensity_per_cell",
+            "mean_integrated_density_per_cell",
+        ])
+        for row in summary_rows:
+            w.writerow([
+                row["filename"],
+                row["condition"],
+                row["region"],
+                row["channel"],
+                row["cell_count"],
+                row["mean_area_per_cell"],
+                row["mean_intensity_per_cell"],
+                row["mean_integrated_density_per_cell"],
+            ])
+
+    print(f"   Condition={condition}: processed {total_to_process} images -> wrote {master_csv.name}")
+# -----------------------------
+# CLI
+# -----------------------------
+def segment_dirs(config_path: Path) -> None:
+    cfg = _load_yaml(config_path)
+    paths = cfg.get("paths", {}) or {}
+    testing_cfg = cfg.get("testing", {}) or {}
+
+    input_pos = paths.get("input_pos", "")
+    input_neg = paths.get("input_neg", "")
+    output_root = paths.get("output_root", "./results_det")
+
+    regions_enabled = cfg.get("regions_enabled") or []
+
+    if not input_pos and not input_neg:
+        print("[ERROR] No inputs configured (paths.input_pos / paths.input_neg). Nothing to do.")
+        return
+
+    out_root = Path(output_root).absolute()
+    out_root.mkdir(parents=True, exist_ok=True)
+
+    if input_pos:
+        root = Path(input_pos).absolute()
+        _segment_dir(root, out_root, cfg, condition="pos", regions_enabled=regions_enabled, testing_cfg=testing_cfg)
+    if input_neg:
+        root = Path(input_neg).absolute()
+        _segment_dir(root, out_root, cfg, condition="neg", regions_enabled=regions_enabled, testing_cfg=testing_cfg)
+
+    print("\n[DONE] Segmentation finished.")
+
+def main(argv: Optional[List[str]] = None) -> int:
+    import argparse
+    ap = argparse.ArgumentParser(description="Batch segmentation with Cellpose v4 (multi-channel)")
+    ap.add_argument("--config", required=True, help="Path to config_det_cpsam.yaml")
+    args = ap.parse_args(argv)
+
+    cfg_path = Path(args.config)
+    if not cfg_path.exists():
+        print(f"[ERROR] Config not found: {cfg_path}")
+        return 2
+    try:
+        segment_dirs(cfg_path)
+    except Exception as e:
+        print(f"[FATAL] {e}")
+        return 1
+    return 0
 
 if __name__ == "__main__":
-	main()
+    raise SystemExit(main())
+
+

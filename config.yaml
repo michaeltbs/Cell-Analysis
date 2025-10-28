@@ -1,54 +1,80 @@
-paths:
-  input_pos: "data/projected_tiffs/Input_old"    # Old samples (positive condition)
-  input_neg: "data/projected_tiffs/Input_adult"  # Adult samples (negative condition)
-  output_root: "results_old_vs_adult_ch2"
-
-cellpose:
-  model_name: "cpsam"
-  batch_size: 8
-  resize_max: 2048
-  niter: 750
-  flow_threshold: 0.6
-  cellprob_threshold: 0.5
-  diameter: 25
-  save_masks: false
-  channel: 2
-  split_regions: true
-
-filters:
-  min_area: 120
-  max_area: 8000
-  min_circularity: 0.2
-  max_circularity: 1.0
-  max_hole_ratio: 0.5
-  intensity_threshold_factor: 0.2
-
-enable_advanced_filtering: true
-
-advanced_filtering:
-  snr_min: 1.1                 # STARK GESENKT von 1 auf 0.3
-  abs_floor_percentile: 70     # STARK GESENKT von 75 auf 30
-  foreground_block_size: 501    # STARK GESENKT von 201 auf 51
-  foreground_offset: 10       # STARK NEGATIV von -10 auf -30
-
-processing:
-  # Preprocessing
-  tophat: true            # Enable white-tophat preprocessing
-  tophat_radius: 15       # Radius for white-tophat (10–20 typical)
-  contrast_stretch: true  # Enable robust contrast stretching
-  stretch_percentiles: [1, 99]  # Percentiles for contrast stretching
-
-  # Postprocessing
-  merge_adjacent_cells: false
-  remove_edge_cells: false
-  intensity_threshold: 5     # GESENKT von 10 auf 5
-
-overlays:
-  overlay_mode: contours
-  contour_color: 'blue'        # Bessere Sichtbarkeit
-  line_width: 1                # Dicker für bessere Sichtbarkeit
-  dpi: 300                     # Niedriger für kleinere Dateien
-  figsize: [12, 12]            # Kleiner
-
-outputs:
-  base_name: "cell_analysis"
+batch_size: 64
+cellprob_threshold: 0.04
+channel_labels:
+- index: 0
+  name: PomC
+- index: 1
+  name: DREADD
+- index: 2
+  name: Fos
+- index: 3
+  name: Gal
+channels:
+- 0
+- 1
+- 2
+- 3
+cpsam:
+  advanced_filtering:
+    abs_floor_percentile: 64
+    foreground_block_size: 1001
+    foreground_offset: 10
+    snr_min: 1.6
+  cellpose:
+    channel: 3
+    niter: 1000
+    resize_max: 4096
+    save_masks: true
+    split_regions: false
+  conditions:
+    neg_pattern: Input_neg_
+    pos_pattern: Input_pos_
+  enable_advanced_filtering: true
+  filters:
+    intensity_threshold_factor: 1.12
+    max_area: 8000
+    max_circularity: 1
+    max_hole_ratio: 0.7
+    min_area: 20
+    min_circularity: 0.01
+  outputs:
+    base_name: cell_analysis
+  overlays:
+    contour_color: magenta
+    dpi: 300
+    figsize:
+    - 12
+    - 12
+    line_width: 1
+    overlay_mode: contours
+  processing:
+    contrast_stretch: true
+    intensity_threshold: 16
+    merge_adjacent_cells: false
+    remove_edge_cells: false
+    split_area_multiplier: 2
+    split_min_area: 0
+    split_min_distance: 10
+    split_rel_peak_threshold: 0.4
+    split_touching_cells: true
+    stretch_percentiles:
+    - 1
+    - 100
+    tophat: true
+    tophat_radius: 20
+det_channel_selection:
+- 1
+- 3
+det_script_path: ''
+diameter: 20
+flow_threshold: 0.15
+input_tiffs_dir: /mnt/c/Users/Admin/Desktop/project_cellanalysis/data/TV2_real
+model_type: cpsam
+output_results_dir: /mnt/c/Users/Admin/Desktop/project_cellanalysis/results/TV2_new
+overlay_suffix: _overlay.png
+save_overlay: true
+testing:
+  enabled: false
+  samples_per_channel: 2
+use_gpu: true
+verbose: false

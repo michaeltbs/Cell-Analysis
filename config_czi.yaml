@@ -1,0 +1,31 @@
+channel_colors:
+- red
+- green
+- blue
+- yellow
+channel_names: []
+channels:
+- 0
+- 1
+- 2
+- 3
+dtype: uint8
+imagej_hyperstack: true
+input_root: /mnt/c/Users/Admin/Desktop/project_cellanalysis/data/raw_czi
+output_base: /mnt/c/Users/Admin/Desktop/project_cellanalysis/data/TV2_real_Tiff
+overwrite: true
+per_channel_normalize: true
+rgb_channels:
+- 0
+- 1
+- 2
+- 3
+save_color_composite: true
+save_multichannel_colored_pages: false
+save_ome_tiff_colors: true
+save_per_channel: true
+save_rgb_preview: false
+save_stack_tiff: true
+stack_layout: CYX
+target_size: 2048
+verbose: false

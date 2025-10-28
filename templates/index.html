@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cell Analysis Pipeline</title>
+  <style>
+    :root{
+      --brand:#3b82f6;
+      --brand-dark:#2563eb;
+      --bg:#f5f7fb;
+      --text:#1a202c;
+      --muted:#64748b;
+      --border:#e2e8f0;
+      --card:#fff;
+      --danger:#dc2626;
+      --danger-dark:#b91c1c;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .container{max-width:1400px;margin:0 auto;padding:20px}
+    .card{background:var(--card);border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);padding:24px;margin-bottom:20px}
+    .card.hero{display:flex;flex-direction:column;gap:14px}
+    .hero-headline{display:flex;flex-direction:column;gap:6px}
+    .hero-steps{display:flex;gap:10px;flex-wrap:wrap}
+    .hero-step{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:#f8fafc;color:#475569;font-size:12px}
+    .hero-step-index{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:var(--brand);color:#fff;font-weight:700;font-size:12px}
+    h1{font-size:28px;margin-bottom:6px}
+    h2{font-size:18px;color:#2d3748;border-bottom:2px solid var(--border);padding-bottom:6px;margin:14px 0}
+    h3{font-size:16px;margin:12px 0 8px}
+    .muted{color:var(--muted);font-size:12px}
+    .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    label{font-weight:600;font-size:13px;display:block;margin:10px 0 6px;color:#4a5568}
+    input[type="text"],input[type="number"],select,textarea{width:100%;padding:10px;border:1px solid #d8deea;border-radius:6px;font-size:14px;background:#fff}
+    textarea{min-height:120px;resize:vertical}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)}
+    .btn{padding:10px 14px;border-radius:8px;border:1px solid #d8deea;background:#fff;cursor:pointer;font-size:14px;transition:.15s}
+    .btn:hover{background:#f7fafc}
+    .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+    .btn.primary:hover{background:var(--brand-dark)}
+    .btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+    .btn.danger:hover{background:var(--danger-dark)}
+    .main-tabs{display:flex;gap:10px;border-bottom:3px solid var(--border);margin-bottom:14px;flex-wrap:wrap}
+    .main-tab{padding:12px 16px;background:transparent;border:none;border-bottom:3px solid transparent;cursor:pointer;font-weight:700;color:#64748b;transition:.15s;margin-bottom:-3px}
+    .main-tab:hover{color:var(--brand);background:#f8fafc}
+    .main-tab.active{color:var(--brand);border-bottom-color:var(--brand)}
+    .sub-tabs{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+    .sub-tab{padding:8px 12px;background:#fff;border:1px solid #e1e5ef;border-radius:8px;cursor:pointer;font-size:13px}
+    .sub-tab.active{background:#eef2ff;color:var(--brand);border-color:#bfdbfe;font-weight:700}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    .sub-content{display:none}
+    .sub-content.active{display:block}
+    .log{background:#0f172a;color:#d1e0ff;border-radius:8px;padding:12px;height:280px;overflow:auto;font-family:Consolas,monospace;font-size:13px;line-height:1.45}
+    .results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+    .results-card{border:1px solid #e5e7eb;border-radius:10px;padding:10px;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .results-card .meta{font-size:12px;color:#64748b}
+    .info-dot{display:inline-block;margin-left:6px;width:16px;height:16px;border-radius:50%;background:#e2e8f0;color:#334155;font-weight:700;font-size:11px;text-align:center;line-height:16px;cursor:help;vertical-align:middle}
+    .slider-container{display:flex;align-items:center;gap:16px}
+    .slider{flex:1}
+    .slider-marks{display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-top:4px}
+    .inline{display:flex;gap:8px;flex-wrap:wrap}
+    /* Modal (Folder browser) */
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000}
+    .modal.active{display:flex;align-items:center;justify-content:center}
+    .modal-content{background:#fff;width:92%;max-width:800px;border-radius:12px;padding:16px}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .modal-list{border:1px solid var(--border);border-radius:8px;max-height:420px;overflow:auto}
+    .modal-item{padding:10px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;gap:8px;align-items:center}
+    .modal-item.selected{background:#dbeafe}
+    .info-box{background:#f8fafc;border-left:4px solid var(--brand);padding:10px;border-radius:8px;margin:8px 0}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card hero">
+      <div class="hero-headline">
+        <h1>Cell Analysis Control Center</h1>
+        <div class="muted">End-to-end workflow: configure CZI conversion, detection, and co-expression from a single view.</div>
+      </div>
+      <div class="hero-steps">
+        <div class="hero-step"><span class="hero-step-index">1</span><span>CZI Conversion</span></div>
+        <div class="hero-step"><span class="hero-step-index">2</span><span>Detection</span></div>
+        <div class="hero-step"><span class="hero-step-index">3</span><span>Co-Expression</span></div>
+      </div>
+    </div>
+    
+    <!-- ===== Global quick note (mapping for Windows/WSL) ===== -->
+    <div class="card">
+      <h2>Quick Notes</h2>
+      <div class="info-box">
+        <div><strong>Windows paths</strong> are automatically mapped to WSL/container mounts by the backend (e.g. <code>C:\data</code> -&gt; <code>/host_mnt/c/data</code>).</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="main-tabs">
+        <button class="main-tab active" onclick="switchMainTab('czi', event)">CZI Conversion</button>
+        <button class="main-tab" onclick="switchMainTab('det', event)">Detection</button>
+        <button class="main-tab" onclick="switchMainTab('coexpr', event)">Co-Expression</button>
+      </div>
+
+      <!-- =================== CZI =================== -->
+      <div id="czi" class="tab-content active">
+        <div class="sub-tabs">
+          <button class="sub-tab active" data-subtab="config" onclick="switchSubTab('czi','config',event)">Configuration</button>
+          <button class="sub-tab" data-subtab="run" onclick="switchSubTab('czi','run',event)">Run</button>
+          <button class="sub-tab" data-subtab="results" onclick="switchSubTab('czi','results',event)">Results</button>
+        </div>
+
+        <div id="czi-config" class="sub-content active">
+          <h2>Input/Output</h2>
+          <div class="row">
+            <div>
+              <label>Input Directory (CZI files)</label>
+              <div class="inline">
+                <input id="czi_input_dir" type="text" placeholder="C:\path\to\czi"/>
+                <button class="btn" onclick="openFileBrowser('czi_input_dir')">Browse</button>
+              </div>
+            </div>
+            <div>
+              <label>Output Directory (TIFF target)</label>
+              <div class="inline">
+                <input id="czi_output_dir" type="text" placeholder="C:\path\to\output"/>
+                <button class="btn" onclick="openFileBrowser('czi_output_dir')">Browse</button>
+              </div>
+            </div>
+          </div>
+
+          <h2>Channel & Processing</h2>
+          <div class="row">
+            <div>
+              <label>Channels to Extract (comma)</label>
+              <input id="czi_channels" type="text" value="0,1,2,3"/>
+            </div>
+            <div>
+              <label>Target Size (max side px)</label>
+              <input id="czi_target_size" type="number" placeholder="2048"/>
+            </div>
+            <div>
+              <label>Per-Channel Normalize</label>
+              <select id="czi_normalize">
+                <option value="true">Yes (0–255)</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+            <div>
+              <label>Overwrite Existing</label>
+              <select id="czi_overwrite">
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+              </select>
+            </div>
+          </div>
+
+          <h2>Saving Options</h2>
+          <div class="row">
+            <div>
+              <label>Save per Channel</label>
+              <select id="czi_save_per_channel">
+                <option value="true">Yes</option><option value="false">No</option>
+              </select>
+              <div class="muted">Writes *_ch0.tif, *_ch1.tif, …</div>
+            </div>
+            <div>
+              <label>Save Stack TIFF</label>
+              <select id="czi_save_stack_tiff">
+                <option value="true">Yes</option><option value="false">No</option>
+              </select>
+            </div>
+            <div>
+              <label>RGB Preview</label>
+              <select id="czi_save_rgb_preview">
+                <option value="false">No</option><option value="true">Yes</option>
+              </select>
+            </div>
+            <div>
+              <label>Stack Layout</label>
+              <select id="czi_stack_layout">
+                <option value="YXC">YXC</option><option value="CYX">CYX</option>
+              </select>
+            </div>
+            <div>
+              <label>ImageJ Hyperstack</label>
+              <select id="czi_imagej_hyperstack">
+                <option value="true">Enabled</option><option value="false">Disabled</option>
+              </select>
+            </div>
+            <div>
+              <label>Color Composite (blend all)</label>
+              <select id="czi_save_color_composite">
+                <option value="true">Yes</option><option value="false">No</option>
+              </select>
+            </div>
+            <div>
+              <label>Channel Colors</label>
+              <div id="czi_channel_colors_container" class="row"></div>
+              <div class="muted">One color per extracted channel (order matches list)</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>RGB Channels (R,G,B)</label>
+              <input id="czi_rgb_channels" type="text" value="0,1,2"/>
+            </div>
+            <div>
+              <label>Output DType</label>
+              <select id="czi_dtype">
+                <option value="uint8">uint8</option>
+                <option value="uint16">uint16</option>
+              </select>
+            </div>
+            <div>
+              <label>Colored Pages (per channel)</label>
+              <select id="czi_save_colored_pages">
+                <option value="true">Yes</option><option value="false">No</option>
+              </select>
+            </div>
+            <div>
+              <label>OME‑TIFF with Colors</label>
+              <select id="czi_save_ome_colors">
+                <option value="true">Yes</option><option value="false">No</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="inline" style="margin-top:12px">
+            <button class="btn" onclick="loadCziConfig()">Load Config</button>
+            <button class="btn primary" onclick="saveCziConfig()">Save Config</button>
+          </div>
+        </div>
+
+        <div id="czi-run" class="sub-content">
+          <h2>CZI Conversion</h2>
+          <div class="muted" style="margin-bottom:6px">Console</div>
+          <div id="czi-log" class="log">Waiting…</div>
+          <div class="inline" style="margin-top:10px">
+            <button id="czi-start" class="btn primary" onclick="startCzi()">Start</button>
+            <button id="czi-stop" class="btn danger" onclick="stopCzi()" style="display:none">Stop</button>
+          </div>
+        </div>
+
+        <div id="czi-results" class="sub-content">
+          <h2>Results</h2>
+          <div class="inline" style="margin-bottom:10px;flex-wrap:wrap">
+            <button class="btn" onclick="loadCziResults()">Refresh</button>
+            <button class="btn" onclick="window.location.href='/api/czi/download-all'">🗜️ Download all (ZIP)</button>
+          </div>
+          <div id="czi-results-list" class="results">
+            <div class="muted">No results yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================== DETECTION =================== -->
+      <div id="det" class="tab-content">
+        <div class="sub-tabs">
+          <button class="sub-tab active" data-subtab="config" onclick="switchSubTab('det','config',event)">Configuration</button>
+          <button class="sub-tab" data-subtab="run" onclick="switchSubTab('det','run',event)">Run</button>
+          <button class="sub-tab" data-subtab="results" onclick="switchSubTab('det','results',event)">Results</button>
+        </div>
+
+        <div id="det-config" class="sub-content active">
+          <h2>Basic Settings</h2>
+          <div class="row">
+            <div>
+              <label>Input TIFFs Directory</label>
+              <div class="inline">
+                <input id="det_input_dir" type="text" placeholder="C:\path\to\tiffs"/>
+                <button class="btn" onclick="openFileBrowser('det_input_dir')">Browse</button>
+              </div>
+            </div>
+            <div>
+              <label>Output Results Directory</label>
+              <div class="inline">
+                <input id="det_output_dir" type="text" placeholder="C:\path\to\results"/>
+                <button class="btn" onclick="openFileBrowser('det_output_dir')">Browse</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>Channels</label>
+              <div id="det_channel_selector" class="channel-selector" style="display:flex;flex-direction:column;gap:6px;"></div>
+            </div>
+            <div>
+              <label>Model Type</label>
+              <select id="det_model_type">
+                <option value="cyto2">cyto2</option>
+                <option value="cyto3">cyto3</option>
+                <option value="cyto">cyto</option>
+                <option value="nuclei">nuclei</option>
+                <option value="cpsam">cpsam</option>
+              </select>
+            </div>
+            <div>
+              <label>Use GPU</label>
+              <select id="det_use_gpu">
+                <option value="false">No (CPU)</option>
+                <option value="true">Yes (if available)</option>
+              </select>
+            </div>
+            <div>
+              <label>Batch Size</label>
+              <input id="det_batch_size" type="number" value="8" min="1" max="64"/>
+            </div>
+            <div>
+              <label>Diameter (px)</label>
+              <input id="det_diameter" type="number" placeholder="auto"/>
+            </div>
+          </div>
+
+          <h3>Test Mode</h3>
+          <div class="row">
+            <div>
+              <label>Test Mode</label>
+              <select id="det_test_mode">
+                <option value="false">Disabled</option><option value="true">Enabled</option>
+              </select>
+            </div>
+            <div>
+              <label>Samples / Channel</label>
+              <input id="det_test_samples" type="number" min="1" value="2"/>
+            </div>
+            <div>
+              <label>Seed (optional)</label>
+              <input id="det_test_seed" type="text" placeholder="auto"/>
+            </div>
+          </div>
+
+          <h3>Detection Sensitivity</h3>
+          <div class="slider-container">
+            <input type="range" id="det-sensitivity" class="slider" min="0" max="9" value="4" step="1">
+            <span id="det-sensitivity-value">Level 5 · Balanced</span>
+          </div>
+          <div class="slider-marks">
+            <span>Only brightest</span>
+            <span>Balanced</span>
+            <span>Counts very weak</span>
+          </div>
+          <div class="muted" style="margin-top:6px">Slider maps to core thresholds (cellprob/flow/SNR/percentile/intensity/ITF).</div>
+          <div class="row" style="margin-top:8px">
+            <div>
+              <label>Flow Threshold</label>
+              <input id="det_flow_thr" type="number" step="0.01" min="-2" max="2" value="0.40"/>
+            </div>
+            <div>
+              <label>Cellprob Threshold</label>
+              <input id="det_cell_thr" type="number" step="0.01" min="-2" max="2" value="0.00"/>
+            </div>
+          </div>
+
+          <h2 style="margin-top:16px">Output & Script</h2>
+          <div class="row">
+            <div>
+              <label>Save Overlay</label>
+              <select id="det_save_overlay">
+                <option value="true">Yes</option><option value="false">No</option>
+              </select>
+            </div>
+            <div>
+              <label>Overlay Suffix</label>
+              <input id="det_overlay_suffix" type="text" value="_overlay.png"/>
+            </div>
+            <div>
+              <label>Detection Script Path</label>
+              <input id="det_script_path" type="text" placeholder="/app/src/batch_segment.py"/>
+            </div>
+          </div>
+
+          <h2>Advanced (CPSAM)</h2>
+          <h3>Parameters</h3>
+          <div class="row">
+            <div>
+              <label>Input Channel</label>
+              <input id="det_cpsam_channel" type="number" placeholder="3"/>
+            </div>
+            <div>
+              <label>Resize Max</label>
+              <input id="det_cpsam_resize_max" type="number" placeholder="2048"/>
+            </div>
+            <div>
+              <label>Iterations (niter)</label>
+              <input id="det_cpsam_niter" type="number" placeholder="750"/>
+            </div>
+            <div>
+              <label>Conditions: Pos Pattern</label>
+              <input id="det_cpsam_pos_pattern" type="text" placeholder="Input_old_"/>
+            </div>
+            <div>
+              <label>Conditions: Neg Pattern</label>
+              <input id="det_cpsam_neg_pattern" type="text" placeholder="Input_adult_"/>
+            </div>
+            <div>
+              <label>Save Masks</label>
+              <select id="det_cpsam_save_masks">
+                <option value="false">No</option><option value="true">Yes</option>
+              </select>
+            </div>
+            <div>
+              <label>Split Regions</label>
+              <select id="det_cpsam_split_regions">
+                <option value="false">No</option><option value="true">Yes</option>
+              </select>
+            </div>
+          </div>
+
+          <h3>Cell Filtering</h3>
+          <div class="row">
+            <div>
+              <label>Min Area (px²)</label>
+              <input id="det_cpsam_min_area" type="number" value="80"/>
+            </div>
+            <div>
+              <label>Max Area (px²)</label>
+              <input id="det_cpsam_max_area" type="number" placeholder="3000"/>
+            </div>
+            <div>
+              <label>Min Circularity</label>
+              <input id="det_cpsam_min_circ" type="number" step="0.01" placeholder="0.1"/>
+            </div>
+            <div>
+              <label>Max Circularity</label>
+              <input id="det_cpsam_max_circ" type="number" step="0.01" placeholder="1.0"/>
+            </div>
+            <div>
+              <label>Max Hole Ratio</label>
+              <input id="det_cpsam_max_hole" type="number" step="0.01" placeholder="0.2"/>
+            </div>
+            <div>
+              <label>Intensity Threshold (abs)</label>
+              <input id="det_cpsam_intensity_thr" type="number" placeholder="5"/>
+            </div>
+            <div>
+              <label>Intensity Threshold Factor (rel)</label>
+              <input id="det_cpsam_itf" type="number" step="0.01" placeholder="0.3"/>
+            </div>
+          </div>
+
+          <h3>Pre‑processing</h3>
+          <div class="row">
+            <div>
+              <label>White Tophat</label>
+              <select id="det_cpsam_tophat">
+                <option value="true">Enabled</option><option value="false">Disabled</option>
+              </select>
+            </div>
+            <div>
+              <label>Tophat Radius</label>
+              <input id="det_cpsam_tophat_radius" type="number" placeholder="15"/>
+            </div>
+            <div>
+              <label>Contrast Stretch</label>
+              <select id="det_cpsam_contrast_stretch">
+                <option value="true">Enabled</option><option value="false">Disabled</option>
+              </select>
+            </div>
+            <div>
+              <label>Stretch Percentiles (low,high)</label>
+              <input id="det_cpsam_stretch_pct" type="text" placeholder="1,99"/>
+            </div>
+          </div>
+
+          <h3>Watershed Split</h3>
+          <div class="row">
+            <div>
+              <label>Split Touching Cells</label>
+              <select id="det_cpsam_split_touching">
+                <option value="true">Enabled</option><option value="false">Disabled</option>
+              </select>
+            </div>
+            <div>
+              <label>Split Min Distance</label>
+              <input id="det_cpsam_split_min_distance" type="number" placeholder="6"/>
+            </div>
+            <div>
+              <label>Split Area Multiplier</label>
+              <input id="det_cpsam_split_area_multiplier" type="number" step="0.1" placeholder="2.5"/>
+            </div>
+            <div>
+              <label>Split Min Area</label>
+              <input id="det_cpsam_split_min_area" type="number" placeholder="0"/>
+            </div>
+            <div>
+              <label>Split Peak Threshold</label>
+              <input id="det_cpsam_split_rel_peak" type="number" step="0.01" placeholder="0.2"/>
+            </div>
+          </div>
+
+          <h3>Advanced Filtering</h3>
+          <div class="row">
+            <div>
+              <label>Enable Advanced</label>
+              <select id="det_cpsam_enable_adv">
+                <option value="true">Enabled</option><option value="false">Disabled</option>
+              </select>
+            </div>
+            <div>
+              <label>SNR Min</label>
+              <input id="det_cpsam_snr_min" type="number" step="0.01" placeholder="1.1"/>
+            </div>
+            <div>
+              <label>Abs Floor Percentile</label>
+              <input id="det_cpsam_abs_floor" type="number" placeholder="75"/>
+            </div>
+            <div>
+              <label>Foreground Block Size</label>
+              <input id="det_cpsam_fg_block" type="number" placeholder="501"/>
+            </div>
+            <div>
+              <label>Foreground Offset</label>
+              <input id="det_cpsam_fg_offset" type="number" placeholder="10"/>
+            </div>
+          </div>
+
+          <h3>Overlays</h3>
+          <div class="row">
+            <div>
+              <label>Overlay Mode</label>
+              <select id="det_cpsam_overlay_mode">
+                <option value="contours">contours</option>
+                <option value="masks">masks</option>
+                <option value="both">both</option>
+              </select>
+            </div>
+            <div>
+              <label>Contour Color</label>
+              <select id="det_cpsam_contour_color">
+                <option>lime</option><option>red</option><option>green</option>
+                <option>blue</option><option>yellow</option><option>cyan</option>
+                <option>magenta</option><option>white</option><option>orange</option><option>purple</option>
+              </select>
+            </div>
+            <div>
+              <label>Line Width</label>
+              <input id="det_cpsam_line_width" type="number" placeholder="1"/>
+            </div>
+            <div>
+              <label>DPI</label>
+              <input id="det_cpsam_dpi" type="number" placeholder="300"/>
+            </div>
+            <div>
+              <label>Figure Size (w,h)</label>
+              <input id="det_cpsam_figsize" type="text" placeholder="12,12"/>
+            </div>
+            <div>
+              <label>Outputs: Base Name</label>
+              <input id="det_cpsam_base_name" type="text" placeholder="cell_analysis"/>
+            </div>
+          </div>
+
+          <div class="inline" style="margin-top:12px">
+            <button class="btn" onclick="loadDetConfig()">Load Config</button>
+            <button class="btn primary" onclick="saveDetConfig()">Save Config</button>
+          </div>
+        </div>
+
+        <div id="det-run" class="sub-content">
+          <h2>Detection</h2>
+          <div class="muted" style="margin-bottom:6px">Console</div>
+          <div id="det-log" class="log">Waiting…</div>
+          <div class="inline" style="margin-top:10px">
+            <button id="det-start" class="btn primary" onclick="startDet()">Start</button>
+            <button class="btn" onclick="startDetTest()">Test</button>
+            <button id="det-stop" class="btn danger" onclick="stopDet()" style="display:none">Stop</button>
+          </div>
+        </div>
+
+        <div id="det-results" class="sub-content">
+          <h2>Results</h2>
+          <div class="inline" style="margin-bottom:10px;flex-wrap:wrap">
+            <button class="btn" onclick="loadDetResults()">Refresh</button>
+            <button class="btn" onclick="window.location.href='/api/det/download-all'">Download CSVs (ZIP)</button>
+            <button class="btn" onclick="window.location.href='/api/det/overlays/download-all'">Download Overlays (ZIP)</button>
+          </div>
+          <div id="det-results-list" class="results">
+            <div class="muted">No results yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================== CO-EXPR =================== -->
+      <div id="coexpr" class="tab-content">
+        <div class="sub-tabs">
+          <button class="sub-tab active" data-subtab="config" onclick="switchSubTab('coexpr','config',event)">Configuration</button>
+          <button class="sub-tab" data-subtab="run" onclick="switchSubTab('coexpr','run',event)">Run</button>
+          <button class="sub-tab" data-subtab="results" onclick="switchSubTab('coexpr','results',event)">Results</button>
+        </div>
+
+        <div id="coexpr-config" class="sub-content active">
+          <h2>Paths</h2>
+          <div class="row">
+            <div>
+              <label>Input Directory (results root with ch*/overlays)</label>
+              <div class="inline">
+                <input id="input_dir" type="text" placeholder="C:\path\to\results\root"/>
+                <button class="btn" onclick="openFileBrowser('input_dir')">Browse</button>
+              </div>
+            </div>
+            <div>
+              <label>Output Directory (co‑expression)</label>
+              <div class="inline">
+                <input id="output_dir" type="text" placeholder="C:\path\to\coexpr\output"/>
+                <button class="btn" onclick="openFileBrowser('output_dir')">Browse</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>Dataset Name (optional)</label>
+              <input id="dataset_name" type="text" placeholder="e.g. glucose"/>
+            </div>
+            <div>
+              <label>HSV Range Preset</label>
+              <select id="active_hsv_range">
+                <option value="0">Lime Green (Default)</option>
+                <option value="1">Extended Green</option>
+                <option value="2">Bright Lime</option>
+                <option value="3">Wide Green</option>
+              </select>
+            </div>
+            <div>
+              <label>Number of Channels</label>
+              <input id="channel_count" type="number" min="2" max="10" value="3"/>
+            </div>
+          </div>
+
+          <h3>Test Mode</h3>
+          <div class="row">
+            <div>
+              <label>Test Mode</label>
+              <select id="coexpr_test_mode">
+                <option value="false">Disabled</option><option value="true">Enabled</option>
+              </select>
+            </div>
+            <div>
+              <label>Samples / Key</label>
+              <input id="coexpr_test_samples" type="number" min="1" value="2"/>
+            </div>
+            <div>
+              <label>Seed (optional)</label>
+              <input id="coexpr_test_seed" type="text" placeholder="auto"/>
+            </div>
+          </div>
+
+          <h2>Source Options</h2>
+          <div class="row">
+            <div>
+              <label>Use Detection Masks</label>
+              <select id="coexpr_use_masks">
+                <option value="true">Prefer *_mask.tif files</option><option value="false">Use overlays only</option>
+              </select>
+            </div>
+            <div>
+              <label>Auto Threshold Overlays (fallback)</label>
+              <select id="coexpr_auto_threshold">
+                <option value="true">Enabled</option><option value="false">Disabled</option>
+              </select>
+            </div>
+          </div>
+          <div class="muted" style="margin-top:6px">When fallback is enabled, overlays without masks are auto-thresholded to binary masks.</div>
+
+          <div id="channel_config_container"></div>
+
+          <h2>Combinations</h2>
+          <div id="way_toggles" class="inline" style="margin-bottom:6px"></div>
+          <div id="combo_checkboxes_container" class="row"></div>
+
+          <h2>Overlay Visualization</h2>
+          <div class="row">
+            <div>
+              <label>2‑way Color</label>
+              <select id="ov_color_k2">
+                <option>red</option><option>magenta</option><option>cyan</option>
+                <option>yellow</option><option>green</option><option>blue</option>
+                <option>white</option><option>orange</option><option>purple</option>
+              </select>
+            </div>
+            <div>
+              <label>3‑way Color</label>
+              <select id="ov_color_k3">
+                <option>magenta</option><option>red</option><option>cyan</option>
+                <option>yellow</option><option>green</option><option>blue</option>
+                <option>white</option><option>orange</option><option>purple</option>
+              </select>
+            </div>
+            <div>
+              <label>4‑way Color</label>
+              <select id="ov_color_k4">
+                <option>cyan</option><option>magenta</option><option>red</option>
+                <option>yellow</option><option>green</option><option>blue</option>
+                <option>white</option><option>orange</option><option>purple</option>
+              </select>
+            </div>
+            <div>
+              <label>Overlay Line Width</label>
+              <input id="ov_line_width" type="number" value="3"/>
+            </div>
+            <div>
+              <label>Overlay DPI</label>
+              <input id="ov_dpi" type="number" value="150"/>
+            </div>
+            <div>
+              <label>Save Composite Figure</label>
+              <select id="coexpr_save_figure">
+                <option value="true">Yes</option><option value="false">No</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="inline" style="margin-top:12px">
+            <button class="btn" onclick="loadOverlayUi()">🔄 Load Overlay Settings</button>
+            <button class="btn primary" onclick="saveOverlayUi()">💾 Save Overlay Settings</button>
+          </div>
+
+          <div class="inline" style="margin-top:12px">
+            <button class="btn" onclick="loadConfig()">Load Config</button>
+            <button class="btn primary" onclick="saveConfig()">Save Config</button>
+          </div>
+        </div>
+
+        <div id="coexpr-run" class="sub-content">
+          <h2>Run Analysis</h2>
+          <label class="muted" style="display:inline-flex;gap:6px;align-items:center;margin:8px 0 10px">
+            <input type="checkbox" id="cb_debug"/> Enable Debug Log (‑v)
+          </label>
+          <div class="muted" style="margin-bottom:6px">Console</div>
+          <div id="log" class="log">Waiting…</div>
+          <div class="inline" style="margin-top:10px">
+            <button id="start-btn" class="btn primary" onclick="startAnalysis()">Start</button>
+            <button class="btn" onclick="startAnalysisTest()">Test</button>
+            <button id="stop-btn" class="btn danger" onclick="stopAnalysis()" style="display:none">Stop</button>
+          </div>
+        </div>
+
+        <div id="coexpr-results" class="sub-content">
+          <h2>Results</h2>
+          <div class="inline" style="margin-bottom:10px;flex-wrap:wrap">
+            <button class="btn" onclick="loadResults()">Refresh</button>
+            <button class="btn" onclick="window.location.href='/api/results/download-all'">🗜️ Download all (ZIP)</button>
+          </div>
+          <div id="results-list" class="results">
+            <div class="muted">No results yet.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Folder Browser Modal ===== -->
+  <div id="fb-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <strong>📂 Select folder</strong>
+        <button class="btn" onclick="closeFileBrowser()">Close</button>
+      </div>
+      <div id="fb-path" class="muted" style="margin-bottom:8px;"></div>
+      <div id="fb-list" class="modal-list"></div>
+      <div class="inline" style="justify-content:flex-end;margin-top:10px">
+        <button class="btn" onclick="closeFileBrowser()">Cancel</button>
+        <button class="btn primary" onclick="selectDirectory()">Choose</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* =================== UTIL =================== */
+const CZI_COLOR_CHOICES = ['red','green','blue','yellow','cyan','magenta','white','orange','purple'];
+const HEX_TO_NAME = {'#ff0000':'red','#00ff00':'green','#0000ff':'blue','#ffff00':'yellow','#00ffff':'cyan','#ff00ff':'magenta','#ffffff':'white','#ffa500':'orange','#800080':'purple'};
+
+function normColor(val){ if(!val) return ''; const s=String(val).trim().toLowerCase(); if(CZI_COLOR_CHOICES.includes(s)) return s; if(HEX_TO_NAME[s]) return HEX_TO_NAME[s]; return s; }
+function toBool(v){ return String(v)==='true'; }
+function toInt(v){ const n=parseInt(v,10); return Number.isFinite(n)?n:undefined; }
+function toFloat(v){ const n=parseFloat(v); return Number.isFinite(n)?n:undefined; }
+function toIntPair(s){ const a=String(s||'').split(',').map(x=>parseInt(x.trim(),10)).filter(Number.isFinite); return a.length>=2?[a[0],a[1]]:undefined; }
+function escapeHtml(value){
+  return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function parseChannelList(value){
+  return String(value||'').split(',').map(part=>parseInt(part.trim(),10)).filter(Number.isFinite);
+}
+function toArray(input){
+  if(Array.isArray(input)) return input.slice();
+  if(input && typeof input==='object'){
+    return Object.values(input);
+  }
+  return [];
+}
+function renderDetChannelSelector(cfg){
+  const cont=document.getElementById('det_channel_selector');
+  if(!cont) return;
+  const rawIndices=Array.isArray(cfg.channels)?cfg.channels:[];
+  let indices=rawIndices.map(v=>parseInt(v,10)).filter(Number.isFinite);
+  if(!indices.length){ indices=[0,1,2,3]; }
+  const labels=Array.isArray(cfg.channel_labels)?cfg.channel_labels:[];
+  const labelMap=new Map();
+  labels.forEach(item=>{
+    if(!item) return;
+    const idx=parseInt(item.index,10);
+    if(Number.isFinite(idx)){
+      labelMap.set(idx, String(item.name||'').trim());
+      if(!indices.includes(idx)) indices.push(idx);
+    }
+  });
+  indices=Array.from(new Set(indices)).filter(Number.isFinite).sort((a,b)=>a-b);
+  const selected=new Set(
+    Array.isArray(cfg.det_channel_selection)
+      ? cfg.det_channel_selection.map(v=>parseInt(v,10)).filter(Number.isFinite)
+      : []
+  );
+  if(!selected.size){
+    const fallback=parseInt(cfg?.cpsam?.cellpose?.channel,10);
+    if(Number.isFinite(fallback)) selected.add(fallback);
+  }
+  cont.innerHTML='';
+  indices.forEach(idx=>{
+    const name=labelMap.get(idx)||'';
+    const checked=selected.size ? selected.has(idx) : false;
+    const row=document.createElement('div');
+    row.className='det-channel-row inline';
+    row.dataset.index=String(idx);
+    row.innerHTML=`
+      <label class="inline" style="gap:6px;align-items:center;">
+        <input type="checkbox" class="det-ch-select" data-index="${idx}" ${checked?'checked':''}/>
+        ch${idx}
+      </label>
+      <input type="text" class="det-ch-name" data-index="${idx}" value="${name.replace(/"/g,'&quot;')}" placeholder="Name (optional)" style="flex:1;min-width:120px"/>
+    `;
+    cont.appendChild(row);
+  });
+}
+function collectDetChannels(){
+  const cont=document.getElementById('det_channel_selector');
+  if(!cont) return [];
+  return Array.from(cont.querySelectorAll('.det-channel-row')).map(row=>{
+    const idx=parseInt(row.dataset.index,10);
+    if(!Number.isFinite(idx)) return null;
+    const name=row.querySelector('.det-ch-name')?.value||'';
+    const selected=!!row.querySelector('.det-ch-select')?.checked;
+    return {index: idx, name, selected};
+  }).filter(Boolean);
+}
+function pruneEmptyBranches(obj){
+  if(!obj || typeof obj!=='object' || Array.isArray(obj)) return;
+  Object.keys(obj).forEach((key)=>{
+    const val=obj[key];
+    if(val && typeof val==='object' && !Array.isArray(val)){
+      pruneEmptyBranches(val);
+      if(Object.keys(val).length===0){
+        delete obj[key];
+      }
+    }else if(val===undefined){
+      delete obj[key];
+    }
+  });
+}
+function buildDetConfigPayload(){
+  const cpsam={
+    conditions:{
+      pos_pattern: document.getElementById('det_cpsam_pos_pattern')?.value || undefined,
+      neg_pattern: document.getElementById('det_cpsam_neg_pattern')?.value || undefined
+    },
+    cellpose:{
+      channel: toInt(document.getElementById('det_cpsam_channel')?.value),
+      resize_max: toInt(document.getElementById('det_cpsam_resize_max')?.value),
+      niter: toInt(document.getElementById('det_cpsam_niter')?.value),
+      save_masks: toBool(document.getElementById('det_cpsam_save_masks')?.value),
+      split_regions: toBool(document.getElementById('det_cpsam_split_regions')?.value)
+    },
+    filters:{
+      min_area: toInt(document.getElementById('det_cpsam_min_area')?.value),
+      max_area: toInt(document.getElementById('det_cpsam_max_area')?.value),
+      min_circularity: toFloat(document.getElementById('det_cpsam_min_circ')?.value),
+      max_circularity: toFloat(document.getElementById('det_cpsam_max_circ')?.value),
+      max_hole_ratio: toFloat(document.getElementById('det_cpsam_max_hole')?.value),
+      intensity_threshold_factor: toFloat(document.getElementById('det_cpsam_itf')?.value)
+    },
+    enable_advanced_filtering: toBool(document.getElementById('det_cpsam_enable_adv')?.value),
+    advanced_filtering:{
+      snr_min: toFloat(document.getElementById('det_cpsam_snr_min')?.value),
+      abs_floor_percentile: toInt(document.getElementById('det_cpsam_abs_floor')?.value),
+      foreground_block_size: toInt(document.getElementById('det_cpsam_fg_block')?.value),
+      foreground_offset: toInt(document.getElementById('det_cpsam_fg_offset')?.value)
+    },
+    processing:{
+      tophat: toBool(document.getElementById('det_cpsam_tophat')?.value),
+      tophat_radius: toInt(document.getElementById('det_cpsam_tophat_radius')?.value),
+      contrast_stretch: toBool(document.getElementById('det_cpsam_contrast_stretch')?.value),
+      stretch_percentiles: toIntPair(document.getElementById('det_cpsam_stretch_pct')?.value),
+      merge_adjacent_cells: toBool(document.getElementById('det_cpsam_merge_cells')?.value),
+      remove_edge_cells: toBool(document.getElementById('det_cpsam_remove_edge')?.value),
+      intensity_threshold: toInt(document.getElementById('det_cpsam_intensity_thr')?.value),
+      split_touching_cells: toBool(document.getElementById('det_cpsam_split_touching')?.value),
+      split_min_distance: toInt(document.getElementById('det_cpsam_split_min_distance')?.value),
+      split_area_multiplier: toFloat(document.getElementById('det_cpsam_split_area_multiplier')?.value),
+      split_min_area: toInt(document.getElementById('det_cpsam_split_min_area')?.value),
+      split_rel_peak_threshold: toFloat(document.getElementById('det_cpsam_split_rel_peak')?.value)
+    },
+    overlays:{
+      overlay_mode: document.getElementById('det_cpsam_overlay_mode')?.value || undefined,
+      contour_color: document.getElementById('det_cpsam_contour_color')?.value || undefined,
+      line_width: toInt(document.getElementById('det_cpsam_line_width')?.value),
+      dpi: toInt(document.getElementById('det_cpsam_dpi')?.value),
+      figsize: toIntPair(document.getElementById('det_cpsam_figsize')?.value)
+    },
+    outputs:{
+      base_name: document.getElementById('det_cpsam_base_name')?.value || undefined
+    }
+  };
+  pruneEmptyBranches(cpsam);
+
+  const diameterValue = toInt(document.getElementById('det_diameter')?.value);
+  const flowValue = toFloat(document.getElementById('det_flow_thr')?.value);
+  const cellprobValue = toFloat(document.getElementById('det_cell_thr')?.value);
+  const batchValue = toInt(document.getElementById('det_batch_size')?.value);
+  const channelMeta = collectDetChannels();
+  const channelIndices = [];
+  const channelLabels = [];
+  const channelSelection = [];
+  channelMeta.forEach(ch=>{
+    if(!ch) return;
+    const idx=parseInt(ch.index,10);
+    if(!Number.isFinite(idx)) return;
+    if(!channelIndices.includes(idx)) channelIndices.push(idx);
+    channelLabels.push({index: idx, name: ch.name || ''});
+    if(ch.selected && !channelSelection.includes(idx)) channelSelection.push(idx);
+  });
+  channelIndices.sort((a,b)=>a-b);
+  channelSelection.sort((a,b)=>a-b);
+
+  const testEnabled = (document.getElementById('det_test_mode')?.value || 'false') === 'true';
+  let testSamples = toInt(document.getElementById('det_test_samples')?.value);
+  if(!Number.isFinite(testSamples) || testSamples <= 0) testSamples = undefined;
+  const testSeedRaw = (document.getElementById('det_test_seed')?.value || '').trim();
+  const testingBlock = { enabled: testEnabled };
+  if(testSamples !== undefined) testingBlock.samples_per_channel = testSamples;
+  if(testSeedRaw) testingBlock.seed = testSeedRaw;
+  pruneEmptyBranches(testingBlock);
+
+  return {
+    input_tiffs_dir: document.getElementById('det_input_dir')?.value || '',
+    output_results_dir: document.getElementById('det_output_dir')?.value || '',
+    channels: channelIndices,
+    channel_labels: channelLabels,
+    det_channel_selection: channelSelection,
+    model_type: document.getElementById('det_model_type')?.value || 'cyto2',
+    diameter: diameterValue ?? null,
+    flow_threshold: flowValue ?? 0.4,
+    cellprob_threshold: cellprobValue ?? 0.0,
+    use_gpu: (document.getElementById('det_use_gpu')?.value || 'false') === 'true',
+    batch_size: batchValue ?? 8,
+    save_overlay: (document.getElementById('det_save_overlay')?.value || 'true') === 'true',
+    overlay_suffix: document.getElementById('det_overlay_suffix')?.value || '_overlay.png',
+    det_script_path: document.getElementById('det_script_path')?.value || '',
+    testing: testingBlock,
+    cpsam
+  };
+}
+function parseIntsCSV(s, fallback=[]) { return String(s||'').split(',').map(x=>parseInt(x.trim(),10)).filter(Number.isFinite).concat([]).slice(0) || fallback; }
+
+/* =================== TABS =================== */
+function switchMainTab(id, ev){
+  document.querySelectorAll('.main-tab').forEach(b=>b.classList.remove('active'));
+  if(ev && ev.target) ev.target.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(p=>p.classList.remove('active'));
+  const panel=document.getElementById(id); if(panel){ panel.classList.add('active'); const first=panel.querySelector('.sub-tab'); if(first){ panel.querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active')); first.classList.add('active'); } switchSubTab(id,'config'); }
+  if(id==='czi'){ injectHelp(HELP_CZI); }
+  if(id==='det'){ injectHelp(HELP_DET); }
+  if(id==='coexpr'){ injectHelp(HELP_COEXPR); }
+}
+function switchSubTab(scope,key,ev){
+  const root=document.getElementById(scope); if(!root) return;
+  root.querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active'));
+  if(ev&&ev.target){
+    ev.target.classList.add('active');
+  }else{
+    const btn=root.querySelector(`.sub-tab[data-subtab="${key}"]`);
+    if(btn) btn.classList.add('active');
+  }
+  root.querySelectorAll('.sub-content').forEach(c=>c.classList.remove('active'));
+  const sub=document.getElementById(`${scope}-${key}`); if(sub) sub.classList.add('active');
+  if(key==='results'){
+    if(scope==='czi') loadCziResults();
+    if(scope==='det') loadDetResults();
+    if(scope==='coexpr') loadResults();
+  }
+}
+
+/* =================== INFO ICONS =================== */
+function injectInfoIcon(forId, text){
+  try{
+    const el=document.getElementById(forId); if(!el) return;
+    const wrap=el.closest('div'); if(!wrap) return;
+    const label=wrap.querySelector('label'); if(!label) return;
+    if(label.querySelector('.info-dot')) return;
+    const s=document.createElement('span'); s.className='info-dot'; s.textContent='i'; s.title=text; label.appendChild(s);
+  }catch(_){}
+}
+function injectHelp(mapping){ Object.entries(mapping).forEach(([id, txt])=>injectInfoIcon(id, txt)); }
+
+const HELP_CZI = {
+  czi_input_dir: "Folder containing CZI files.\nEffect: Source images for conversion.\nRange: valid path",
+  czi_output_dir: "Target folder where TIFFs will be written.\nEffect: Destination for outputs.\nRange: valid path",
+  czi_channels: "Indices of channels to extract, comma‑separated.\nIncrease: include more channels.\nRange: 0–9",
+  czi_target_size: "Resize to this max side in pixels; empty to keep original.\nIncrease: bigger output (slower).\nRange: 512–8192",
+  czi_normalize: "Normalize each channel to 0–255.\nOn: consistent brightness.\nRange: true|false",
+  czi_overwrite: "Overwrite existing files.\nOn: regenerate outputs.\nRange: true|false",
+  czi_save_per_channel: "Save one TIFF per channel (*_ch{i}.tif).\nRange: true|false",
+  czi_save_stack_tiff: "Save a multi‑channel stack (YXC or CYX).\nRange: true|false",
+  czi_save_rgb_preview: "Save a 3‑channel RGB preview mapping given channels.\nRange: true|false",
+  czi_stack_layout: "Axis order in saved stack.\nRange: YXC|CYX",
+  czi_imagej_hyperstack: "Write ImageJ hyperstack metadata.\nBetter handling in ImageJ/Fiji.\nRange: true|false",
+  czi_save_color_composite: "Blend all channels into one color composite.\nRange: true|false",
+  czi_channel_colors_container: "Per‑channel display colors (order follows channels list).",
+  czi_rgb_channels: "Indices to map to R,G,B in preview.\nRange: 3 integers",
+  czi_dtype: "Bit depth of outputs.\nuint8: small, uint16: larger dynamic range.\nRange: uint8|uint16",
+  czi_save_colored_pages: "Save one colored page per channel in a multipage TIFF.\nRange: true|false",
+  czi_save_ome_colors: "Write OME‑TIFF with channel color metadata.\nRange: true|false"
+};
+
+const HELP_DET = {
+  det_input_dir: "TIFF input root. Should contain folders like ch*/ and optionally overlays/.\nRange: valid path",
+  det_output_dir: "Output root for detection CSVs and overlays.\nRange: valid path",
+  det_channel_selector: "Wähle die Kanäle für die Detection aus und vergebe optionale Namen.\nMehrere Kanäle werden nacheinander verarbeitet.",
+  det_model_type: "Cellpose model to use (or cpsam for wrapper).\nRange: cyto2|cyto3|cyto|nuclei|cpsam",
+  det_use_gpu: "Try to use GPU if available.\nRange: true|false",
+  det_batch_size: "Tiles per batch.\nIncrease: faster, more VRAM.\nRange: 1–64",
+  det_diameter: "Expected cell diameter (px). Empty = auto.\nIncrease: fewer segments; Decrease: more segments.",
+  det_test_mode: "Enable test mode to process only a few images per channel.",
+  det_test_samples: "Number of images per channel when test mode is enabled.",
+  det_test_seed: "Optional seed to reproduce the sampled images.",
+  'det-sensitivity': "Master sensitivity slider. Left=Conservative, Right=Liberal.\nMaps to multiple thresholds automatically.",
+  det_save_overlay: "Write overlay images for QC.\nRange: true|false",
+  det_overlay_suffix: "Suffix of overlay image files. Must match co‑expression pipeline.\nExample: _overlay.png",
+  det_script_path: "Path to batch_segment.py.\nLeave empty to auto‑discover.\nRange: valid path or empty",
+  det_cpsam_channel: "Channel index to segment.\nRange: 0–7",
+  det_cpsam_resize_max: "Max image dimension for processing.\nIncrease: more detail (slower).\nRange: 1024–4096",
+  det_cpsam_niter: "Number of model iterations.\nIncrease: potentially better masks (slower).",
+  det_cpsam_pos_pattern: "Substring pattern for positive condition folders/files.",
+  det_cpsam_neg_pattern: "Substring pattern for negative condition folders/files.",
+  det_cpsam_save_masks: "Save binary masks.\nRange: true|false",
+  det_cpsam_split_regions: "Write outputs split by regions.\nRange: true|false",
+  det_cpsam_min_area: "Minimum cell area.\nIncrease: filter small objects.",
+  det_cpsam_max_area: "Maximum cell area.\nDecrease: filter very large objects.",
+  det_cpsam_min_circ: "Minimum circularity (0..1).\nIncrease: only rounder cells.",
+  det_cpsam_max_circ: "Maximum circularity (0..1).\nDecrease: allow less round cells.",
+  det_cpsam_max_hole: "Maximum allowed hole ratio inside cell.\nDecrease: remove holey cells.",
+  det_cpsam_intensity_thr: "Absolute intensity threshold to keep a cell.\nIncrease: stricter.",
+  det_cpsam_itf: "Relative intensity threshold factor w.r.t. background.\nIncrease: looser if > 0.5 (see doc).",
+  det_cpsam_split_touching: "Watershed splitting for touching cells.\nEnable to avoid fused masks.",
+  det_cpsam_split_min_distance: "Minimum distance between split seeds (px).\nRaise to reduce over-splitting.",
+  det_cpsam_split_area_multiplier: "Factor vs. min area to trigger splitting.\nHigher = split only very large cells.",
+  det_cpsam_split_min_area: "Explicit area threshold for splitting (px^2). 0 = auto via multiplier.",
+  det_cpsam_split_rel_peak: "Relative peak strength (0-1) to keep seed points.\nRaise to keep only strong peaks.",
+  det_cpsam_tophat: "Apply white tophat filter.",
+  det_cpsam_tophat_radius: "Tophat radius (px).",
+  det_cpsam_contrast_stretch: "Percentile contrast stretch.",
+  det_cpsam_stretch_pct: "Percentiles (low,high) e.g. 1,99",
+  det_cpsam_enable_adv: "Enable SNR/background filters.",
+  det_cpsam_snr_min: "Minimum SNR; Increase: stricter.",
+  det_cpsam_abs_floor: "Background floor percentile; Increase: stricter.",
+  det_cpsam_fg_block: "Adaptive threshold block size (odd).",
+  det_cpsam_fg_offset: "Adaptive threshold offset (negatives = more sensitive).",
+  det_cpsam_overlay_mode: "Overlay type: contours/masks/both.",
+  det_cpsam_contour_color: "Overlay contour color (visual only).",
+  det_cpsam_line_width: "Overlay line width.",
+  det_cpsam_dpi: "Saved overlay DPI.",
+  det_cpsam_figsize: "Figure size (w,h inches).",
+  det_cpsam_base_name: "Base name for outputs."
+};
+
+const HELP_COEXPR = {
+  input_dir: "Results root (should contain ch*/ and overlays/).\nRange: valid path",
+  output_dir: "Folder to write co‑expression outputs.\nRange: valid path",
+  dataset_name: "Optional dataset label.\nRange: text",
+  active_hsv_range: "HSV preset used for visual extraction.\nRange: 0‑3",
+  channel_count: "Number of channels considered when composing combos.\nRange: 2‑10",
+  coexpr_test_mode: "Enable test mode to limit the number of sample keys processed.",
+  coexpr_test_samples: "Number of sample keys when test mode is enabled.",
+  coexpr_test_seed: "Optional seed for reproducible sampling.",
+  coexpr_use_masks: "Prefer *_mask.tif files generated by detection. Disable to force overlay thresholding.",
+  coexpr_auto_threshold: "When enabled, automatically threshold overlays if no mask exists (fallback).",
+  coexpr_save_figure: "If enabled, saves a composite figure (channel previews + co-expression) per sample.",
+  ov_color_k2: "Color for 2‑way overlays.",
+  ov_color_k3: "Color for 3‑way overlays.",
+  ov_color_k4: "Color for 4‑way overlays.",
+  ov_line_width: "Line width for overlays.",
+  ov_dpi: "DPI for overlay figures."
+};
+
+/* =================== FOLDER BROWSER =================== */
+let fbTarget=null, fbCurrent=null, fbSelected=null;
+async function openFileBrowser(targetId){
+  fbTarget=targetId;
+  const el=document.getElementById(targetId);
+  fbCurrent=(el?el.value:'.').trim()||'.';
+  fbSelected=null;
+  document.getElementById('fb-modal')?.classList.add('active');
+  await browseTo(fbCurrent);
+}
+async function browseTo(path){
+  try{
+    const r=await fetch('/api/browse',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path})});
+    const j=await r.json();
+    fbCurrent=j.current_path;
+    const pathEl=document.getElementById('fb-path'); if(pathEl) pathEl.textContent=fbCurrent;
+    const list=document.getElementById('fb-list'); if(!list) return;
+    list.innerHTML='';
+    (j.items||[]).forEach(it=>{
+      if(!it.isDir) return;
+      const d=document.createElement('div');
+      d.className='modal-item';
+      d.innerHTML=`<span>${it.type==='parent'?'⬆️':'📁'}</span><span>${it.name}</span>`;
+      d.onclick=()=>{ list.querySelectorAll('.modal-item').forEach(x=>x.classList.remove('selected')); d.classList.add('selected'); fbSelected=it.path; if(it.type==='parent') browseTo(it.path); };
+      d.ondblclick=()=>{ if(it.type!=='parent') browseTo(it.path); };
+      list.appendChild(d);
+    });
+  }catch(e){
+    const list=document.getElementById('fb-list'); if(list) list.innerHTML=`<div class="modal-item">Error: ${e.message}</div>`;
+  }
+}
+function selectDirectory(){
+  const pick=fbSelected||fbCurrent;
+  if(fbTarget && pick){ const el=document.getElementById(fbTarget); if(el) el.value=pick; }
+  closeFileBrowser();
+}
+function closeFileBrowser(){ document.getElementById('fb-modal')?.classList.remove('active'); fbTarget=fbCurrent=fbSelected=null; }
+
+/* =================== CZI =================== */
+function parseCziChannels(){ return (document.getElementById('czi_channels')?.value||'').split(',').map(s=>parseInt(s.trim(),10)).filter(Number.isFinite); }
+function renderCziChannelColors(existingColors){
+  const cont=document.getElementById('czi_channel_colors_container'); if(!cont) return;
+  cont.innerHTML='';
+  const chs=parseCziChannels();
+  if(!chs.length){ cont.innerHTML='<div class="muted">Set “Channels to Extract” first.</div>'; return; }
+  chs.forEach((srcCh, idx)=>{
+    const selId=`czi_color_ch_${idx}`;
+    const current=normColor((existingColors && existingColors[idx])||'');
+    const wrap=document.createElement('div');
+    wrap.innerHTML=`
+      <label>ch${srcCh} color</label>
+      <select id="${selId}">
+        ${CZI_COLOR_CHOICES.map(c=>`<option value="${c}" ${c===current?'selected':''}>${c}</option>`).join('')}
+      </select>`;
+    cont.appendChild(wrap);
+  });
+}
+
+document.addEventListener('input', (e)=>{ if(e.target?.id==='czi_channels') renderCziChannelColors(); });
+
+async function loadCziConfig(){
+  try{
+    const res=await fetch('/api/czi/config'); const cfg=await res.json();
+    const m=(id,v)=>{ const el=document.getElementById(id); if(el!=null && v!==undefined) el.value = Array.isArray(v)?v.join(','):String(v); };
+    m('czi_input_dir', cfg.input_root||'');
+    m('czi_output_dir', cfg.output_base||'');
+    m('czi_channels', (cfg.channels||[0,1,2,3]).join(','));
+    m('czi_target_size', cfg.target_size||'');
+    m('czi_normalize', String(cfg.per_channel_normalize!==false));
+    m('czi_overwrite', String(!!cfg.overwrite));
+    m('czi_save_per_channel', String(cfg.save_per_channel!==false));
+    m('czi_save_stack_tiff', String(cfg.save_stack_tiff!==false));
+    m('czi_save_rgb_preview', String(!!cfg.save_rgb_preview));
+    m('czi_stack_layout', (cfg.stack_layout||'YXC').toUpperCase());
+    m('czi_imagej_hyperstack', String(cfg.imagej_hyperstack!==false));
+    m('czi_save_color_composite', String(cfg.save_color_composite!==false));
+    m('czi_rgb_channels', (cfg.rgb_channels||[0,1,2]).join(','));
+    m('czi_dtype', cfg.dtype||'uint8');
+    renderCziChannelColors(Array.isArray(cfg.channel_colors)?cfg.channel_colors:[]);
+    m('czi_save_colored_pages', String(cfg.save_multichannel_colored_pages!==false));
+    m('czi_save_ome_colors', String(cfg.save_ome_tiff_colors!==false));
+  }catch(e){ console.error('CZI load error', e); }
+}
+async function saveCziConfig(){
+  const chs=parseCziChannels();
+  const channel_colors = chs.map((_,idx)=>document.getElementById(`czi_color_ch_${idx}`)?.value||'white');
+  const parseInts=(s)=>String(s||'').split(',').map(x=>parseInt(x.trim(),10)).filter(Number.isFinite);
+  const cfg={
+    input_root: document.getElementById('czi_input_dir')?.value||'',
+    output_base: document.getElementById('czi_output_dir')?.value||'',
+    channels: parseInts(document.getElementById('czi_channels')?.value||'0,1,2,3'),
+    target_size: parseInt(document.getElementById('czi_target_size')?.value,10)||null,
+    per_channel_normalize: (document.getElementById('czi_normalize')?.value||'true')==='true',
+    overwrite: (document.getElementById('czi_overwrite')?.value||'false')==='false'?false:true,
+    save_per_channel: (document.getElementById('czi_save_per_channel')?.value||'true')==='true',
+    save_stack_tiff: (document.getElementById('czi_save_stack_tiff')?.value||'true')==='true',
+    save_rgb_preview: (document.getElementById('czi_save_rgb_preview')?.value||'false')==='true',
+    stack_layout: (document.getElementById('czi_stack_layout')?.value||'YXC').toUpperCase(),
+    imagej_hyperstack: (document.getElementById('czi_imagej_hyperstack')?.value||'true')==='true',
+    save_color_composite: (document.getElementById('czi_save_color_composite')?.value||'true')==='true',
+    rgb_channels: parseInts(document.getElementById('czi_rgb_channels')?.value||'0,1,2'),
+    dtype: document.getElementById('czi_dtype')?.value||'uint8',
+    channel_colors,
+    save_multichannel_colored_pages: (document.getElementById('czi_save_colored_pages')?.value||'true')==='true',
+    save_ome_tiff_colors: (document.getElementById('czi_save_ome_colors')?.value||'true')==='true'
+  };
+  const res=await fetch('/api/czi/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  alert('✅ CZI config saved');
+}
+let cziPoll=null;
+async function startCzi(){
+  try{ await saveCziConfig(); }catch(e){ alert('❌ Save failed: '+e.message); return; }
+  const logEl=document.getElementById('czi-log'); const startBtn=document.getElementById('czi-start'); const stopBtn=document.getElementById('czi-stop');
+  if(startBtn) startBtn.style.display='none'; if(stopBtn) stopBtn.style.display='inline-block'; if(logEl) logEl.textContent='Starting...\n';
+  try{
+    const r=await fetch('/api/czi/start',{method:'POST'}); if(!r.ok) throw new Error('HTTP '+r.status);
+    if(cziPoll) clearInterval(cziPoll);
+    cziPoll=setInterval(pollCzi, 700);
+  }catch(e){ if(logEl) logEl.textContent+='❌ Start failed: '+e.message+'\n'; if(startBtn) startBtn.style.display='inline-block'; if(stopBtn) stopBtn.style.display='none'; }
+}
+async function pollCzi(){
+  try{
+    const r=await fetch('/api/czi/status'); if(!r.ok) throw new Error('HTTP '+r.status);
+    const st=await r.json();
+    const logEl=document.getElementById('czi-log');
+    if(logEl && st.log){ logEl.textContent=(st.log||[]).join('\n'); logEl.scrollTop=logEl.scrollHeight; }
+    if(!st.running){ if(cziPoll){ clearInterval(cziPoll); cziPoll=null; } document.getElementById('czi-start').style.display='inline-block'; document.getElementById('czi-stop').style.display='none'; }
+  }catch(e){ console.error('CZI poll error', e); }
+}
+async function stopCzi(){
+  if(!confirm('Stop conversion?')) return;
+  try{ await fetch('/api/czi/stop',{method:'POST'});}catch(_){}
+  if(cziPoll){ clearInterval(cziPoll); cziPoll=null; }
+  document.getElementById('czi-start').style.display='inline-block';
+  document.getElementById('czi-stop').style.display='none';
+}
+async function loadCziResults(){
+  const el=document.getElementById('czi-results-list'); if(!el) return; el.textContent='Loading...';
+  try{
+    const r=await fetch('/api/czi/results'); if(!r.ok) throw new Error('HTTP '+r.status);
+    const data=await r.json(); const files=Array.isArray(data.files)?data.files:[];
+    if(!files.length){ el.innerHTML='<div class="muted">No files found.</div>'; return; }
+    const header=`<div class="muted" style="margin-bottom:8px">${data.total_files} files • ${(data.total_size/1024/1024).toFixed(1)} MB</div>`;
+    const grid='<div class="results-grid">'+files.map(f=>(
+      `<div class="results-card"><div><div><strong>🖼 ${f.name}</strong></div><div class="meta">${(f.size/1024/1024).toFixed(2)} MB • ${f.modified}</div></div><a class="btn" href="${f.download || ('/api/czi/download?path='+encodeURIComponent(f.path))}">⬇️</a></div>`
+    )).join('')+'</div>';
+    el.innerHTML=header+grid;
+  }catch(e){ el.textContent='Error: '+e.message; }
+}
+
+/* =================== DETECTION =================== */
+const SENSITIVITY_LEVELS=[
+  {label:'Level 1 · Only brightest',         cellprob:0.90, flow:1.10, snr:4.2, floorPct:98, absInt:45, itf:0.10},
+  {label:'Level 2 · Very conservative',      cellprob:0.78, flow:0.95, snr:3.8, floorPct:95, absInt:40, itf:0.22},
+  {label:'Level 3 · Strict',                 cellprob:0.64, flow:0.80, snr:3.3, floorPct:92, absInt:35, itf:0.36},
+  {label:'Level 4 · Semi-strict',            cellprob:0.50, flow:0.65, snr:2.8, floorPct:88, absInt:30, itf:0.52},
+  {label:'Level 5 · Balanced',               cellprob:0.36, flow:0.50, snr:2.3, floorPct:82, absInt:25, itf:0.72},
+  {label:'Level 6 · Moderate sensitivity',   cellprob:0.20, flow:0.32, snr:2.0, floorPct:74, absInt:21, itf:0.92},
+  {label:'Level 7 · Liberal',                cellprob:0.04, flow:0.15, snr:1.6, floorPct:64, absInt:16, itf:1.12},
+  {label:'Level 8 · Very liberal',           cellprob:-0.08, flow:0.00, snr:1.2, floorPct:52, absInt:11, itf:1.32},
+  {label:'Level 9 · High sensitivity',       cellprob:-0.16, flow:-0.12, snr:0.9, floorPct:36, absInt:7, itf:1.52},
+  {label:'Level 10 · Counts very weak',      cellprob:-0.24, flow:-0.22, snr:0.6, floorPct:20, absInt:3, itf:1.72}
+];
+function mapSensitivityToParams(val){
+  const raw = Number.parseInt(val, 10);
+  const fallback = 4;
+  const idx = Number.isNaN(raw) ? fallback : raw;
+  const clamped = Math.max(0, Math.min(SENSITIVITY_LEVELS.length - 1, idx));
+  const entry = SENSITIVITY_LEVELS[clamped];
+  return {...entry,index:clamped};
+}
+function applySensitivity(val){
+  const p=mapSensitivityToParams(val);
+  const lab=document.getElementById('det-sensitivity-value');
+  const slider=document.getElementById('det-sensitivity');
+  if(slider && slider.value !== String(p.index)){
+    slider.value = String(p.index);
+  }
+  if(lab){
+    lab.textContent = `${p.label} (flow ${p.flow.toFixed(2)}, cellprob ${p.cellprob.toFixed(2)})`;
+  }
+  const set=(id,v,decimals)=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    if(typeof v==='number'){
+      el.value = decimals!=null ? v.toFixed(decimals) : String(v);
+    }else{
+      el.value = String(v);
+    }
+  };
+  set('det_cell_thr', p.cellprob, 2);
+  set('det_flow_thr', p.flow, 2);
+  set('det_cpsam_snr_min', p.snr, 2);
+  set('det_cpsam_abs_floor', p.floorPct);
+  set('det_cpsam_intensity_thr', p.absInt);
+  set('det_cpsam_itf', p.itf, 2);
+}
+document.addEventListener('input', (e)=>{
+  if(e.target?.id==='det-sensitivity'){ applySensitivity(e.target.value); }
+});
+
+async function loadDetConfig(){
+  try{
+    const res=await fetch('/api/det/config'); if(!res.ok) throw new Error('HTTP '+res.status);
+    const cfg=await res.json();
+    const m=(id,v)=>{ const el=document.getElementById(id); if(el!=null && v!==undefined) el.value = String(v); };
+    m('det_input_dir', cfg.input_tiffs_dir||'');
+    m('det_output_dir', cfg.output_results_dir||'');
+    renderDetChannelSelector(cfg);
+    m('det_model_type', cfg.model_type||'cyto2');
+    m('det_diameter', cfg.diameter==null?'':cfg.diameter);
+    m('det_flow_thr', cfg.flow_threshold==null?'0.4':cfg.flow_threshold);
+    m('det_cell_thr', cfg.cellprob_threshold==null?'0.0':cfg.cellprob_threshold);
+    m('det_use_gpu', String(!!cfg.use_gpu));
+    m('det_batch_size', cfg.batch_size==null?'8':cfg.batch_size);
+    m('det_save_overlay', String(cfg.save_overlay!==false));
+    m('det_overlay_suffix', cfg.overlay_suffix||'_overlay.png');
+    m('det_script_path', cfg.det_script_path||'');
+    const testing=cfg.testing||{};
+    m('det_test_mode', testing.enabled?'true':'false');
+    m('det_test_samples', testing.samples_per_channel==null?'':testing.samples_per_channel);
+    m('det_test_seed', testing.seed||'');
+    const c=cfg.cpsam||{}; const cond=c.conditions||{}; const cp=c.cellpose||{}; const fil=c.filters||{}; const adv=c.advanced_filtering||{}; const proc=c.processing||{}; const ov=c.overlays||{}; const outp=c.outputs||{};
+    m('det_cpsam_pos_pattern', cond.pos_pattern||''); m('det_cpsam_neg_pattern', cond.neg_pattern||'');
+    m('det_cpsam_channel', cp.channel); m('det_cpsam_resize_max', cp.resize_max); m('det_cpsam_niter', cp.niter);
+    m('det_cpsam_save_masks', String(cp.save_masks)); m('det_cpsam_split_regions', String(cp.split_regions));
+    m('det_cpsam_min_area', fil.min_area==null?'':fil.min_area); m('det_cpsam_max_area', fil.max_area);
+    m('det_cpsam_min_circ', fil.min_circularity); m('det_cpsam_max_circ', fil.max_circularity);
+    m('det_cpsam_max_hole', fil.max_hole_ratio); m('det_cpsam_itf', fil.intensity_threshold_factor);
+    m('det_cpsam_enable_adv', String(c.enable_advanced_filtering));
+    m('det_cpsam_snr_min', adv.snr_min); m('det_cpsam_abs_floor', adv.abs_floor_percentile);
+    m('det_cpsam_fg_block', adv.foreground_block_size); m('det_cpsam_fg_offset', adv.foreground_offset);
+    m('det_cpsam_tophat', String(proc.tophat)); m('det_cpsam_tophat_radius', proc.tophat_radius);
+    m('det_cpsam_contrast_stretch', String(proc.contrast_stretch));
+    m('det_cpsam_stretch_pct', Array.isArray(proc.stretch_percentiles)?proc.stretch_percentiles.join(','):'');
+    m('det_cpsam_merge_cells', String(proc.merge_adjacent_cells)); m('det_cpsam_remove_edge', String(proc.remove_edge_cells));
+    m('det_cpsam_intensity_thr', proc.intensity_threshold);
+    m('det_cpsam_split_touching', String(proc.split_touching_cells));
+    m('det_cpsam_split_min_distance', proc.split_min_distance);
+    m('det_cpsam_split_area_multiplier', proc.split_area_multiplier);
+    m('det_cpsam_split_min_area', proc.split_min_area);
+    m('det_cpsam_split_rel_peak', proc.split_rel_peak_threshold);
+    m('det_cpsam_overlay_mode', ov.overlay_mode||'contours'); m('det_cpsam_contour_color', ov.contour_color||'lime');
+    m('det_cpsam_line_width', ov.line_width); m('det_cpsam_dpi', ov.dpi);
+    m('det_cpsam_figsize', Array.isArray(ov.figsize)?ov.figsize.join(','):'');
+    m('det_cpsam_base_name', outp.base_name||'');
+  }catch(e){ alert('Load detection config failed: '+e.message); }
+}
+
+async function saveDetConfig(options={}){
+  const opts = options || {};
+  const cfg = buildDetConfigPayload();
+  const response = await fetch('/api/det/config',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(cfg)
+  });
+  if(!response.ok) throw new Error('HTTP '+response.status);
+  if(!opts.silent){
+    alert('Detection config saved');
+  }
+  return cfg;
+}
+
+
+let detPoll=null;
+async function startDet(){
+  switchSubTab('det','run');
+  let payload;
+  try{
+    payload = await saveDetConfig({silent:true});
+  }catch(err){
+    alert('Error saving detection config: '+err.message);
+    return;
+  }
+  try{
+    const response = await fetch('/api/det/start',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload || buildDetConfigPayload())
+    });
+    if(!response.ok) throw new Error('HTTP '+response.status);
+    document.getElementById('det-start').style.display='none';
+    document.getElementById('det-stop').style.display='inline-block';
+    if(!detPoll){
+      detPoll=setInterval(async()=>{
+        try{
+          const s=await (await fetch('/api/det/status')).json();
+          const logEl=document.getElementById('det-log');
+          if(logEl && s.log){
+            logEl.textContent=(s.log||[]).join('\n');
+            logEl.scrollTop=logEl.scrollHeight;
+          }
+          if(!s.running){
+            clearInterval(detPoll);
+            detPoll=null;
+            document.getElementById('det-start').style.display='inline-block';
+            document.getElementById('det-stop').style.display='none';
+          }
+        }catch(_){ }
+      },800);
+    }
+  }catch(e){
+    alert('Start detection failed: '+e.message);
+  }
+}
+
+async function startDetTest(){
+  const modeEl = document.getElementById('det_test_mode');
+  const samplesEl = document.getElementById('det_test_samples');
+  const seedEl = document.getElementById('det_test_seed');
+  const prevMode = modeEl ? modeEl.value : 'false';
+  const prevSamples = samplesEl ? samplesEl.value : '';
+  const prevSeed = seedEl ? seedEl.value : '';
+  if(modeEl) modeEl.value = 'true';
+  if(samplesEl){
+    const parsed = parseInt(samplesEl.value, 10);
+    if(!Number.isFinite(parsed) || parsed <= 0) samplesEl.value = '2';
+  }
+  try{
+    await startDet();
+  }finally{
+    if(modeEl) modeEl.value = prevMode;
+    if(samplesEl) samplesEl.value = prevSamples;
+    if(seedEl) seedEl.value = prevSeed;
+    try{ await saveDetConfig({silent:true}); }catch(_){}
+  }
+}
+
+async function stopDet(){
+  try{ await fetch('/api/det/stop',{method:'POST'});}catch(_){}
+  if(detPoll){ clearInterval(detPoll); detPoll=null; }
+  document.getElementById('det-start').style.display='inline-block';
+  document.getElementById('det-stop').style.display='none';
+}
+async function loadDetResults(){
+  const el=document.getElementById('det-results-list'); if(!el) return; el.textContent='Loading...';
+  try{
+    const r=await fetch('/api/det/results'); if(!r.ok) throw new Error('HTTP '+r.status);
+    const j=await r.json(); const csvs=Array.isArray(j.csv_files)?j.csv_files:[]; const ovTotal=j.overlays_total||0;
+    const top=`<div class="muted" style="margin-bottom:8px;">CSV files: ${csvs.length} | overlays: ${ovTotal}</div>`;
+    const list=csvs.map(c=>`
+      <div class="results-card">
+        <div>
+          <div><strong>${c.name}</strong></div>
+          <div class="meta">${(c.size/1024).toFixed(1)} KB | ${c.modified}</div>
+        </div>
+        <a class="btn" href="${c.download}">Open</a>
+      </div>`).join('');
+    el.innerHTML=top+`<div class="results-grid">${list || '<div class="muted">No CSVs.</div>'}</div>`;
+  }catch(e){ el.textContent='Error: '+e.message; }
+}
+
+
+/* =================== COEXPR =================== */
+function collectChannelConfig(){
+  const cont=document.getElementById('channel_config_container'); if(!cont) return [];
+  const out=[]; const rows=cont.querySelectorAll('.channel-row'); rows.forEach((row,idx)=>{
+    const enabled=row.querySelector('.ch-enabled')?.checked||false;
+    const name=row.querySelector('.ch-name')?.value||'';
+    out.push({index:idx, enabled, name});
+  });
+  return out;
+}
+function collectCombosEnabled(){
+  const enabled=[]; document.querySelectorAll('.way-toggle').forEach(el=>{ if(el.checked){ const k=parseInt(el.dataset.k,10); if(!isNaN(k)) enabled.push(k); } }); return enabled;
+}
+function collectSelectedCombos(){
+  const selected=[]; document.querySelectorAll('.combo-cb').forEach(el=>{ if(el.checked && el.dataset.combo){ try{ const combo=JSON.parse(el.dataset.combo); if(Array.isArray(combo)) selected.push(combo); }catch(_){} } }); return selected;
+}
+function renderChannelConfig(cfg){
+  const cont=document.getElementById('channel_config_container'); if(!cont) return;
+  const channelCfg=toArray(cfg.channel_config).map(entry=>{
+    const idx=parseInt(entry?.index,10);
+    return {
+      index:Number.isFinite(idx)?idx:0,
+      enabled: entry?.enabled!==false,
+      name: entry?.name||''
+    };
+  });
+  const count=parseInt(cfg.channels_limit,10);
+  const maxCount=Number.isFinite(count)?count:Math.max(channelCfg.length,3);
+  cont.innerHTML='<h3>Configuration</h3>';
+  for(let i=0;i<maxCount;i++){
+    const ch=channelCfg.find(c=>c.index===i) || {index:i, enabled:true, name:''};
+    const row=document.createElement('div'); row.className='channel-row row'; row.innerHTML=`
+      <div><label>Channel ${i}</label><div class="inline" style="align-items:center;gap:6px;"><input type="checkbox" class="ch-enabled" ${ch.enabled?'checked':''}/><span>Enabled</span></div></div>
+      <div><label>Name</label><input type="text" class="ch-name" value="${escapeHtml(ch.name||'')}" placeholder="e.g. GAL"/></div>`;
+    cont.appendChild(row);
+  }
+}
+function renderCombinations(cfg){
+  const toggleCont=document.getElementById('way_toggles'); const cbCont=document.getElementById('combo_checkboxes_container');
+  if(!toggleCont||!cbCont) return;
+  const count=parseInt(cfg.channels_limit,10);
+  const maxCount=Number.isFinite(count)?count:3;
+  const enabled=toArray(cfg.combos_enabled).map(v=>parseInt(v,10)).filter(Number.isFinite);
+  toggleCont.innerHTML='';
+  for(let k=2;k<=Math.min(maxCount,6);k++){
+    const checked=enabled.includes(k)?'checked':'';
+    toggleCont.innerHTML+=`<label style="display:inline-flex;gap:6px;margin-right:12px;"><input type="checkbox" class="way-toggle" data-k="${k}" ${checked}/> ${k}-way</label>`;
+  }
+  cbCont.innerHTML='';
+  const selected=toArray(cfg.selected_combos).map(item=>{
+    if(Array.isArray(item)) return item;
+    if(typeof item==='string'){
+      try{
+        const parsed=JSON.parse(item);
+        return Array.isArray(parsed)?parsed:null;
+      }catch(_){}
+    }
+    return null;
+  }).filter(Boolean);
+  if(selected.length){
+    selected.forEach(combo=>{
+      const label=combo.join(',');
+      cbCont.innerHTML+=`
+        <label class="results-card" style="cursor:pointer">
+          <input type="checkbox" class="combo-cb" data-combo='${JSON.stringify(combo)}' checked/>
+          <span>ch${label}</span>
+        </label>`;
+    });
+  }else{
+    cbCont.innerHTML='<div class="muted">No combinations selected yet.</div>';
+  }
+}
+
+async function loadOverlayUi(){
+  try{
+    const res=await fetch('/api/config'); if(!res.ok) throw new Error('HTTP '+res.status);
+    const cfg=await res.json();
+    const oc=cfg.overlay_colors||{}; const op=cfg.overlay_params||{};
+    const get=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v; };
+    get('ov_color_k2', oc['2-way']||oc['2']||'red');
+    get('ov_color_k3', oc['3-way']||oc['3']||'magenta');
+    get('ov_color_k4', oc['4-way']||oc['4']||'cyan');
+    get('ov_line_width', op.line_width??3);
+    get('ov_dpi', op.dpi??150);
+  }catch(e){ alert('❌ Load overlay settings failed: '+e.message); }
+}
+async function saveOverlayUi(){
+  try{
+    const cur=await (await fetch('/api/config')).json();
+    const oc=cur.overlay_colors||{};
+    oc['2-way']=document.getElementById('ov_color_k2')?.value||'red';
+    oc['3-way']=document.getElementById('ov_color_k3')?.value||'magenta';
+    oc['4-way']=document.getElementById('ov_color_k4')?.value||'cyan';
+    cur.overlay_colors=oc;
+    const op=cur.overlay_params||{};
+    op.line_width=parseInt(document.getElementById('ov_line_width')?.value||'3',10);
+    op.dpi=parseInt(document.getElementById('ov_dpi')?.value||'150',10);
+    cur.overlay_params=op;
+    const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cur)});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    alert('✅ Overlay settings saved');
+  }catch(e){ alert('❌ Save overlay settings failed: '+e.message); }
+}
+
+async function loadConfig(){
+  try{
+    const res=await fetch('/api/config'); if(!res.ok) throw new Error('HTTP '+res.status);
+    const cfg=await res.json();
+    const m=(id,v)=>{ const el=document.getElementById(id); if(el && v!==undefined && v!==null) el.value=String(v); };
+    m('input_dir', cfg.paths?.base_results_dir||'');
+    m('output_dir', cfg.paths?.output_dir||'');
+    m('dataset_name', cfg.dataset_name||'');
+    m('active_hsv_range', cfg.detection?.active_hsv_range_index||0);
+    m('channel_count', cfg.channels_limit||3);
+    m('coexpr_use_masks', cfg.use_detection_masks===false?'false':'true');
+    m('coexpr_auto_threshold', cfg.fallback_from_overlays===false?'false':'true');
+    m('coexpr_save_figure', cfg.save_composite_figure===false?'false':'true');
+    const testing=cfg.testing||{};
+    m('coexpr_test_mode', testing.enabled?'true':'false');
+    m('coexpr_test_samples', testing.samples_per_channel==null?'':testing.samples_per_channel);
+    m('coexpr_test_seed', testing.seed||'');
+    // Render dynamic
+    renderChannelConfig(cfg);
+    renderCombinations(cfg);
+  }catch(e){ alert('❌ Load co‑expr config failed: '+e.message); }
+}
+async function saveConfig(options={}){
+  try{
+    const testMode=(document.getElementById('coexpr_test_mode')?.value||'false')==='true';
+    let testSamples=parseInt(document.getElementById('coexpr_test_samples')?.value||'0',10);
+    if(!Number.isFinite(testSamples) || testSamples<=0) testSamples=undefined;
+    const testSeed=(document.getElementById('coexpr_test_seed')?.value||'').trim();
+    const testingBlock={ enabled:testMode };
+    if(testSamples!==undefined) testingBlock.samples_per_channel=testSamples;
+    if(testSeed) testingBlock.seed=testSeed;
+    const cfg={
+      paths:{ base_results_dir: document.getElementById('input_dir')?.value||'',
+              output_dir: document.getElementById('output_dir')?.value||'' },
+      dataset_name: document.getElementById('dataset_name')?.value||'',
+      channels_limit: parseInt(document.getElementById('channel_count')?.value||'3',10),
+      detection:{ active_hsv_range_index: parseInt(document.getElementById('active_hsv_range')?.value||'0',10) },
+      channel_config: collectChannelConfig(),
+      combos_enabled: collectCombosEnabled(),
+      selected_combos: collectSelectedCombos(),
+      use_detection_masks: (document.getElementById('coexpr_use_masks')?.value||'true')==='true',
+      fallback_from_overlays: (document.getElementById('coexpr_auto_threshold')?.value||'true')==='true',
+      save_composite_figure: (document.getElementById('coexpr_save_figure')?.value||'true')==='true',
+      testing: testingBlock,
+      debug: document.getElementById('cb_debug')?.checked||false
+    };
+    const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    if(!options?.silent){ alert('✅ Config saved'); }
+  }catch(e){ alert('❌ Save config failed: '+e.message); }
+}
+async function startAnalysis(){
+  try{ await saveConfig({silent:true}); }catch(_){}
+  const testMode=(document.getElementById('coexpr_test_mode')?.value||'false')==='true';
+  let testSamples=parseInt(document.getElementById('coexpr_test_samples')?.value||'0',10);
+  if(!Number.isFinite(testSamples) || testSamples<=0) testSamples=undefined;
+  const testSeed=(document.getElementById('coexpr_test_seed')?.value||'').trim();
+  const testingBlock={ enabled:testMode };
+  if(testSamples!==undefined) testingBlock.samples_per_channel=testSamples;
+  if(testSeed) testingBlock.seed=testSeed;
+  const cfg={
+    paths:{ base_results_dir: document.getElementById('input_dir')?.value||'',
+            output_dir: document.getElementById('output_dir')?.value||'' },
+    dataset_name: document.getElementById('dataset_name')?.value||'',
+    channels_limit: parseInt(document.getElementById('channel_count')?.value||'3',10),
+    detection:{ active_hsv_range_index: parseInt(document.getElementById('active_hsv_range')?.value||'0',10) },
+    channel_config: collectChannelConfig(),
+    combos_enabled: collectCombosEnabled(),
+    selected_combos: collectSelectedCombos(),
+    use_detection_masks: (document.getElementById('coexpr_use_masks')?.value||'true')==='true',
+    fallback_from_overlays: (document.getElementById('coexpr_auto_threshold')?.value||'true')==='true',
+    save_composite_figure: (document.getElementById('coexpr_save_figure')?.value||'true')==='true',
+    testing: testingBlock,
+    debug: document.getElementById('cb_debug')?.checked||false
+  };
+  try{
+    const r=await fetch('/api/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    document.getElementById('start-btn').style.display='none';
+    document.getElementById('stop-btn').style.display='inline-block';
+    if(!window._analysisPoll){
+      window._analysisPoll=setInterval(async()=>{
+        try{
+          const st=await (await fetch('/api/status')).json();
+          const logEl=document.getElementById('log'); if(logEl && st.log){ logEl.textContent=(st.log||[]).join('\n'); logEl.scrollTop=logEl.scrollHeight; }
+          if(!st.running){ clearInterval(window._analysisPoll); window._analysisPoll=null; document.getElementById('start-btn').style.display='inline-block'; document.getElementById('stop-btn').style.display='none'; }
+        }catch(_){}
+      },800);
+    }
+  }catch(e){ alert('❌ Start analysis failed: '+e.message); }
+}
+async function stopAnalysis(){
+  try{ await fetch('/api/stop',{method:'POST'});}catch(_){}
+  if(window._analysisPoll){ clearInterval(window._analysisPoll); window._analysisPoll=null; }
+  document.getElementById('start-btn').style.display='inline-block';
+  document.getElementById('stop-btn').style.display='none';
+}
+async function startAnalysisTest(){
+  const modeEl=document.getElementById('coexpr_test_mode');
+  const samplesEl=document.getElementById('coexpr_test_samples');
+  const seedEl=document.getElementById('coexpr_test_seed');
+  const prevMode=modeEl?modeEl.value:'false';
+  const prevSamples=samplesEl?samplesEl.value:'';
+  const prevSeed=seedEl?seedEl.value:'';
+  if(modeEl) modeEl.value='true';
+  if(samplesEl){
+    const parsed=parseInt(samplesEl.value,10);
+    if(!Number.isFinite(parsed)||parsed<=0) samplesEl.value='2';
+  }
+  try{
+    await startAnalysis();
+  }finally{
+    if(modeEl) modeEl.value=prevMode;
+    if(samplesEl) samplesEl.value=prevSamples;
+    if(seedEl) seedEl.value=prevSeed;
+    try{ await saveConfig({silent:true}); }catch(_){}
+  }
+}
+async function loadResults(){
+  const el=document.getElementById('results-list'); if(!el) return; el.textContent='Loading...';
+  try{
+    const res=await fetch('/api/results'); if(!res.ok) throw new Error('HTTP '+res.status);
+    const files=await res.json();
+    if(!Array.isArray(files) || !files.length){ el.innerHTML='<div class="muted">No results found.</div>'; return; }
+    const grid='<div class="results-grid">'+files.map(f=>(
+      `<div class="results-card"><div><div><strong>📄 ${f.name}</strong></div><div class="meta">${(f.size/1024).toFixed(1)} KB • ${f.modified}</div></div><a class="btn" href="/api/download/${encodeURIComponent(f.name)}">⬇️</a></div>`
+    )).join('')+'</div>';
+    el.innerHTML=grid;
+  }catch(e){ el.textContent='Error: '+e.message; }
+}
+
+/* =================== INIT =================== */
+document.addEventListener('DOMContentLoaded', ()=>{
+  switchMainTab('czi',{target:document.querySelector('.main-tab')});
+  loadCziConfig(); loadOverlayUi();
+  loadDetConfig(); loadConfig();
+  injectHelp(HELP_CZI); injectHelp(HELP_DET); injectHelp(HELP_COEXPR);
+  // Set initial sensitivity reflection
+  applySensitivity(document.getElementById('det-sensitivity')?.value||4);
+  const channelCountInput=document.getElementById('channel_count');
+  if(channelCountInput){
+    channelCountInput.addEventListener('change', ()=>{
+      const current=collectChannelConfig();
+      const target=parseInt(channelCountInput.value,10);
+      renderChannelConfig({channel_config: current, channels_limit: target});
+      renderCombinations({
+        channels_limit: target,
+        combos_enabled: collectCombosEnabled(),
+        selected_combos: collectSelectedCombos()
+      });
+    });
+  }
+});
+</script>
+</body>
+</html>

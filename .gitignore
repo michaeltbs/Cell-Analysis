@@ -218,3 +218,4 @@ results_parallel/
 *.sh
 *.png
 results/
+*.zip

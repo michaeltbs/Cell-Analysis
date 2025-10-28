@@ -1,0 +1,32 @@
+channel_config:
+- enabled: true
+  index: 0
+  name: PomC
+- enabled: true
+  index: 1
+  name: DREADD
+- enabled: true
+  index: 2
+  name: Fos
+- enabled: true
+  index: 3
+  name: Gal
+channels_limit: 4
+combos_enabled:
+- 2
+- 3
+- 4
+dataset_name: ''
+debug: false
+detection:
+  active_hsv_range_index: 0
+fallback_from_overlays: true
+paths:
+  base_results_dir: /mnt/c/Users/Admin/Desktop/project_cellanalysis/results/TV2_new
+  output_dir: ./coexpr_out_New
+save_composite_figure: true
+selected_combos: []
+testing:
+  enabled: false
+  samples_per_channel: 2
+use_detection_masks: true

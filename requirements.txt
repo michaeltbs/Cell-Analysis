@@ -1,10 +1,15 @@
 cellpose>=3.0.0
-torch==2.0.1          # letzte Torch-Version für Py 3.8
-pandas==2.0.3         # letzte Pandas-Version für Py 3.8
-numpy>=1.24
-scikit-image>=0.21
-tqdm>=4.66
-pyyaml>=6.0
+pandas==2.2.2         # letzte Pandas-Version für Py 3.8
+numpy==1.26.4
+scikit-image==0.24.0
+tqdm==4.66.4
+pyyaml==6.0.2
 pyarrow>=14.0
-matplotlib>=3.5.0
+matplotlib==3.9.0
 aicspylibczi
+Flask==3.0.3
+czifile==2019.7.2
+imagecodecs==2024.1.1
+opencv-python==4.10.0.84
+scipy==1.13.1
+tifffile>=2024.8.30
