@@ -44,8 +44,8 @@ CMD ["python", "app.py"]
 
 
 # -------------------- GPU target --------------------
-# This stage uses NVIDIA CUDA runtime as base and installs a CUDA-capable PyTorch.
-FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04 AS gpu
+# Use an official PyTorch CUDA base image to avoid re-installing large PyTorch wheels
+FROM pytorch/pytorch:2.3.1-cuda11.8-cudnn8-runtime AS gpu
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -53,23 +53,16 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Install python3 and system deps
+# Install system deps required for image processing libraries
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    python3 python3-pip python3-dev build-essential gcc git curl ca-certificates \
+    build-essential gcc git curl ca-certificates \
     libglib2.0-0 libgl1 libsm6 libxext6 libxrender1 \
     libjpeg-turbo8 libtiff5 libopenjp2-7 zlib1g \
     && rm -rf /var/lib/apt/lists/*
 
-# Ensure pip refers to python3
-RUN ln -s /usr/bin/python3 /usr/bin/python || true
-
+# Copy requirements and install Python dependencies (PyTorch is already present in base image)
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Install CUDA-enabled PyTorch (adjust version if needed). This uses the official PyTorch CUDA 11.8 wheels.
-RUN pip install --no-cache-dir \
-    torch==2.3.1+cu118 torchvision==0.18.1+cu118 torchaudio==2.3.1 \
-    --extra-index-url https://download.pytorch.org/whl/cu118
 
 # Copy source
 COPY . /app
