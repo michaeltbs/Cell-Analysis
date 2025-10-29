@@ -1,0 +1,26 @@
+{
+  "name": "Cell-Analysis (Dev Container)",
+  "dockerComposeFile": ["../docker-compose.yml", "../docker-compose.gpu.yml"],
+  "service": "cellanalysis",
+  "workspaceFolder": "/app",
+  "shutdownAction": "stopCompose",
+  "forwardPorts": [5000],
+  "mounts": [
+    "source=${localEnv:HOST_DATA:-.},target=/data,type=bind,consistency=cached"
+  ],
+  "remoteUser": "appuser",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      }
+    }
+  },
+  "postStartCommand": "pip install --no-cache-dir -r /app/requirements.txt || true",
+  "overrideCommand": false
+}
