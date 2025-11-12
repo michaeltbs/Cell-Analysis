@@ -96,10 +96,20 @@ def _load_cellpose_model(model_name: str, use_gpu: bool = False):
 
     # prefer v4 API
     try:
-        return _models.CellposeModel(gpu=bool(use_gpu), model_type=mtype)
+        model = _models.CellposeModel(gpu=bool(use_gpu), model_type=mtype)
+        if use_gpu and not getattr(model, "gpu", False):
+            print("[WARN] CellposeModel requested GPU but fell back to CPU. Check CUDA visibility.")
+        elif use_gpu:
+            print("[INFO] CellposeModel running with GPU acceleration.")
+        return model
     except AttributeError:
         # fallback for older versions
-        return _models.Cellpose(gpu=bool(use_gpu), model_type=mtype)
+        model = _models.Cellpose(gpu=bool(use_gpu), model_type=mtype)
+        if use_gpu and not getattr(model, "gpu", False):
+            print("[WARN] Cellpose GPU fallback is not active; running on CPU.")
+        elif use_gpu:
+            print("[INFO] Cellpose fallback running with GPU acceleration.")
+        return model
 
 # -----------------------------
 # Image helpers
@@ -133,17 +143,17 @@ def _resolve_channel_selection(shape: Tuple[int, ...], requested_index: int) -> 
         size = shape[ax]
         if size <= 0:
             continue
-        idx = requested_index
+        idx = int(requested_index)
         if idx < 0:
             idx += size
         if 0 <= idx < size:
             return ax, idx, False
-        # tolerate 1-based indices from UI
-        if 0 < idx <= size:
-            return ax, idx - 1, True
         # no valid index on this axis, keep checking other candidates
 
-    raise ValueError(f"Channel index {requested_index} out of range for image shape {shape}.")
+    raise ValueError(
+        f"Channel index {requested_index} out of range for image shape {shape}. "
+        "Please verify the detection channel selection and the TIFF channel count."
+    )
 
 
 def _extract_channel(img: np.ndarray, channel_index: int) -> np.ndarray:

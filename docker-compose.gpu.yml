@@ -16,8 +16,11 @@ services:
       - FLASK_ENV=production
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video,graphics
+      - HOST_DATA=${HOST_DATA:-./data}
+      - CONTAINER_DATA_ROOT=${HOST_DATA:-/data}
     # Requires Docker engine with nvidia-container-toolkit installed on the host
-    gpus: all
+    gpus:
+      - count: -1
     volumes:
-      - ${HOST_DATA:-.}:/data:rw
+      - ${HOST_DATA:-./data}:/data:rw
       - .:/app:rw

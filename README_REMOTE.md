@@ -1,84 +1,84 @@
-# Remote-Setup — Cell-Analysis
+# Remote-Setup - Cell-Analysis
 
-Kurzanleitung, um das Projekt remote (Host-Daten-Verzeichnis gemountet) laufen zu lassen.
+Kurzanleitung, um das Projekt remote zu betreiben und Daten ueber Google Drive bereitzustellen.
 
-Ziele:
-- Host-Datenverzeichnis einfach in den Container mounten (Pfad `/data`).
-- Vermeiden von Datei-/Rechteproblemen beim Schreiben in gemountete Ordner.
+## Ziele
+- Host-Datenverzeichnis sauber in den Container mounten (`/data`).
+- Schreibrechte auf gemounteten Ordnern erhalten.
+- Analysen per Google Remote Desktop starten und ueber einen synchronisierten Drive-Ordner versorgen.
 
-Vorbereitung
-1. Stelle sicher, dass Docker und docker-compose (V2) auf dem Host installiert sind.
-2. Optional: Wähle ein Host-Verzeichnis für die Daten, z.B. `/srv/cell_data`.
+## Vorbereitung
+1. Docker und docker compose (V2) auf dem Host installieren.
+2. Optional ein dediziertes Datenverzeichnis anlegen, z. B. `D:\CellAnalysisData`.
 
-Empfohlene Startschritte
+## Container starten
 
-1) Build (einmalig oder nach Änderungen an der Dockerfile):
-
+### 1) Build (einmalig oder nach Dockerfile-Aenderungen)
 ```bash
-# falls UID/GID Angleichung gewünscht (z.B. Host-User ist uid 1001 gid 1001)
-HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose build --build-arg USER_ID=${HOST_UID} --build-arg GROUP_ID=${HOST_GID}
+# UID/GID-Anpassung (falls Host-User nicht 1000:1000 ist)
+HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose build --build-arg USER_ID=${HOST_UID} --build-arg GROUP_ID=${HOST_GID}
 
-# ohne explizite UID/GID:
-docker-compose build
+# Ohne UID/GID-Anpassung
+docker compose build
 ```
 
-2) Start mit Host-Datenverzeichnis gemountet
-
+### 2) Start mit gemountetem Host-Datenverzeichnis
 ```bash
-# Beispiel: Host-Pfad /srv/cell_data wird in den Container nach /data gemountet
-HOST_DATA=/srv/cell_data HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose up -d
+# Beispiel: Host-Pfad /srv/cell_data wird als /data gemountet
+HOST_DATA=/srv/cell_data HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose up -d
 ```
 
-Hinweise:
-- Das Projekt mountet `HOST_DATA` nach `/data` im Container. App-Schnittstellen (z.B. der Date-Browser) listen `/data` als möglichen Anker.
-- Wenn `HOST_DATA` nicht gesetzt ist, wird standardmäßig das Projektverzeichnis (.) als `/data` gemountet.
-- `HOST_UID` / `HOST_GID` helfen, Schreibrechte auf dem gemounteten Verzeichnis zu erhalten, indem der Containerbenutzer dieselbe UID/GID verwendet.
+### Hinweise
+- `HOST_DATA` wird als `/data` im Container sichtbar. Die Web-App verwendet diesen Pfad im Dateibrowser.
+- Wenn `HOST_DATA` fehlt, wird standardmaessig das aktuelle Projektverzeichnis gemountet.
+- `HOST_UID` und `HOST_GID` sorgen dafuer, dass der Container-User dieselbe UID/GID wie der Host-User besitzt und damit Schreibrechte behaelt.
 
-GPU (NVIDIA) Hinweis
----------------------------------
-Wenn dein Remote-Rechner eine NVIDIA-GPU hat (z.B. deine 1080Ti), kannst du die Analyse mit GPU-Beschleunigung laufen lassen. Kurze Schritte:
+## GPU (NVIDIA)
+Wenn der Remote-Rechner eine NVIDIA-GPU besitzt, kann die GPU-Variante genutzt werden.
 
-1) Host vorbereiten
-  - NVIDIA-Treiber auf dem Host installieren (treiber passend zur GPU, z.B. 470/510/... je nach Kernel).
-  - `nvidia-smi` sollte auf dem Host funktionieren und deine GPU zeigen.
-  - Installiere `nvidia-container-toolkit` (früher nvidia-docker2). Siehe: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html
+1. NVIDIA-Treiber auf dem Host installieren (`nvidia-smi` sollte funktionieren).
+2. `nvidia-container-toolkit` einrichten: <https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html>
+3. GPU-Compose-Datei verwenden:
+   ```bash
+   HOST_DATA=/srv/cell_data HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
+   ```
+4. Alternativ das Hilfsskript mit GPU-Flag nutzen:
+   ```bash
+   ./start_remote.sh --gpu /srv/cell_data
+   ```
 
-2) Compose GPU-Start
-  - Ich habe `docker-compose.gpu.yml` angelegt. Damit baust und startest du die GPU-Variante:
+## Google Drive Synchronisierung
 
-```bash
-# Beispiel: Build + Start GPU-Variante
-# HOST_DATA auf den Pfad zu Daten setzen
-HOST_DATA=/srv/cell_data HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
-```
+1. Google Drive for Desktop auf Leistungs-PC, Mac und weiteren Clients installieren.
+2. Einen Projektordner (z. B. `CellAnalysisData`) anlegen und als "Spiegeln" konfigurieren, damit die Dateien lokal vorliegen.
+3. Auf Windows erscheint der Ordner als Laufwerk (z. B. `G:\CellAnalysisData`). Diesen Pfad in `HOST_DATA` setzen:
+   ```powershell
+   set HOST_DATA=G:\CellAnalysisData
+   docker compose up -d --build
+   ```
+4. Auf dem Mac liegt der Ordner unter `/Volumes/GoogleDrive`. Dateien werden dort automatisch synchronisiert und stehen dem Container bereit.
+5. Input- und Output-Unterordner trennen (`input/`, `output/`), um Konflikte zu vermeiden.
+6. Bei sensiblen Daten optional clientseitige Verschluesselung einsetzen (z. B. Cryptomator).
 
-  - Alternativ kannst du das Hilfsskript mit dem Flag `--gpu` verwenden:
+### Web-App Hinweise
+- `DATA_UPLOAD_SUBDIR`: legt den Unterordner innerhalb von `HOST_DATA` fest, den die Upload-Oberflaeche nutzt (`Input` als Standard).
+- `GOOGLE_DRIVE_SYNC_PATH`: Pfadangabe (z. B. `G:\CellAnalysisData\Input`), die im Dashboard angezeigt wird, damit alle User denselben Drive-Ordner sehen.
+- `GOOGLE_DRIVE_EMBED_URL`: Optionaler Embed-Link (`https://drive.google.com/embeddedfolderview?id=<FOLDER_ID>#list`), um den Drive-Ordner direkt im Upload-Tab einzubetten.
+- Nach dem Setzen neuer Variablen den Container neu starten, damit Flask die Werte uebernimmt.
 
-```bash
-# macht build+start mit GPU-Compose
-./start_remote.sh --gpu /srv/cell_data
-```
+## Google Remote Desktop
+- Google Remote Desktop fuer den Leistungs-PC einrichten und in der Sitzung angemeldet bleiben.
+- Aufgaben via Remote Desktop starten und ggf. per Aufgabenplanung oder Skripte automatisieren.
+- Remote Desktop beeinflusst den Containerbetrieb nicht; GPU-Beschleunigung bleibt aktiv.
 
-3) Versionen/Kompatibilität
-  - Die GPU-Docker-Stage verwendet CUDA 11.8 und installiert PyTorch mit CUDA 11.8 wheels (`torch==2.3.1+cu118`). Falls dein Host-Treiber zu alt ist, kann ein anderer CUDA-Tag nötig sein.
-  - Wenn beim Start Fehler auftauchen (z.B. `Failed to initialize NVML` oder `CUDA library not found`), prüfe `nvidia-smi` auf dem Host und ggf. installierte `nvidia-container-toolkit` Version.
+## Zugriff
+- Web-UI: `http://<host>:5000` (Portweiterleitung oder VPN beachten).
 
-4) Debugging
-  - Prüfe auf dem Host:
-    - `nvidia-smi`
-    - `docker run --rm --gpus all nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04 nvidia-smi`
-  - Logs anschauen: `docker compose -f docker-compose.yml -f docker-compose.gpu.yml logs -f`
+## Fehlersuche
+- Schreibrechte: `docker compose exec cellanalysis ls -ln /data` und UID/GID pruefen.
+- Container-Logs: `docker compose logs -f`.
+- GPU-Probleme: `nvidia-smi` und `docker run --rm --gpus all nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04 nvidia-smi`.
 
-Zugriff
-- Web-UI: http://<host>:5000 (bei lokalen/remote-Forwarding entsprechend Port freigeben)
-
-Tipps zur Fehlersuche
-- Dateirechte: Wenn der Container keine Dateien schreiben kann, prüfe `ls -ln /srv/cell_data` auf dem Host und vergleiche UID/GID mit der im Container verwendeten UID.
-- Logs: `docker-compose logs -f` zeigt die Container-Ausgabe.
-
-Weiteres / nächste Schritte
-- Falls benötigt, kann ich:
-  - Eine systemd-Unit oder ein docker-compose.override.yml mit persistenten Bind-Mounts vorbereiten.
-  - Ein kurzes Start-Skript `start_remote.sh` erstellen, das ENV-Variablen abfragt und `docker-compose` startet.
-
-Viel Erfolg — sag mir, wenn ich noch ein Startskript oder zusätzliche Automatisierung hinzufügen soll.
+## Weitere Schritte
+- Optional systemd-Unit oder `docker-compose.override.yml` erstellen, um Container automatisch zu starten.
+- Bei Bedarf ein Skript schreiben, das Analysen nach dem Drive-Sync automatisch anstoesst.

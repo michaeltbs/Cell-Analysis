@@ -17,13 +17,13 @@ combos_enabled:
 - 3
 - 4
 dataset_name: ''
-debug: false
+debug: true
 detection:
   active_hsv_range_index: 0
 fallback_from_overlays: true
 paths:
-  base_results_dir: /mnt/c/Users/Admin/Desktop/project_cellanalysis/results/TV2_new
-  output_dir: ./coexpr_out_New
+  base_results_dir: /app/results/Test2
+  output_dir: /app/results/Coex
 save_composite_figure: true
 selected_combos: []
 testing:

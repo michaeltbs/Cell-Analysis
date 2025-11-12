@@ -1,18 +1,18 @@
 channel_colors:
-- red
-- green
-- blue
 - yellow
+- green
+- red
+- red
 channel_names: []
 channels:
 - 0
 - 1
 - 2
 - 3
-dtype: uint8
+dtype: uint16
 imagej_hyperstack: true
-input_root: /mnt/c/Users/Admin/Desktop/project_cellanalysis/data/raw_czi
-output_base: /mnt/c/Users/Admin/Desktop/project_cellanalysis/data/TV2_real_Tiff
+input_root: /app/data/Input/TV2_czi
+output_base: /app/data/Input/TV2
 overwrite: true
 per_channel_normalize: true
 rgb_channels:
@@ -20,10 +20,10 @@ rgb_channels:
 - 1
 - 2
 - 3
-save_color_composite: true
+save_color_composite: false
 save_multichannel_colored_pages: false
 save_ome_tiff_colors: true
-save_per_channel: true
+save_per_channel: false
 save_rgb_preview: false
 save_stack_tiff: true
 stack_layout: CYX

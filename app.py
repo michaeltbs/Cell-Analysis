@@ -11,6 +11,7 @@ from urllib.parse import quote
 import tempfile, zipfile
 import copy
 import csv  # added
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -37,6 +38,42 @@ czi_process = None
 
 # NEU: CZI Config Path
 CZI_CONFIG_PATH = 'config_czi.yaml'
+
+def _resolve_data_root() -> Path:
+    """Determine the writable data root inside the container."""
+    raw = (os.environ.get('HOST_DATA') or os.environ.get('CONTAINER_DATA_ROOT') or '').strip()
+    candidates: list[str] = []
+    if raw:
+        if ':' in raw and '\\' in raw:
+            drive = raw[0].lower()
+            rest = raw[2:].replace('\\', '/')
+            candidates.append(f"/host_mnt/{drive}/{rest}")
+            candidates.append(f"/mnt/{drive}/{rest}")
+        candidates.append(raw)
+    candidates.append('/data')
+    for cand in candidates:
+        try:
+            path = Path(cand)
+            if path.is_dir():
+                return path.resolve()
+            path.mkdir(parents=True, exist_ok=True)
+            return path.resolve()
+        except Exception:
+            continue
+    return Path('/data').resolve()
+
+# Data exchange base paths
+DATA_ROOT = _resolve_data_root()
+UPLOAD_SUBDIR = os.environ.get('DATA_UPLOAD_SUBDIR', 'Input') or 'Input'
+UPLOAD_ROOT = (DATA_ROOT / UPLOAD_SUBDIR).resolve()
+try:
+    UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
+except Exception:
+    pass
+
+# Optional Google Drive integration hints
+GOOGLE_DRIVE_EMBED_URL = os.environ.get('GOOGLE_DRIVE_EMBED_URL', '').strip()
+GOOGLE_DRIVE_SYNC_PATH = os.environ.get('GOOGLE_DRIVE_SYNC_PATH', '').strip()
 
 # detection state
 det_status = { 'running': False, 'log': [] }
@@ -690,7 +727,19 @@ def run_det_thread(cfg: dict):
 
         env = os.environ.copy()
         if bool(cfg.get('use_gpu')):
-            env['CUDA_VISIBLE_DEVICES'] = env.get('CUDA_VISIBLE_DEVICES', '')
+            visible = (env.get('CUDA_VISIBLE_DEVICES') or '').strip()
+            if not visible:
+                env['CUDA_VISIBLE_DEVICES'] = '0'
+                visible = '0'
+            env.pop('CELLPOSE_FORCE_CPU', None)
+            det_status['log'].append(
+                f"[{datetime.now().strftime('%H:%M:%S')}] GPU requested (CUDA_VISIBLE_DEVICES={visible})"
+            )
+        else:
+            env['CELLPOSE_FORCE_CPU'] = '1'
+            det_status['log'].append(
+                f"[{datetime.now().strftime('%H:%M:%S')}] GPU disabled for this run (CELLPOSE_FORCE_CPU=1)"
+            )
         if bool(cfg.get('verbose')):
             env['VERBOSE'] = '1'
             env['PYTHONUNBUFFERED'] = '1'
@@ -814,6 +863,15 @@ def run_det_thread(cfg: dict):
     finally:
         det_status['running'] = False
         det_process = None
+
+def _safe_join(base: Path, *parts: str) -> Path:
+    """Join path parts and ensure the result remains within the base directory."""
+    candidate = base.joinpath(*[part for part in parts if part]).resolve()
+    try:
+        candidate.relative_to(base)
+    except ValueError:
+        raise ValueError(f"Path escapes base directory: {candidate}")
+    return candidate
 
 def _map_incoming_path(p: str) -> str:
     """
@@ -945,7 +1003,13 @@ def _unique_path(dst_path: str) -> str:
 @app.route('/')
 def index():
     """Hauptseite"""
-    return render_template('index.html')
+    return render_template(
+        'index.html',
+        google_drive_embed=GOOGLE_DRIVE_EMBED_URL,
+        google_drive_sync_hint=GOOGLE_DRIVE_SYNC_PATH,
+        upload_root=str(UPLOAD_ROOT),
+        data_root=str(DATA_ROOT)
+    )
 
 # ========== CZI CONVERSION ENDPOINTS ==========
 @app.route('/api/czi/config', methods=['GET'])
@@ -1267,6 +1331,96 @@ def download_all_coexpr_zip():
         return response
 
     return send_file(zip_path, as_attachment=True, download_name=os.path.basename(zip_path))
+
+@app.route('/api/files/upload', methods=['POST'])
+def upload_files():
+    """Handle drag-and-drop uploads into the shared data directory."""
+    target_subdir = (request.form.get('subdir') or '').strip()
+    try:
+        target_dir = _safe_join(DATA_ROOT, target_subdir) if target_subdir else UPLOAD_ROOT
+    except ValueError:
+        return jsonify({'error': 'Invalid target directory'}), 400
+
+    try:
+        target_dir.mkdir(parents=True, exist_ok=True)
+    except Exception as exc:
+        return jsonify({'error': f'Unable to prepare target directory: {exc}'}), 500
+
+    files = request.files.getlist('files')
+    if not files:
+        return jsonify({'error': 'No files uploaded'}), 400
+
+    saved = []
+    for storage in files:
+        if not storage or not storage.filename:
+            continue
+        safe_name = secure_filename(storage.filename)
+        if not safe_name:
+            continue
+        dest_path = target_dir / safe_name
+        try:
+            storage.save(dest_path)
+            stat = dest_path.stat()
+            saved.append({
+                'name': safe_name,
+                'size': stat.st_size,
+                'modified': datetime.fromtimestamp(stat.st_mtime).isoformat(),
+                'relative_path': str(dest_path.relative_to(DATA_ROOT))
+            })
+        except Exception as exc:
+            return jsonify({'error': f'Failed to save {storage.filename}: {exc}'}), 500
+
+    return jsonify({
+        'saved': saved,
+        'target': str(target_dir.relative_to(DATA_ROOT)),
+        'total': len(saved)
+    })
+
+@app.route('/api/files/list', methods=['GET'])
+def list_uploaded_files():
+    """Return simple file listing for the upload directory."""
+    subdir = (request.args.get('subdir') or '').strip()
+    try:
+        root_dir = _safe_join(DATA_ROOT, subdir) if subdir else UPLOAD_ROOT
+    except ValueError:
+        return jsonify({'error': 'Invalid directory'}), 400
+
+    try:
+        root_dir.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
+
+    files = []
+    for entry in sorted(root_dir.iterdir()):
+        if not entry.is_file():
+            continue
+        stat = entry.stat()
+        files.append({
+            'name': entry.name,
+            'size': stat.st_size,
+            'modified': datetime.fromtimestamp(stat.st_mtime).isoformat(),
+            'relative_path': str(entry.relative_to(DATA_ROOT))
+        })
+
+    return jsonify({
+        'path': str(root_dir.relative_to(DATA_ROOT)),
+        'files': files,
+        'count': len(files)
+    })
+
+@app.route('/api/files/download')
+def download_uploaded_file():
+    """Download a single file from the shared data directory."""
+    rel_path = (request.args.get('path') or '').strip()
+    if not rel_path:
+        return jsonify({'error': 'Missing path parameter'}), 400
+    try:
+        file_path = _safe_join(DATA_ROOT, rel_path)
+    except ValueError:
+        return jsonify({'error': 'Invalid file path'}), 400
+    if not file_path.exists() or not file_path.is_file():
+        return jsonify({'error': 'File not found'}), 404
+    return send_file(file_path, as_attachment=True, download_name=file_path.name)
 
 @app.route('/api/browse', methods=['POST'])
 def browse_directory():
@@ -1637,7 +1791,10 @@ def det_start():
     cfg['testing'] = testing_cfg
 
     if not cfg.get('input_tiffs_dir') or not cfg.get('output_results_dir'):
-        return jsonify({'status':'error','message':'Input/Output Pfade fehlen'}), 400
+        return jsonify({
+            'status': 'error',
+            'message': 'Input and output directories are required for detection. Please set both before starting.'
+        }), 400
 
     save_det_config(cfg)
 
@@ -1812,10 +1969,6 @@ if __name__ == '__main__':
     print("ðŸ“Š Pipeline: CZI Conversion â†’ Cell Detection â†’ Co-Expression")
     print("ðŸ”— Open browser at: http://localhost:5000")
     app.run(debug=True, host='0.0.0.0', port=5000)
-
-
-
-
 
 
 

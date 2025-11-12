@@ -80,6 +80,7 @@ class CziConfig:
     channel_colors: List[str] = field(default_factory=lambda: ['#ff0000','#00ff00','#0000ff','#ffff00'])
     save_multichannel_colored_pages: bool = True
     save_ome_tiff_colors: bool = True
+    verbose: bool = False
 
     def validate(self) -> None:
         if self.dtype not in {"uint8","uint16"}:
@@ -172,22 +173,52 @@ def load_czi_to_CZYX(czi_path: str) -> np.ndarray:
         raise ImportError("CZI backend missing (install aicspylibczi or czifile)")
     czi = CziFile(czi_path)
     data = czi.read_image()
-    data = data[0] if isinstance(data, tuple) else data
+    if isinstance(data, tuple):
+        arr, dims = data
+    else:
+        arr, dims = data, None
 
-    # Heuristic axis handling: try to land on (C,Z,Y,X) minimal
-    arr = np.squeeze(np.array(data))
-    # Move channel axis first if found among last 4 dims
+    arr = np.asarray(arr)
+
+    if dims:
+        # dims -> list of (axis_name, size)
+        axes = [("C" if ax == "A" else ax) for ax, _ in dims]  # treat 'A' samples as channels
+        sizes = [size for _, size in dims]
+        desired = ("C", "Z", "Y", "X")
+        keep = set(desired)
+
+        # Drop axes that are not relevant (keep first index)
+        for idx in reversed(range(len(axes))):
+            ax_name = axes[idx]
+            size = sizes[idx]
+            if ax_name not in keep:
+                if size > 1:
+                    print(f"[WARN] Axis '{ax_name}' (size={size}) collapsed to first index for {Path(czi_path).name}")
+                arr = np.take(arr, 0, axis=idx)
+                axes.pop(idx)
+                sizes.pop(idx)
+
+        if "C" not in axes:
+            arr = np.expand_dims(arr, axis=0)
+            axes.insert(0, "C")
+
+        # Reorder axes to C, Z, Y, X (dropping missing ones)
+        order = [axes.index(ax) for ax in desired if ax in axes]
+        arr = np.transpose(arr, axes=order)
+
+        return arr
+
+    # Fallback heuristic when dims metadata is unavailable
+    arr = np.squeeze(arr)
     if arr.ndim >= 4:
-        # Find axis with smallest size likely being C (<=10)
         axis_sizes = [(i, s) for i, s in enumerate(arr.shape)]
         c_axis = min(axis_sizes, key=lambda kv: kv[1])[0]
         arr = np.moveaxis(arr, c_axis, 0)
     elif arr.ndim == 3:
-        # Assume (Y,X,C) → move C first
         arr = np.moveaxis(arr, -1, 0)
     else:
-        arr = arr[None, ...]  # as (1,Y,X)
-    return arr  # (C, Y, X) or (C, Z?, Y, X) collapsed
+        arr = arr[None, ...]
+    return arr
 
 
 def ensure_uint(arr: np.ndarray, dtype: str) -> np.ndarray:
@@ -350,17 +381,27 @@ def process_czi_file(inp_path: str, group: str, target_size: Optional[int], chan
                 except Exception as e:
                     print(f"[WARN] Save per-channel failed ({ch_path.name}): {e}")
 
-    # 2) multi-channel stack as YXC (preferred for metadata)
+    # 2) multi-channel stack (layout configurable)
     if save_stack_tiff:
         stack_path = out_dir / f"{inp.stem}_stack.tif"
         if overwrite or (not stack_path.exists()):
             try:
-                arr = np.moveaxis(cyx, 0, -1)  # (Y,X,C)
-                axes = 'YXC'
+                layout = str((cfg or {}).get('stack_layout', 'YXC')).upper()
+                if layout not in {'CYX', 'YXC'}:
+                    layout = 'YXC'
+                if layout == 'CYX':
+                    arr = cyx  # (C,Y,X)
+                    axes = 'CYX'
+                else:
+                    arr = np.moveaxis(cyx, 0, -1)  # (Y,X,C)
+                    axes = 'YXC'
                 if tiff is not None:
                     meta = {'axes': axes}
                     desc = json.dumps({'shape': [int(arr.shape[0]), int(arr.shape[1]), int(arr.shape[2])] })
-                    photometric = 'rgb' if arr.shape[-1] == 3 else 'minisblack'
+                    if axes == 'YXC' and arr.shape[-1] == 3:
+                        photometric = 'rgb'
+                    else:
+                        photometric = 'minisblack'
                     tiff.imwrite(str(stack_path), arr, photometric=photometric, metadata=meta, description=desc)
                 else:
                     skio.imsave(str(stack_path), arr, check_contrast=False)
@@ -448,11 +489,15 @@ def process_czi_file(inp_path: str, group: str, target_size: Optional[int], chan
                     'SamplesPerPixel': 1
                 })
             arr_cyx = cyx.astype(np.uint16 if out_dtype=='uint16' else np.uint8)
-            # OME prefers CYX for channel dimension first; we store YXC with axes metadata too
+            metadata = {
+                'axes': 'CYX',  # keep channel dimension first so X/Y sizes stay consistent with ImageJ expectations
+                'Channel': chan_meta,
+                'SignificantBits': 16 if out_dtype=='uint16' else 8,
+            }
             tiff.imwrite(
                 str(ome_path),
-                np.moveaxis(arr_cyx, 0, -1),  # YXC
-                metadata={'axes': 'YXC', 'Channel': chan_meta, 'SignificantBits': 16 if out_dtype=='uint16' else 8}
+                arr_cyx,
+                metadata=metadata,
             )
             if verbose: print(f"[SAVE] {ome_path.name}")
             saved_any = True

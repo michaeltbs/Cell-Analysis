@@ -23,6 +23,7 @@
     .card.hero{display:flex;flex-direction:column;gap:14px}
     .hero-headline{display:flex;flex-direction:column;gap:6px}
     .hero-steps{display:flex;gap:10px;flex-wrap:wrap}
+    .hero-actions{margin-top:8px}
     .hero-step{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:#f8fafc;color:#475569;font-size:12px}
     .hero-step-index{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:var(--brand);color:#fff;font-weight:700;font-size:12px}
     h1{font-size:28px;margin-bottom:6px}
@@ -38,6 +39,89 @@
     .btn:hover{background:#f7fafc}
     .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
     .btn.primary:hover{background:var(--brand-dark)}
+    .info-card .btn{margin-top:10px}
+    .impressum-section{max-width:1400px;margin:0 auto 30px;}
+    .impressum-section details{border:1px solid var(--border);border-radius:12px;background:#fff;padding:16px;box-shadow:0 12px 26px -20px rgba(15,23,42,0.4);}
+    .impressum-section summary{font-weight:700;color:#1f2937;cursor:pointer;outline:none;}
+    .impressum-section details[open]{box-shadow:0 18px 40px -24px rgba(15,23,42,0.45);}
+    details.section-card{border:1px solid #e5e7eb;border-radius:12px;margin:10px 0;box-shadow:0 10px 25px -22px rgba(15,23,42,0.5);background:#fff;}
+    details.section-card summary.section-header{margin:0;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:600;color:#1f2937;cursor:pointer;border-bottom:1px solid #e5e7eb;list-style:none;}
+    details.section-card summary::-webkit-details-marker{display:none;}
+    details.section-card[open] > .section-body{display:block;}
+    details.section-card > .section-body{padding:16px;display:none;}
+    .chatbot-toggle{
+      position:fixed;
+      right:22px;
+      bottom:22px;
+      width:54px;
+      height:54px;
+      border-radius:50%;
+      background:var(--brand);
+      color:#fff;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 18px 40px -24px rgba(37,99,235,0.85);
+      cursor:pointer;
+      transition:transform .2s ease,box-shadow .2s ease;
+      z-index:1100;
+    }
+    .chatbot-toggle:hover{transform:translateY(-2px);box-shadow:0 26px 58px -26px rgba(37,99,235,0.95);}
+    .chatbot-toggle.busy{opacity:0.75;}
+    .chatbot-panel{
+      position:fixed;
+      right:22px;
+      bottom:94px;
+      width:340px;
+      max-width:calc(100vw - 36px);
+      background:#ffffff;
+      border-radius:18px;
+      border:1px solid rgba(37,99,235,0.25);
+      box-shadow:0 32px 70px -34px rgba(15,23,42,0.55);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      z-index:1150;
+      transition:opacity .2s ease,transform .2s ease;
+      opacity:1;
+      transform:translateY(0);
+    }
+    .chatbot-panel.collapsed{pointer-events:none;opacity:0;transform:translateY(20px);}
+    .chatbot-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:linear-gradient(135deg,rgba(37,99,235,0.12),rgba(14,165,233,0.18));font-weight:600;color:var(--brand-dark);}
+    .chatbot-header button{border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:12px;font-weight:600;letter-spacing:0.05em;}
+    .chatbot-messages{padding:14px 16px;display:flex;flex-direction:column;gap:10px;max-height:300px;overflow-y:auto;background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(14,165,233,0.07));}
+    .chatbot-msg{display:flex;}
+    .chatbot-msg.assistant{justify-content:flex-start;}
+    .chatbot-msg.user{justify-content:flex-end;}
+    .chatbot-msg .bubble{border-radius:12px;padding:10px 13px;max-width:82%;line-height:1.45;white-space:pre-wrap;box-shadow:0 14px 28px -22px rgba(15,23,42,0.45);}
+    .chatbot-msg.assistant .bubble{background:#fff;border:1px solid rgba(37,99,235,0.28);color:var(--text);}
+    .chatbot-msg.user .bubble{background:var(--brand);color:#fff;border:1px solid rgba(37,99,235,0.35);}
+    .chatbot-input{padding:14px 16px;border-top:1px solid rgba(226,232,240,0.9);background:#fff;display:flex;flex-direction:column;gap:10px;}
+    .chatbot-input textarea{width:100%;min-height:78px;border-radius:10px;border:1px solid rgba(203,213,225,0.9);padding:10px 12px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;resize:vertical;}
+    .chatbot-input textarea:focus{border-color:var(--brand);box-shadow:0 0 0 2px rgba(59,130,246,0.12);}
+    .chatbot-input .actions{display:flex;gap:10px;justify-content:space-between;}
+    .chatbot-input .actions .btn{flex:1;}
+    .chatbot-update-box{margin:0 16px 14px;display:none;}
+    .chatbot-update-box.active{display:block;}
+    .chatbot-update-box .update-actions{display:flex;gap:10px;margin-top:10px;}
+    .chatbot-update-box .update-actions .btn{flex:1;}
+    .checkbox-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+      gap:8px;
+    }
+    .checkbox-grid label{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:8px 10px;
+      background:#fff;
+      font-size:13px;
+    }
+    .checkbox-grid input{margin:0;}
     .btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
     .btn.danger:hover{background:var(--danger-dark)}
     .main-tabs{display:flex;gap:10px;border-bottom:3px solid var(--border);margin-bottom:14px;flex-wrap:wrap}
@@ -69,6 +153,17 @@
     .modal-item{padding:10px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;gap:8px;align-items:center}
     .modal-item.selected{background:#dbeafe}
     .info-box{background:#f8fafc;border-left:4px solid var(--brand);padding:10px;border-radius:8px;margin:8px 0}
+    .combo-group{border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;background:#f8fafc}
+    .combo-group h4{margin:0 0 10px;font-size:14px;color:#1f2937}
+    .combo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+    .combo-chip{display:flex;align-items:center;gap:8px;border:1px solid #d7deed;border-radius:10px;padding:8px 10px;background:#fff;font-size:13px;color:#1f2937}
+    .combo-chip input{margin:0}
+    .channel-color-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:8px}
+    .channel-color-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;box-shadow:0 8px 18px -18px rgba(15,23,42,0.6)}
+    .channel-color-item input[type="color"]{width:44px;height:36px;padding:0;border:none;background:transparent;cursor:pointer}
+    .channel-color-text{display:flex;flex-direction:column;font-size:12px;color:#475569}
+    .overlay-heatmap-group{margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:12px;background:#f8fafc}
+    .overlay-heatmap-group h4{margin-top:0;margin-bottom:10px;font-size:14px;color:#1f2937}
   </style>
 </head>
 <body>
@@ -83,13 +178,8 @@
         <div class="hero-step"><span class="hero-step-index">2</span><span>Detection</span></div>
         <div class="hero-step"><span class="hero-step-index">3</span><span>Co-Expression</span></div>
       </div>
-    </div>
-    
-    <!-- ===== Global quick note (mapping for Windows/WSL) ===== -->
-    <div class="card">
-      <h2>Quick Notes</h2>
-      <div class="info-box">
-        <div><strong>Windows paths</strong> are automatically mapped to WSL/container mounts by the backend (e.g. <code>C:\data</code> -&gt; <code>/host_mnt/c/data</code>).</div>
+      <div class="hero-actions">
+        <button class="btn primary" type="button" onclick="window.open('/static/docs/Quickstart_Guide.md','_blank')">Quickstart-Dokument herunterladen</button>
       </div>
     </div>
 
@@ -127,103 +217,110 @@
             </div>
           </div>
 
-          <h2>Channel & Processing</h2>
-          <div class="row">
-            <div>
-              <label>Channels to Extract (comma)</label>
-              <input id="czi_channels" type="text" value="0,1,2,3"/>
+          <details class="section-card" open>
+            <summary class="section-header">Channel &amp; Processing</summary>
+            <div class="section-body">
+              <div class="row">
+                <div>
+                  <label>Channels to Extract (comma)</label>
+                  <input id="czi_channels" type="text" value="0,1,2,3"/>
+                </div>
+                <div>
+                  <label>Target Size (max side px)</label>
+                  <input id="czi_target_size" type="number" placeholder="2048"/>
+                </div>
+                <div>
+                  <label>Per-Channel Normalize</label>
+                  <select id="czi_normalize">
+                    <option value="true">Yes (0-255)</option>
+                    <option value="false">No</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Overwrite Existing</label>
+                  <select id="czi_overwrite">
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div>
-              <label>Target Size (max side px)</label>
-              <input id="czi_target_size" type="number" placeholder="2048"/>
-            </div>
-            <div>
-              <label>Per-Channel Normalize</label>
-              <select id="czi_normalize">
-                <option value="true">Yes (0–255)</option>
-                <option value="false">No</option>
-              </select>
-            </div>
-            <div>
-              <label>Overwrite Existing</label>
-              <select id="czi_overwrite">
-                <option value="false">No</option>
-                <option value="true">Yes</option>
-              </select>
-            </div>
-          </div>
+          </details>
 
-          <h2>Saving Options</h2>
-          <div class="row">
-            <div>
-              <label>Save per Channel</label>
-              <select id="czi_save_per_channel">
-                <option value="true">Yes</option><option value="false">No</option>
-              </select>
-              <div class="muted">Writes *_ch0.tif, *_ch1.tif, …</div>
+          <details class="section-card">
+            <summary class="section-header">Saving Options</summary>
+            <div class="section-body">
+              <div class="row">
+                <div>
+                  <label>Save per Channel</label>
+                  <select id="czi_save_per_channel">
+                    <option value="true">Yes</option><option value="false">No</option>
+                  </select>
+                  <div class="muted">Writes *_ch0.tif, *_ch1.tif, ...</div>
+                </div>
+                <div>
+                  <label>Save Stack TIFF</label>
+                  <select id="czi_save_stack_tiff">
+                    <option value="true">Yes</option><option value="false">No</option>
+                  </select>
+                </div>
+                <div>
+                  <label>RGB Preview</label>
+                  <select id="czi_save_rgb_preview">
+                    <option value="false">No</option><option value="true">Yes</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Stack Layout</label>
+                  <select id="czi_stack_layout">
+                    <option value="YXC">YXC</option><option value="CYX">CYX</option>
+                  </select>
+                </div>
+                <div>
+                  <label>ImageJ Hyperstack</label>
+                  <select id="czi_imagej_hyperstack">
+                    <option value="true">Enabled</option><option value="false">Disabled</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Color Composite (blend all)</label>
+                  <select id="czi_save_color_composite">
+                    <option value="true">Yes</option><option value="false">No</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Channel Colors</label>
+                  <div id="czi_channel_colors_container" class="row"></div>
+                  <div class="muted">One color per extracted channel (order matches list)</div>
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label>RGB Channels (R,G,B)</label>
+                  <input id="czi_rgb_channels" type="text" value="0,1,2"/>
+                </div>
+                <div>
+                  <label>Output DType</label>
+                  <select id="czi_dtype">
+                    <option value="uint8">uint8</option>
+                    <option value="uint16">uint16</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Colored Pages (per channel)</label>
+                  <select id="czi_save_colored_pages">
+                    <option value="true">Yes</option><option value="false">No</option>
+                  </select>
+                </div>
+                <div>
+                  <label>OME-TIFF with Colors</label>
+                  <select id="czi_save_ome_colors">
+                    <option value="true">Yes</option><option value="false">No</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div>
-              <label>Save Stack TIFF</label>
-              <select id="czi_save_stack_tiff">
-                <option value="true">Yes</option><option value="false">No</option>
-              </select>
-            </div>
-            <div>
-              <label>RGB Preview</label>
-              <select id="czi_save_rgb_preview">
-                <option value="false">No</option><option value="true">Yes</option>
-              </select>
-            </div>
-            <div>
-              <label>Stack Layout</label>
-              <select id="czi_stack_layout">
-                <option value="YXC">YXC</option><option value="CYX">CYX</option>
-              </select>
-            </div>
-            <div>
-              <label>ImageJ Hyperstack</label>
-              <select id="czi_imagej_hyperstack">
-                <option value="true">Enabled</option><option value="false">Disabled</option>
-              </select>
-            </div>
-            <div>
-              <label>Color Composite (blend all)</label>
-              <select id="czi_save_color_composite">
-                <option value="true">Yes</option><option value="false">No</option>
-              </select>
-            </div>
-            <div>
-              <label>Channel Colors</label>
-              <div id="czi_channel_colors_container" class="row"></div>
-              <div class="muted">One color per extracted channel (order matches list)</div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div>
-              <label>RGB Channels (R,G,B)</label>
-              <input id="czi_rgb_channels" type="text" value="0,1,2"/>
-            </div>
-            <div>
-              <label>Output DType</label>
-              <select id="czi_dtype">
-                <option value="uint8">uint8</option>
-                <option value="uint16">uint16</option>
-              </select>
-            </div>
-            <div>
-              <label>Colored Pages (per channel)</label>
-              <select id="czi_save_colored_pages">
-                <option value="true">Yes</option><option value="false">No</option>
-              </select>
-            </div>
-            <div>
-              <label>OME‑TIFF with Colors</label>
-              <select id="czi_save_ome_colors">
-                <option value="true">Yes</option><option value="false">No</option>
-              </select>
-            </div>
-          </div>
+          </details>
 
           <div class="inline" style="margin-top:12px">
             <button class="btn" onclick="loadCziConfig()">Load Config</button>
@@ -234,7 +331,7 @@
         <div id="czi-run" class="sub-content">
           <h2>CZI Conversion</h2>
           <div class="muted" style="margin-bottom:6px">Console</div>
-          <div id="czi-log" class="log">Waiting…</div>
+          <div id="czi-log" class="log">Waiting...</div>
           <div class="inline" style="margin-top:10px">
             <button id="czi-start" class="btn primary" onclick="startCzi()">Start</button>
             <button id="czi-stop" class="btn danger" onclick="stopCzi()" style="display:none">Stop</button>
@@ -245,7 +342,7 @@
           <h2>Results</h2>
           <div class="inline" style="margin-bottom:10px;flex-wrap:wrap">
             <button class="btn" onclick="loadCziResults()">Refresh</button>
-            <button class="btn" onclick="window.location.href='/api/czi/download-all'">🗜️ Download all (ZIP)</button>
+            <button class="btn" onclick="window.location.href='/api/czi/download-all'">Download all (ZIP)</button>
           </div>
           <div id="czi-results-list" class="results">
             <div class="muted">No results yet.</div>
@@ -262,7 +359,7 @@
         </div>
 
         <div id="det-config" class="sub-content active">
-          <h2>Basic Settings</h2>
+          <h2>Input/Output</h2>
           <div class="row">
             <div>
               <label>Input TIFFs Directory</label>
@@ -280,60 +377,10 @@
             </div>
           </div>
 
-          <div class="row">
-            <div>
-              <label>Channels</label>
-              <div id="det_channel_selector" class="channel-selector" style="display:flex;flex-direction:column;gap:6px;"></div>
-            </div>
-            <div>
-              <label>Model Type</label>
-              <select id="det_model_type">
-                <option value="cyto2">cyto2</option>
-                <option value="cyto3">cyto3</option>
-                <option value="cyto">cyto</option>
-                <option value="nuclei">nuclei</option>
-                <option value="cpsam">cpsam</option>
-              </select>
-            </div>
-            <div>
-              <label>Use GPU</label>
-              <select id="det_use_gpu">
-                <option value="false">No (CPU)</option>
-                <option value="true">Yes (if available)</option>
-              </select>
-            </div>
-            <div>
-              <label>Batch Size</label>
-              <input id="det_batch_size" type="number" value="8" min="1" max="64"/>
-            </div>
-            <div>
-              <label>Diameter (px)</label>
-              <input id="det_diameter" type="number" placeholder="auto"/>
-            </div>
-          </div>
-
-          <h3>Test Mode</h3>
-          <div class="row">
-            <div>
-              <label>Test Mode</label>
-              <select id="det_test_mode">
-                <option value="false">Disabled</option><option value="true">Enabled</option>
-              </select>
-            </div>
-            <div>
-              <label>Samples / Channel</label>
-              <input id="det_test_samples" type="number" min="1" value="2"/>
-            </div>
-            <div>
-              <label>Seed (optional)</label>
-              <input id="det_test_seed" type="text" placeholder="auto"/>
-            </div>
-          </div>
-
-          <h3>Detection Sensitivity</h3>
+          <h2>Detection Sensitivity</h2>
           <div class="slider-container">
             <input type="range" id="det-sensitivity" class="slider" min="0" max="9" value="4" step="1">
-            <span id="det-sensitivity-value">Level 5 · Balanced</span>
+            <span id="det-sensitivity-value">Level 5    Balanced</span>
           </div>
           <div class="slider-marks">
             <span>Only brightest</span>
@@ -352,25 +399,74 @@
             </div>
           </div>
 
-          <h2 style="margin-top:16px">Output & Script</h2>
+          <h2>Channels &amp; Processing</h2>
           <div class="row">
             <div>
-              <label>Save Overlay</label>
-              <select id="det_save_overlay">
-                <option value="true">Yes</option><option value="false">No</option>
+              <label>Channels</label>
+              <div id="det_channel_selector" class="channel-selector" style="display:flex;flex-direction:column;gap:6px;"></div>
+            </div>
+            <div>
+              <label>Model Type</label>
+              <select id="det_model_type">
+                <option value="cyto2">cyto2</option>
+                <option value="cyto3">cyto3</option>
+                <option value="cyto">cyto</option>
+                <option value="nuclei">nuclei</option>
+                <option value="cpsam">cpsam</option>
               </select>
             </div>
             <div>
-              <label>Overlay Suffix</label>
-              <input id="det_overlay_suffix" type="text" value="_overlay.png"/>
-            </div>
-            <div>
-              <label>Detection Script Path</label>
-              <input id="det_script_path" type="text" placeholder="/app/src/batch_segment.py"/>
+              <label>Diameter (px)</label>
+              <input id="det_diameter" type="number" placeholder="auto"/>
             </div>
           </div>
 
-          <h2>Advanced (CPSAM)</h2>
+          <details class="section-card">
+            <summary class="section-header">Test Mode</summary>
+            <div class="section-body">
+              <div class="row">
+                <div>
+                  <label>Test Mode</label>
+                  <select id="det_test_mode">
+                    <option value="disabled">Disabled</option>
+                    <option value="simple">Simple (random sample)</option>
+                    <option value="advanced">Advanced sweep</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Samples / Channel</label>
+                  <input id="det_test_samples" type="number" min="1" value="2"/>
+                </div>
+                <div>
+                  <label>Seed (optional)</label>
+                  <input id="det_test_seed" type="text" placeholder="auto"/>
+                </div>
+              </div>
+              <div id="det-test-advanced" class="row" style="display:none">
+                <div>
+                  <label>Levels to Sweep</label>
+                  <div id="det_test_levels" class="checkbox-grid"></div>
+                  <div class="hint">Leave empty to test all sensitivity Levels.</div>
+                </div>
+                <div>
+                  <label>Specific Sample (POS)</label>
+                  <div class="inline">
+                    <input id="det_test_image_pos" type="text" placeholder="e.g. ARC/B465_sample.tif" style="flex:1;min-width:140px"/>
+                    <button class="btn" onclick="openFileBrowser('det_test_image_pos',{pickFile:true,includeFiles:true,relativeTo:'det_input_dir',title:'Select POS test image',allowedExtensions:['.tif','.tiff','.png','.jpg','.jpeg'],startFrom:document.getElementById('det_test_image_pos')?.value||document.getElementById('det_input_dir')?.value||'.'})">Browse</button>
+                  </div>
+                  <label style="margin-top:12px">Specific Sample (NEG)</label>
+                  <div class="inline">
+                    <input id="det_test_image_neg" type="text" placeholder="e.g. DMH/B123_sample.tif" style="flex:1;min-width:140px"/>
+                    <button class="btn" onclick="openFileBrowser('det_test_image_neg',{pickFile:true,includeFiles:true,relativeTo:'det_input_dir',title:'Select NEG test image',allowedExtensions:['.tif','.tiff','.png','.jpg','.jpeg'],startFrom:document.getElementById('det_test_image_neg')?.value||document.getElementById('det_input_dir')?.value||'.'})">Browse</button>
+                  </div>
+                  <div class="hint">Advanced mode only. Pick files inside the detection input tree; they are stored relative to the matching condition directory.</div>
+                </div>
+              </div>
+            </div>
+          </details>
+          <details class="section-card">
+            <summary class="section-header">Advanced (CPSAM)</summary>
+            <div class="section-body">
           <h3>Parameters</h3>
           <div class="row">
             <div>
@@ -410,11 +506,11 @@
           <h3>Cell Filtering</h3>
           <div class="row">
             <div>
-              <label>Min Area (px²)</label>
+              <label>Min Area (px  )</label>
               <input id="det_cpsam_min_area" type="number" value="80"/>
             </div>
             <div>
-              <label>Max Area (px²)</label>
+              <label>Max Area (px  )</label>
               <input id="det_cpsam_max_area" type="number" placeholder="3000"/>
             </div>
             <div>
@@ -439,7 +535,7 @@
             </div>
           </div>
 
-          <h3>Pre‑processing</h3>
+          <h3>Pre-processing</h3>
           <div class="row">
             <div>
               <label>White Tophat</label>
@@ -447,7 +543,7 @@
                 <option value="true">Enabled</option><option value="false">Disabled</option>
               </select>
             </div>
-            <div>
+            <div id="det_tophat_radius_field">
               <label>Tophat Radius</label>
               <input id="det_cpsam_tophat_radius" type="number" placeholder="15"/>
             </div>
@@ -457,7 +553,7 @@
                 <option value="true">Enabled</option><option value="false">Disabled</option>
               </select>
             </div>
-            <div>
+            <div id="det_stretch_field">
               <label>Stretch Percentiles (low,high)</label>
               <input id="det_cpsam_stretch_pct" type="text" placeholder="1,99"/>
             </div>
@@ -471,6 +567,8 @@
                 <option value="true">Enabled</option><option value="false">Disabled</option>
               </select>
             </div>
+          </div>
+          <div class="row" id="det_split_fields">
             <div>
               <label>Split Min Distance</label>
               <input id="det_cpsam_split_min_distance" type="number" placeholder="6"/>
@@ -497,6 +595,8 @@
                 <option value="true">Enabled</option><option value="false">Disabled</option>
               </select>
             </div>
+          </div>
+          <div class="row" id="det_adv_fields">
             <div>
               <label>SNR Min</label>
               <input id="det_cpsam_snr_min" type="number" step="0.01" placeholder="1.1"/>
@@ -515,41 +615,80 @@
             </div>
           </div>
 
-          <h3>Overlays</h3>
-          <div class="row">
-            <div>
-              <label>Overlay Mode</label>
-              <select id="det_cpsam_overlay_mode">
-                <option value="contours">contours</option>
-                <option value="masks">masks</option>
-                <option value="both">both</option>
-              </select>
-            </div>
-            <div>
-              <label>Contour Color</label>
-              <select id="det_cpsam_contour_color">
-                <option>lime</option><option>red</option><option>green</option>
-                <option>blue</option><option>yellow</option><option>cyan</option>
-                <option>magenta</option><option>white</option><option>orange</option><option>purple</option>
-              </select>
-            </div>
-            <div>
-              <label>Line Width</label>
-              <input id="det_cpsam_line_width" type="number" placeholder="1"/>
-            </div>
-            <div>
-              <label>DPI</label>
-              <input id="det_cpsam_dpi" type="number" placeholder="300"/>
-            </div>
-            <div>
-              <label>Figure Size (w,h)</label>
-              <input id="det_cpsam_figsize" type="text" placeholder="12,12"/>
-            </div>
-            <div>
-              <label>Outputs: Base Name</label>
-              <input id="det_cpsam_base_name" type="text" placeholder="cell_analysis"/>
-            </div>
           </div>
+          </details>
+
+          <details class="section-card">
+            <summary class="section-header">Overlay Settings</summary>
+            <div class="section-body">
+              <div class="row">
+                <div>
+                  <label>Save Overlay</label>
+                  <select id="det_save_overlay">
+                    <option value="true">Yes</option><option value="false">No</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Overlay Suffix</label>
+                  <input id="det_overlay_suffix" type="text" value="_overlay.png"/>
+                </div>
+              </div>
+              <h3 style="margin-top:18px">CPSAM Rendering</h3>
+              <div class="row">
+                <div>
+                  <label>Overlay Mode</label>
+                  <select id="det_cpsam_overlay_mode">
+                    <option value="contours">contours</option>
+                    <option value="masks">masks</option>
+                    <option value="both">both</option>
+                  </select>
+                </div>
+                <div id="det_contour_color_field">
+                  <label>Contour Color</label>
+                  <input type="color" id="det_cpsam_contour_color" value="#00ff00"/>
+                </div>
+                <div id="det_line_width_field">
+                  <label>Line Width</label>
+                  <input id="det_cpsam_line_width" type="number" placeholder="1"/>
+                </div>
+                <div>
+                  <label>DPI</label>
+                  <input id="det_cpsam_dpi" type="number" placeholder="300"/>
+                </div>
+                <div>
+                  <label>Figure Size (w,h)</label>
+                  <input id="det_cpsam_figsize" type="text" placeholder="12,12"/>
+                </div>
+                <div>
+                  <label>Outputs: Base Name</label>
+                  <input id="det_cpsam_base_name" type="text" placeholder="cell_analysis"/>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="section-card">
+            <summary class="section-header">Output &amp; Script</summary>
+            <div class="section-body">
+              <div class="row">
+                <div>
+                  <label>Detection Script Path</label>
+                  <input id="det_script_path" type="text" placeholder="/app/src/batch_segment.py"/>
+                </div>
+                <div>
+                  <label>Use GPU</label>
+                  <select id="det_use_gpu">
+                    <option value="false">No (CPU)</option>
+                    <option value="true">Yes (if available)</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Batch Size</label>
+                  <input id="det_batch_size" type="number" value="8" min="1" max="64"/>
+                </div>
+              </div>
+            </div>
+          </details>
 
           <div class="inline" style="margin-top:12px">
             <button class="btn" onclick="loadDetConfig()">Load Config</button>
@@ -560,7 +699,7 @@
         <div id="det-run" class="sub-content">
           <h2>Detection</h2>
           <div class="muted" style="margin-bottom:6px">Console</div>
-          <div id="det-log" class="log">Waiting…</div>
+          <div id="det-log" class="log">Waiting...</div>
           <div class="inline" style="margin-top:10px">
             <button id="det-start" class="btn primary" onclick="startDet()">Start</button>
             <button class="btn" onclick="startDetTest()">Test</button>
@@ -590,7 +729,7 @@
         </div>
 
         <div id="coexpr-config" class="sub-content active">
-          <h2>Paths</h2>
+          <h2>Input/Output</h2>
           <div class="row">
             <div>
               <label>Input Directory (results root with ch*/overlays)</label>
@@ -600,7 +739,7 @@
               </div>
             </div>
             <div>
-              <label>Output Directory (co‑expression)</label>
+              <label>Output Directory (co-expression)</label>
               <div class="inline">
                 <input id="output_dir" type="text" placeholder="C:\path\to\coexpr\output"/>
                 <button class="btn" onclick="openFileBrowser('output_dir')">Browse</button>
@@ -608,112 +747,258 @@
             </div>
           </div>
 
-          <div class="row">
-            <div>
-              <label>Dataset Name (optional)</label>
-              <input id="dataset_name" type="text" placeholder="e.g. glucose"/>
+
+          <details class="section-card">
+            <summary class="section-header">Test Mode</summary>
+            <div class="section-body">
+              <div class="row">
+                <div>
+                  <label>Test Mode</label>
+                  <select id="coexpr_test_mode_type">
+                    <option value="off">Disabled</option>
+                    <option value="simple">Simple (random subset)</option>
+                    <option value="sweep">Sweep specific sample</option>
+                  </select>
+                </div>
+              </div>
+              <div id="coexpr_test_simple_options" class="row" style="display:none">
+                <div>
+                  <label>Samples / Key</label>
+                  <input id="coexpr_test_samples" type="number" min="1" value="2"/>
+                </div>
+                <div>
+                  <label>Seed (optional)</label>
+                  <input id="coexpr_test_seed" type="text" placeholder="auto"/>
+                </div>
+              </div>
+              <div id="coexpr_sweep_block" style="display:none">
+                <h3>Sweep Test</h3>
+                <div class="row">
+                  <div>
+                    <label>Methods</label>
+                    <div id="coexpr_sweep_modes_container" class="checkbox-grid"></div>
+                  </div>
+                  <div>
+                    <label>Sample Key</label>
+                    <div class="inline" style="align-items:center;gap:8px">
+                      <input id="coexpr_sweep_sample" type="text" placeholder="B465_ARC_C3_slice6" style="flex:1;min-width:140px"/>
+                      <button class="btn" type="button" onclick="browseCoexprSample()">Browse</button>
+                    </div>
+                    <div class="hint">Pick a mask/overlay file; the trailing part of the filename becomes the sample key.</div>
+                  </div>
+                </div>
+                <div class="muted" style="margin-top:6px">Sweep runs each selected mode against that sample key. Outputs land in <code>__sweep__/&lt;mode&gt;</code>.</div>
+              </div>
             </div>
-            <div>
-              <label>HSV Range Preset</label>
-              <select id="active_hsv_range">
-                <option value="0">Lime Green (Default)</option>
-                <option value="1">Extended Green</option>
-                <option value="2">Bright Lime</option>
-                <option value="3">Wide Green</option>
-              </select>
-            </div>
-            <div>
-              <label>Number of Channels</label>
-              <input id="channel_count" type="number" min="2" max="10" value="3"/>
+          </details>
+
+          <details class="section-card">
+            <summary class="section-header">Co-expression Logic</summary>
+            <div class="section-body">
+              <div class="row">
+                <div>
+                  <label>Mode</label>
+                  <select id="coexpr_mode">
+                    <option value="overlap">Mask overlap</option>
+                    <option value="centroid">Centroid distance</option>
+                    <option value="either">Overlap OR centroid</option>
+                    <option value="intersection">Overlap AND centroid</option>
+                    <option value="blend">Blend Heatmap (overlap highlight)</option>
+                  </select>
+                </div>
+                <div id="centroid_distance_field">
+                  <label>Centroid Max Distance (px)</label>
+                  <input id="coexpr_centroid_distance" type="number" min="0" step="0.5" value="8"/>
+                </div>
+              </div>
+              <div class="row" id="overlap-threshold-field" style="display:none">
+                <div>
+                  <label>Overlap Threshold (%)</label>
+                  <input id="blend_overlap_fraction" type="number" min="0" max="100" step="1" value="2"/>
+                  <div class="hint">Minimum fraction of the base cell area that must overlap with every partner channel to count as multi-positive. Applies to all mask-overlap modes.</div>
+                </div>
+              </div>
+              <div class="row" id="centroid-overlap-field" style="display:none">
+                <div>
+                  <label>Centroid Overlap Threshold (%)</label>
+                  <input id="centroid_overlap_fraction" type="number" min="0" max="100" step="0.1" value="0.5"/>
+                  <div class="hint">When centroid logic is used (centroid/either/intersection), partner masks only need to cover this percentage of the base cell to be counted.</div>
+                </div>
+              </div>
+              <div id="blend-color-settings" style="display:none">
+                <h3>Blend Heatmap Colors</h3>
+                <div class="hint" style="margin-bottom:10px">
+                  <strong>Note:</strong> Individual channel colors are set in the <em>Channel Configuration</em> section. Here you only need to set the multi-positive overlap color.
+                </div>
+            <div class="row">
+              <div>
+                <label>Overlap Highlight Color (Multi-positive)</label>
+                <input type="color" id="blend_overlap_color" value="#ff4080"/>
+                <div class="hint">Color for cells that are positive in all channels</div>
+              </div>
             </div>
           </div>
+          
+          <details class="section-card" open>
+            <summary class="section-header">Output Format Selection</summary>
+            <div class="section-body">
+              <div class="hint" style="margin-bottom:10px">
+                Choose which file formats to save for each visualization type. All formats use high quality (300 DPI for overlay).
+              </div>
+              <div style="margin-bottom:15px;">
+                <label style="font-weight:600;">Blend Heatmap Formats</label>
+                <div class="inline" style="gap:15px;margin-top:6px;">
+                  <label style="font-weight:normal;"><input type="checkbox" id="blend_fmt_png" checked/> PNG</label>
+                  <label style="font-weight:normal;"><input type="checkbox" id="blend_fmt_tiff"/> TIFF</label>
+                  <label style="font-weight:normal;"><input type="checkbox" id="blend_fmt_jpg"/> JPEG</label>
+                </div>
+              </div>
+              <div>
+                <label style="font-weight:600;">Overlay Formats</label>
+                <div class="inline" style="gap:15px;margin-top:6px;">
+                  <label style="font-weight:normal;"><input type="checkbox" id="overlay_fmt_png" checked/> PNG</label>
+                  <label style="font-weight:normal;"><input type="checkbox" id="overlay_fmt_tiff"/> TIFF</label>
+                  <label style="font-weight:normal;"><input type="checkbox" id="overlay_fmt_jpg"/> JPEG</label>
+                </div>
+              </div>
+            </div>
+          </details>
+            </div>
+          </details>
 
-          <h3>Test Mode</h3>
-          <div class="row">
-            <div>
-              <label>Test Mode</label>
-              <select id="coexpr_test_mode">
-                <option value="false">Disabled</option><option value="true">Enabled</option>
-              </select>
+          <details class="section-card">
+            <summary class="section-header">Source Options</summary>
+            <div class="section-body">
+              <div class="row">
+                <div>
+                  <label>Use Detection Masks</label>
+                  <select id="coexpr_use_masks">
+                    <option value="true">Prefer *_mask.tif files</option><option value="false">Use overlays only</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Auto Threshold Overlays (fallback)</label>
+                  <select id="coexpr_auto_threshold">
+                    <option value="true">Enabled</option><option value="false">Disabled</option>
+                  </select>
+                </div>
+              </div>
+              <div class="muted" style="margin-top:6px">When fallback is enabled, overlays without masks are auto-thresholded to binary masks.</div>
             </div>
-            <div>
-              <label>Samples / Key</label>
-              <input id="coexpr_test_samples" type="number" min="1" value="2"/>
-            </div>
-            <div>
-              <label>Seed (optional)</label>
-              <input id="coexpr_test_seed" type="text" placeholder="auto"/>
-            </div>
-          </div>
+          </details>
 
-          <h2>Source Options</h2>
-          <div class="row">
-            <div>
-              <label>Use Detection Masks</label>
-              <select id="coexpr_use_masks">
-                <option value="true">Prefer *_mask.tif files</option><option value="false">Use overlays only</option>
-              </select>
+          <details class="section-card" open>
+            <summary class="section-header">Channel Configuration</summary>
+            <div class="section-body">
+              <div class="row">
+                <div>
+                  <label>Number of Channels</label>
+                  <input id="channel_count" type="number" min="2" max="10" value="3"/>
+                </div>
+              </div>
+              <div id="channel_config_container"></div>
+              <div class="hint" style="margin-top:10px">
+                <strong>Tip:</strong> Channel colors are automatically used in all visualization modes (Overlay, Blend, Heatmaps). Each channel will be rendered in its assigned color.
+              </div>
             </div>
-            <div>
-              <label>Auto Threshold Overlays (fallback)</label>
-              <select id="coexpr_auto_threshold">
-                <option value="true">Enabled</option><option value="false">Disabled</option>
-              </select>
-            </div>
-          </div>
-          <div class="muted" style="margin-top:6px">When fallback is enabled, overlays without masks are auto-thresholded to binary masks.</div>
+          </details>
 
-          <div id="channel_config_container"></div>
+          <details class="section-card" open>
+            <summary class="section-header">Combinations</summary>
+            <div class="section-body">
+              <div class="inline" id="way_toggles" style="margin-bottom:12px;flex-wrap:wrap"></div>
+              <div id="combo_checkboxes_container"></div>
+            </div>
+          </details>
 
-          <h2>Combinations</h2>
-          <div id="way_toggles" class="inline" style="margin-bottom:6px"></div>
-          <div id="combo_checkboxes_container" class="row"></div>
-
-          <h2>Overlay Visualization</h2>
-          <div class="row">
-            <div>
-              <label>2‑way Color</label>
-              <select id="ov_color_k2">
-                <option>red</option><option>magenta</option><option>cyan</option>
-                <option>yellow</option><option>green</option><option>blue</option>
-                <option>white</option><option>orange</option><option>purple</option>
-              </select>
+          <details class="section-card">
+            <summary class="section-header">Overlay Visualization</summary>
+            <div class="section-body">
+              <div class="row">
+                <div>
+                  <label>2-way Color</label>
+                  <input type="color" id="ov_color_k2" value="#ff0000"/>
+                </div>
+                <div>
+                  <label>3-way Color</label>
+                  <input type="color" id="ov_color_k3" value="#ff00ff"/>
+                </div>
+                <div>
+                  <label>4-way Color</label>
+                  <input type="color" id="ov_color_k4" value="#00ffff"/>
+                </div>
+                <div>
+                  <label>Single-positive Color</label>
+                  <input id="ov_single_color" type="color" value="#808080"/>
+                </div>
+                <div>
+                  <label>Base Channel (background)</label>
+                  <input id="ov_base_channel" type="number" min="0" placeholder="auto"/>
+                </div>
+                <div>
+                  <label>Figure Type</label>
+                  <select id="ov_figure_type">
+                    <option value="overlay">Overlay</option>
+                    <option value="mask">Mask only</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Layout for even counts</label>
+                  <select id="ov_even_layout">
+                    <option value="line">Single row</option>
+                    <option value="grid">Block (2x2)</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Overlay Line Width</label>
+                  <input id="ov_line_width" type="number" value="3"/>
+                </div>
+                <div>
+                  <label>Overlay DPI</label>
+                  <input id="ov_dpi" type="number" value="150"/>
+                </div>
+                <div>
+                  <label>Save Composite Figure</label>
+                  <select id="coexpr_save_figure">
+                    <option value="true">Yes</option><option value="false">No</option>
+                  </select>
+                </div>
+              </div>
+              <div class="overlay-heatmap-group">
+                <h4>Heatmap Options</h4>
+                <div class="row">
+                  <div>
+                    <label>Overlay Style</label>
+                    <select id="ov_overlay_style">
+                      <option value="mixed">Contours + Heatmap</option>
+                      <option value="contour">Contours only</option>
+                      <option value="filled">Heatmap only (single color)</option>
+                      <option value="blend">Blend-style (per-channel colors)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label>Fill Opacity</label>
+                    <input id="ov_fill_alpha" type="number" min="0" max="1" step="0.05" value="0.45"/>
+                  </div>
+                  <div>
+                    <label>Centroid Heatmap</label>
+                    <select id="ov_centroid_heatmap">
+                      <option value="false">Disabled</option>
+                      <option value="true">Enabled (centroid modes)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label>Centroid Marker Size</label>
+                    <input id="ov_centroid_size" type="number" min="10" max="400" value="80"/>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <label>3‑way Color</label>
-              <select id="ov_color_k3">
-                <option>magenta</option><option>red</option><option>cyan</option>
-                <option>yellow</option><option>green</option><option>blue</option>
-                <option>white</option><option>orange</option><option>purple</option>
-              </select>
-            </div>
-            <div>
-              <label>4‑way Color</label>
-              <select id="ov_color_k4">
-                <option>cyan</option><option>magenta</option><option>red</option>
-                <option>yellow</option><option>green</option><option>blue</option>
-                <option>white</option><option>orange</option><option>purple</option>
-              </select>
-            </div>
-            <div>
-              <label>Overlay Line Width</label>
-              <input id="ov_line_width" type="number" value="3"/>
-            </div>
-            <div>
-              <label>Overlay DPI</label>
-              <input id="ov_dpi" type="number" value="150"/>
-            </div>
-            <div>
-              <label>Save Composite Figure</label>
-              <select id="coexpr_save_figure">
-                <option value="true">Yes</option><option value="false">No</option>
-              </select>
-            </div>
-          </div>
+          </details>
 
           <div class="inline" style="margin-top:12px">
-            <button class="btn" onclick="loadOverlayUi()">🔄 Load Overlay Settings</button>
-            <button class="btn primary" onclick="saveOverlayUi()">💾 Save Overlay Settings</button>
+            <button class="btn" onclick="loadOverlayUi()">Reload Overlay Settings</button>
+            <button class="btn primary" onclick="saveOverlayUi()">Save Overlay Settings</button>
           </div>
 
           <div class="inline" style="margin-top:12px">
@@ -725,10 +1010,10 @@
         <div id="coexpr-run" class="sub-content">
           <h2>Run Analysis</h2>
           <label class="muted" style="display:inline-flex;gap:6px;align-items:center;margin:8px 0 10px">
-            <input type="checkbox" id="cb_debug"/> Enable Debug Log (‑v)
+            <input type="checkbox" id="cb_debug"/> Enable Debug Log (-v)
           </label>
           <div class="muted" style="margin-bottom:6px">Console</div>
-          <div id="log" class="log">Waiting…</div>
+          <div id="log" class="log">Waiting...</div>
           <div class="inline" style="margin-top:10px">
             <button id="start-btn" class="btn primary" onclick="startAnalysis()">Start</button>
             <button class="btn" onclick="startAnalysisTest()">Test</button>
@@ -740,7 +1025,7 @@
           <h2>Results</h2>
           <div class="inline" style="margin-bottom:10px;flex-wrap:wrap">
             <button class="btn" onclick="loadResults()">Refresh</button>
-            <button class="btn" onclick="window.location.href='/api/results/download-all'">🗜️ Download all (ZIP)</button>
+            <button class="btn" onclick="window.location.href='/api/results/download-all'">Download all (ZIP)</button>
           </div>
           <div id="results-list" class="results">
             <div class="muted">No results yet.</div>
@@ -749,29 +1034,300 @@
       </div>
     </div>
   </div>
+  <div class="impressum-section">
+    <details>
+      <summary>Impressum</summary>
+      <div style="margin-top:12px;color:#1f2937;font-size:14px;line-height:1.5">
+        <p><strong>Cell Analysis Pipeline (Remote)</strong><br/>Forschungscampus Datenwerk<br/>MusterstraÃŸe 12<br/>10999 Berlin, Deutschland</p>
+        <p><strong>Kontakt:</strong> remote-support@cell-analysis.example<br/><strong>Telefon:</strong> +49&nbsp;30&nbsp;123456-0</p>
+        <p><strong>Verantwortlich gem. Â§5 TMG:</strong> Projektleitung Cell Analysis<br/><strong>USt-IdNr.:</strong> DE999999999</p>
+        <p class="muted" style="margin:0">Diese Angaben dienen als Platzhalter â€“ bitte bei Bedarf durch die offiziellen Unternehmensdaten ersetzen.</p>
+      </div>
+    </details>
+  </div>
 
   <!-- ===== Folder Browser Modal ===== -->
   <div id="fb-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <strong>📂 Select folder</strong>
+        <strong id="fb-title">Select folder</strong>
         <button class="btn" onclick="closeFileBrowser()">Close</button>
       </div>
       <div id="fb-path" class="muted" style="margin-bottom:8px;"></div>
       <div id="fb-list" class="modal-list"></div>
       <div class="inline" style="justify-content:flex-end;margin-top:10px">
         <button class="btn" onclick="closeFileBrowser()">Cancel</button>
-        <button class="btn primary" onclick="selectDirectory()">Choose</button>
+        <button id="fb-confirm" class="btn primary" onclick="confirmFileBrowserSelection()">Choose</button>
       </div>
     </div>
   </div>
-
+<div id="chatbot-panel" class="chatbot-panel collapsed">
+  <div class="chatbot-header">
+    <span>KI-Assistent</span>
+    <button type="button" onclick="toggleChatbot(false)">X</button>
+  </div>
+  <div id="chatbot-messages" class="chatbot-messages">
+    <div class="chatbot-msg assistant"><div class="bubble">Hallo! Ich helfe dir beim Konfigurieren der Pipeline. Teile dein Ziel oder frage nach Empfehlungen.</div></div>
+  </div>
+  <div id="chatbot-update" class="assistant-box chatbot-update-box"></div>
+  <div class="chatbot-input">
+    <textarea id="chatbot-input-text" placeholder="Frage stellen oder Problem beschreiben...\n(Senden mit Strg+Enter)"></textarea>
+    <div class="actions">
+      <button class="btn" type="button" onclick="toggleChatbot(false)">Schliessen</button>
+      <button id="chatbot-send" class="btn primary" type="button">Senden</button>
+    </div>
+  </div>
+</div>
+<div id="chatbot-toggle" class="chatbot-toggle">KI</div>
 <script>
+/* =================== CHATBOT =================== */
+const chatbotState = {
+  isOpen: false,
+  busy: false,
+  messages: [{ role: 'assistant', content: 'Hallo! Ich helfe dir beim Konfigurieren der Pipeline. Teile dein Ziel oder frage nach Empfehlungen.' }],
+  pendingUpdate: null
+};
+function getChatbotElements(){
+  return {
+    panel: document.getElementById('chatbot-panel'),
+    toggle: document.getElementById('chatbot-toggle'),
+    input: document.getElementById('chatbot-input-text'),
+    send: document.getElementById('chatbot-send'),
+    messages: document.getElementById('chatbot-messages'),
+    update: document.getElementById('chatbot-update')
+  };
+}
+function toggleChatbot(forceOpen){
+  const el = getChatbotElements();
+  if(!el.panel || !el.toggle) return;
+  const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : el.panel.classList.contains('collapsed');
+  if(shouldOpen){
+    el.panel.classList.remove('collapsed');
+    chatbotState.isOpen = true;
+    setTimeout(()=>{ if(el.input){ el.input.focus(); } }, 120);
+  }else{
+    el.panel.classList.add('collapsed');
+    chatbotState.isOpen = false;
+  }
+}
+function setChatbotBusy(isBusy){
+  const el = getChatbotElements();
+  chatbotState.busy = !!isBusy;
+  if(el.send) el.send.disabled = !!isBusy;
+  if(el.input) el.input.disabled = !!isBusy;
+  if(el.toggle){
+    if(isBusy) el.toggle.classList.add('busy');
+    else el.toggle.classList.remove('busy');
+  }
+}
+function appendChatbotMessage(role, text){
+  const el = getChatbotElements();
+  if(!el.messages) return;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'chatbot-msg ' + (role === 'user' ? 'user' : 'assistant');
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = text;
+  wrapper.appendChild(bubble);
+  el.messages.appendChild(wrapper);
+  el.messages.scrollTop = el.messages.scrollHeight;
+}
+function rememberUserMessage(text){
+  chatbotState.messages.push({ role:'user', content:text });
+}
+function rememberAssistantMessage(text){
+  chatbotState.messages.push({ role:'assistant', content:text });
+}
+function showChatbotUpdate(update){
+  const { update: updateBox } = getChatbotElements();
+  chatbotState.pendingUpdate = null;
+  if(!updateBox) return;
+  updateBox.innerHTML = '';
+  updateBox.classList.remove('active');
+  if(!update) return;
+  chatbotState.pendingUpdate = update;
+  const targetLabel = update.target ? String(update.target) : 'unbekannt';
+  const reason = update.reason ? String(update.reason) : 'Kein Grund angegeben.';
+  const title = document.createElement('div');
+  title.innerHTML = '<strong>Vorgeschlagene Aenderung (' + targetLabel + ')</strong>';
+  const reasonEl = document.createElement('div');
+  reasonEl.textContent = 'Begruendung: ' + reason;
+  const confirmText = document.createElement('div');
+    confirmText.textContent = 'Please confirm with YES or NO before saving.';
+  const actions = document.createElement('div');
+  actions.className = 'update-actions';
+  const denyBtn = document.createElement('button');
+  denyBtn.className = 'btn';
+  denyBtn.type = 'button';
+  denyBtn.textContent = 'NEIN';
+  denyBtn.addEventListener('click', ()=>confirmChatbotUpdate('NEIN'));
+  const applyBtn = document.createElement('button');
+  applyBtn.className = 'btn primary';
+  applyBtn.type = 'button';
+  applyBtn.textContent = 'JA';
+  applyBtn.addEventListener('click', ()=>confirmChatbotUpdate('JA'));
+  actions.appendChild(denyBtn);
+  actions.appendChild(applyBtn);
+  updateBox.appendChild(title);
+  updateBox.appendChild(reasonEl);
+  updateBox.appendChild(confirmText);
+  updateBox.appendChild(actions);
+  updateBox.classList.add('active');
+}
+async function confirmChatbotUpdate(decision){
+  const pending = chatbotState.pendingUpdate;
+  if(!pending) return;
+  if(decision !== 'JA'){
+    showChatbotUpdate(null);
+    const msg = 'Verstanden. Keine Aenderung gespeichert.';
+    appendChatbotMessage('assistant', msg);
+    rememberAssistantMessage(msg);
+    return;
+  }
+  try{
+    setChatbotBusy(true);
+    const res = await fetch('/api/assistant/apply', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        confirmation:'JA',
+        target: pending.target,
+        changes: pending.changes,
+        reason: pending.reason || ''
+      })
+    });
+    let data = null;
+    try{ data = await res.json(); }catch(_){ data = null; }
+    if(!res.ok){
+      const msg = 'Fehler beim Anwenden: ' + (data && data.message ? data.message : res.status);
+      appendChatbotMessage('assistant', msg);
+      rememberAssistantMessage(msg);
+      return;
+    }
+    const successMsg = 'Change applied. Please review the results.';
+    appendChatbotMessage('assistant', successMsg);
+    rememberAssistantMessage(successMsg);
+    showChatbotUpdate(null);
+  }catch(err){
+    const msg = 'Fehler beim Anwenden: ' + (err && err.message ? err.message : err);
+    appendChatbotMessage('assistant', msg);
+    rememberAssistantMessage(msg);
+  }finally{
+    setChatbotBusy(false);
+  }
+}
+async function sendChatbotMessage(){
+  if(chatbotState.busy) return;
+  const el = getChatbotElements();
+  if(!el.input) return;
+  const raw = (el.input.value || '').trim();
+  if(!raw) return;
+  appendChatbotMessage('user', raw);
+  rememberUserMessage(raw);
+  el.input.value = '';
+  setChatbotBusy(true);
+  try{
+    const activeTab = document.querySelector('.main-tab.active')?.dataset?.tab || '';
+    const payload = {
+      include_detection: activeTab === 'det',
+      messages: chatbotState.messages.map(entry => ({ role: entry.role, content: entry.content }))
+    };
+    const res = await fetch('/api/assistant/chat', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if(!res.ok){
+      chatbotState.messages.pop();
+      const errMsg = 'Fehler: ' + (data && data.message ? data.message : res.status);
+      appendChatbotMessage('assistant', errMsg);
+      rememberAssistantMessage(errMsg);
+      return;
+    }
+    const reply = (data && data.response) ? data.response : 'Keine Antwort erhalten.';
+    appendChatbotMessage('assistant', reply);
+    rememberAssistantMessage(reply);
+    if(data && data.config_update){
+      showChatbotUpdate(data.config_update);
+    }else{
+      showChatbotUpdate(null);
+    }
+  }catch(err){
+    chatbotState.messages.pop();
+    const errMsg = 'Verbindung fehlgeschlagen: ' + (err && err.message ? err.message : err);
+    appendChatbotMessage('assistant', errMsg);
+    rememberAssistantMessage(errMsg);
+  }finally{
+    setChatbotBusy(false);
+  }
+}
+function initChatbotUi(){
+  const el = getChatbotElements();
+  if(!el.panel || !el.toggle || !el.input || !el.send) return;
+  showChatbotUpdate(null);
+  toggleChatbot(false);
+  el.toggle.addEventListener('click', ()=>toggleChatbot());
+  el.send.addEventListener('click', ()=>sendChatbotMessage());
+  el.input.addEventListener('keydown', (ev)=>{
+    if(ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)){
+      ev.preventDefault();
+      sendChatbotMessage();
+    }
+  });
+}
 /* =================== UTIL =================== */
-const CZI_COLOR_CHOICES = ['red','green','blue','yellow','cyan','magenta','white','orange','purple'];
-const HEX_TO_NAME = {'#ff0000':'red','#00ff00':'green','#0000ff':'blue','#ffff00':'yellow','#00ffff':'cyan','#ff00ff':'magenta','#ffffff':'white','#ffa500':'orange','#800080':'purple'};
+const COLOR_NAME_TO_HEX = {
+  red:'#ff0000',
+  green:'#008000',
+  lime:'#00ff00',
+  blue:'#0000ff',
+  cyan:'#00ffff',
+  magenta:'#ff00ff',
+  yellow:'#ffff00',
+  orange:'#ffa500',
+  purple:'#800080',
+  white:'#ffffff',
+  black:'#000000',
+  gray:'#808080',
+  grey:'#808080',
+  teal:'#008080',
+  pink:'#ffc0cb'
+};
+const HEX_TO_NAME = {};
+Object.entries(COLOR_NAME_TO_HEX).forEach(([name, hex])=>{
+  const key = hex.toLowerCase();
+  if(!HEX_TO_NAME[key]) HEX_TO_NAME[key] = name;
+});
+const CZI_COLOR_CHOICES = Object.keys(COLOR_NAME_TO_HEX);
 
-function normColor(val){ if(!val) return ''; const s=String(val).trim().toLowerCase(); if(CZI_COLOR_CHOICES.includes(s)) return s; if(HEX_TO_NAME[s]) return HEX_TO_NAME[s]; return s; }
+function toHexColorValue(val, fallback='#ffffff'){
+  if(val==null) return fallback;
+  let s = String(val).trim();
+  if(!s) return fallback;
+  if(s.startsWith('#')){
+    if(s.length===4){
+      s = '#' + s[1]+s[1] + s[2]+s[2] + s[3]+s[3];
+    }
+    if(/^#[0-9a-f]{6}$/i.test(s)) return s.toLowerCase();
+    return fallback;
+  }
+  const lower = s.toLowerCase();
+  if(COLOR_NAME_TO_HEX[lower]) return COLOR_NAME_TO_HEX[lower];
+  return fallback;
+}
+function fromColorInputValue(val){
+  if(!val) return '';
+  const lower = String(val).trim().toLowerCase();
+  if(HEX_TO_NAME[lower]) return HEX_TO_NAME[lower];
+  return lower.startsWith('#') ? lower : val;
+}
+function normColor(val){
+  if(!val) return '';
+  const hex = toHexColorValue(val, '');
+  if(hex) return hex;
+  return String(val).trim();
+}
 function toBool(v){ return String(v)==='true'; }
 function toInt(v){ const n=parseInt(v,10); return Number.isFinite(n)?n:undefined; }
 function toFloat(v){ const n=parseFloat(v); return Number.isFinite(n)?n:undefined; }
@@ -789,60 +1345,101 @@ function toArray(input){
   }
   return [];
 }
-function renderDetChannelSelector(cfg){
-  const cont=document.getElementById('det_channel_selector');
-  if(!cont) return;
-  const rawIndices=Array.isArray(cfg.channels)?cfg.channels:[];
-  let indices=rawIndices.map(v=>parseInt(v,10)).filter(Number.isFinite);
-  if(!indices.length){ indices=[0,1,2,3]; }
-  const labels=Array.isArray(cfg.channel_labels)?cfg.channel_labels:[];
-  const labelMap=new Map();
-  labels.forEach(item=>{
-    if(!item) return;
-    const idx=parseInt(item.index,10);
-    if(Number.isFinite(idx)){
-      labelMap.set(idx, String(item.name||'').trim());
-      if(!indices.includes(idx)) indices.push(idx);
+  function renderDetChannelSelector(cfg){
+    const cont=document.getElementById('det_channel_selector');
+    if(!cont) return;
+    const rawIndices=Array.isArray(cfg.channels)?cfg.channels:[];
+    let indices=rawIndices.map(v=>parseInt(v,10)).filter(Number.isFinite);
+    if(!indices.length){ indices=[0,1,2,3]; }
+    const labels=Array.isArray(cfg.channel_labels)?cfg.channel_labels:[];
+    const labelMap=new Map();
+    labels.forEach(item=>{
+      if(!item) return;
+      const idx=parseInt(item.index,10);
+      if(Number.isFinite(idx)){
+        labelMap.set(idx, String(item.name||'').trim());
+        if(!indices.includes(idx)) indices.push(idx);
+      }
+    });
+    indices=Array.from(new Set(indices)).filter(Number.isFinite).sort((a,b)=>a-b);
+    const selected=new Set(
+      Array.isArray(cfg.det_channel_selection)
+        ? cfg.det_channel_selection.map(v=>parseInt(v,10)).filter(Number.isFinite)
+        : []
+    );
+    if(!selected.size){
+      const fallback=parseInt(cfg?.cpsam?.cellpose?.channel,10);
+      if(Number.isFinite(fallback)) selected.add(fallback);
     }
-  });
-  indices=Array.from(new Set(indices)).filter(Number.isFinite).sort((a,b)=>a-b);
-  const selected=new Set(
-    Array.isArray(cfg.det_channel_selection)
-      ? cfg.det_channel_selection.map(v=>parseInt(v,10)).filter(Number.isFinite)
-      : []
-  );
-  if(!selected.size){
-    const fallback=parseInt(cfg?.cpsam?.cellpose?.channel,10);
-    if(Number.isFinite(fallback)) selected.add(fallback);
+    const levelSource=cfg?.channel_levels;
+    const levelMap=new Map();
+    if(Array.isArray(levelSource)){
+      levelSource.forEach(entry=>{
+        if(!entry) return;
+        const idx=parseInt(entry.index,10);
+        const lvl=parseInt(entry.level,10);
+        if(Number.isFinite(idx) && Number.isFinite(lvl)){
+          levelMap.set(idx,lvl);
+        }
+      });
+    }else if(levelSource && typeof levelSource==='object'){
+      Object.entries(levelSource).forEach(([k,v])=>{
+        const idx=parseInt(k,10);
+        const lvl=parseInt(v,10);
+        if(Number.isFinite(idx) && Number.isFinite(lvl)){
+          levelMap.set(idx,lvl);
+        }
+      });
+    }
+    const sliderFallback=parseInt(document.getElementById('det-sensitivity')?.value,10);
+    const fallbackLevel=Number.isFinite(sliderFallback)?sliderFallback:4;
+    const totalLevels=Array.isArray(SENSITIVITY_LEVELS)?SENSITIVITY_LEVELS.length:0;
+    const clampLevel=(lvl)=>{
+      if(!Number.isFinite(lvl)) return fallbackLevel;
+      if(totalLevels<=0) return lvl;
+      return Math.max(0, Math.min(totalLevels-1, lvl));
+    };
+    cont.innerHTML='';
+    indices.forEach(idx=>{
+      const name=labelMap.get(idx)||'';
+      const checked=selected.size ? selected.has(idx) : false;
+      const row=document.createElement('div');
+      row.className='det-channel-row inline';
+      row.dataset.index=String(idx);
+      const currentLevel=clampLevel(levelMap.has(idx)?levelMap.get(idx):fallbackLevel);
+      const options=Array.isArray(SENSITIVITY_LEVELS)?SENSITIVITY_LEVELS.map((entry,lvl)=>{
+        const niceLabel=entry.label.replace(/\s{2,}/g,' - ');
+        return `<option value="${lvl}" ${lvl===currentLevel?'selected':''}>${niceLabel}</option>`;
+      }).join(''):'';
+      row.innerHTML=`
+        <label class="inline" style="gap:6px;align-items:center;">
+          <input type="checkbox" class="det-ch-select" data-index="${idx}" ${checked?'checked':''}/>
+          ch${idx}
+        </label>
+        <input type="text" class="det-ch-name" data-index="${idx}" value="${name.replace(/"/g,'&quot;')}" placeholder="Name (optional)" style="flex:1;min-width:120px"/>
+        <label class="inline" style="gap:6px;align-items:center;min-width:220px;">
+          <span class="muted" style="min-width:56px;">Level</span>
+          <select class="det-ch-level" data-index="${idx}" style="flex:1;min-width:150px;">
+            ${options}
+          </select>
+        </label>
+      `;
+      cont.appendChild(row);
+    });
   }
-  cont.innerHTML='';
-  indices.forEach(idx=>{
-    const name=labelMap.get(idx)||'';
-    const checked=selected.size ? selected.has(idx) : false;
-    const row=document.createElement('div');
-    row.className='det-channel-row inline';
-    row.dataset.index=String(idx);
-    row.innerHTML=`
-      <label class="inline" style="gap:6px;align-items:center;">
-        <input type="checkbox" class="det-ch-select" data-index="${idx}" ${checked?'checked':''}/>
-        ch${idx}
-      </label>
-      <input type="text" class="det-ch-name" data-index="${idx}" value="${name.replace(/"/g,'&quot;')}" placeholder="Name (optional)" style="flex:1;min-width:120px"/>
-    `;
-    cont.appendChild(row);
-  });
-}
-function collectDetChannels(){
-  const cont=document.getElementById('det_channel_selector');
-  if(!cont) return [];
-  return Array.from(cont.querySelectorAll('.det-channel-row')).map(row=>{
-    const idx=parseInt(row.dataset.index,10);
-    if(!Number.isFinite(idx)) return null;
-    const name=row.querySelector('.det-ch-name')?.value||'';
-    const selected=!!row.querySelector('.det-ch-select')?.checked;
-    return {index: idx, name, selected};
-  }).filter(Boolean);
-}
+  function collectDetChannels(){
+    const cont=document.getElementById('det_channel_selector');
+    if(!cont) return [];
+    return Array.from(cont.querySelectorAll('.det-channel-row')).map(row=>{
+      const idx=parseInt(row.dataset.index,10);
+      if(!Number.isFinite(idx)) return null;
+      const name=row.querySelector('.det-ch-name')?.value||'';
+      const selected=!!row.querySelector('.det-ch-select')?.checked;
+      const levelEl=row.querySelector('.det-ch-level');
+      const level=parseInt(levelEl?.value,10);
+      return {index: idx, name, selected, level: Number.isFinite(level)?level:undefined};
+    }).filter(Boolean);
+  }
 function pruneEmptyBranches(obj){
   if(!obj || typeof obj!=='object' || Array.isArray(obj)) return;
   Object.keys(obj).forEach((key)=>{
@@ -899,13 +1496,13 @@ function buildDetConfigPayload(){
       split_min_area: toInt(document.getElementById('det_cpsam_split_min_area')?.value),
       split_rel_peak_threshold: toFloat(document.getElementById('det_cpsam_split_rel_peak')?.value)
     },
-    overlays:{
-      overlay_mode: document.getElementById('det_cpsam_overlay_mode')?.value || undefined,
-      contour_color: document.getElementById('det_cpsam_contour_color')?.value || undefined,
-      line_width: toInt(document.getElementById('det_cpsam_line_width')?.value),
-      dpi: toInt(document.getElementById('det_cpsam_dpi')?.value),
-      figsize: toIntPair(document.getElementById('det_cpsam_figsize')?.value)
-    },
+      overlays:{
+        overlay_mode: document.getElementById('det_cpsam_overlay_mode')?.value || undefined,
+        contour_color: fromColorInputValue(document.getElementById('det_cpsam_contour_color')?.value || '') || undefined,
+        line_width: toInt(document.getElementById('det_cpsam_line_width')?.value),
+        dpi: toInt(document.getElementById('det_cpsam_dpi')?.value),
+        figsize: toIntPair(document.getElementById('det_cpsam_figsize')?.value)
+      },
     outputs:{
       base_name: document.getElementById('det_cpsam_base_name')?.value || undefined
     }
@@ -920,6 +1517,9 @@ function buildDetConfigPayload(){
   const channelIndices = [];
   const channelLabels = [];
   const channelSelection = [];
+  const channelLevels = [];
+  const seenForLevel = new Set();
+  const maxLevelIndex = Array.isArray(SENSITIVITY_LEVELS) && SENSITIVITY_LEVELS.length ? SENSITIVITY_LEVELS.length - 1 : null;
   channelMeta.forEach(ch=>{
     if(!ch) return;
     const idx=parseInt(ch.index,10);
@@ -927,20 +1527,54 @@ function buildDetConfigPayload(){
     if(!channelIndices.includes(idx)) channelIndices.push(idx);
     channelLabels.push({index: idx, name: ch.name || ''});
     if(ch.selected && !channelSelection.includes(idx)) channelSelection.push(idx);
+    if(Number.isFinite(ch.level) && !seenForLevel.has(idx)){
+      let levelIdx = Math.trunc(ch.level);
+      if(Number.isFinite(levelIdx)){
+        if(maxLevelIndex !== null){
+          levelIdx = Math.max(0, Math.min(maxLevelIndex, levelIdx));
+        }
+        channelLevels.push({index: idx, level: levelIdx});
+        seenForLevel.add(idx);
+      }
+    }
   });
   channelIndices.sort((a,b)=>a-b);
   channelSelection.sort((a,b)=>a-b);
 
-  const testEnabled = (document.getElementById('det_test_mode')?.value || 'false') === 'true';
+  const testModeValue = (document.getElementById('det_test_mode')?.value || 'disabled');
   let testSamples = toInt(document.getElementById('det_test_samples')?.value);
   if(!Number.isFinite(testSamples) || testSamples <= 0) testSamples = undefined;
   const testSeedRaw = (document.getElementById('det_test_seed')?.value || '').trim();
-  const testingBlock = { enabled: testEnabled };
+  const testingBlock = {
+    mode: testModeValue,
+    enabled: testModeValue !== 'disabled'
+  };
   if(testSamples !== undefined) testingBlock.samples_per_channel = testSamples;
   if(testSeedRaw) testingBlock.seed = testSeedRaw;
+  if(testModeValue === 'advanced'){
+    const selectedLevels = Array.from(document.querySelectorAll('#det_test_levels input[type="checkbox"]:checked'))
+      .map((el)=>parseInt(el.value,10))
+      .filter(Number.isFinite)
+      .sort((a,b)=>a-b);
+    if(selectedLevels.length) testingBlock.levels = selectedLevels;
+    const selectedImagePos = (document.getElementById('det_test_image_pos')?.value || '').trim();
+    const selectedImageNeg = (document.getElementById('det_test_image_neg')?.value || '').trim();
+    const selectedImages = {};
+    if(selectedImagePos) selectedImages.pos = selectedImagePos;
+    if(selectedImageNeg) selectedImages.neg = selectedImageNeg;
+    if(Object.keys(selectedImages).length){
+      testingBlock.selected_images = selectedImages;
+      if(!testingBlock.selected_image){
+        testingBlock.selected_image = selectedImages.pos || selectedImages.neg;
+      }
+    }
+  }
+  if(testModeValue === 'disabled'){
+    testingBlock.enabled = false;
+  }
   pruneEmptyBranches(testingBlock);
 
-  return {
+  const payload = {
     input_tiffs_dir: document.getElementById('det_input_dir')?.value || '',
     output_results_dir: document.getElementById('det_output_dir')?.value || '',
     channels: channelIndices,
@@ -958,6 +1592,11 @@ function buildDetConfigPayload(){
     testing: testingBlock,
     cpsam
   };
+  if(channelLevels.length){
+    payload.channel_levels = channelLevels;
+  }
+  pruneEmptyBranches(payload);
+  return payload;
 }
 function parseIntsCSV(s, fallback=[]) { return String(s||'').split(',').map(x=>parseInt(x.trim(),10)).filter(Number.isFinite).concat([]).slice(0) || fallback; }
 
@@ -1004,40 +1643,43 @@ function injectHelp(mapping){ Object.entries(mapping).forEach(([id, txt])=>injec
 const HELP_CZI = {
   czi_input_dir: "Folder containing CZI files.\nEffect: Source images for conversion.\nRange: valid path",
   czi_output_dir: "Target folder where TIFFs will be written.\nEffect: Destination for outputs.\nRange: valid path",
-  czi_channels: "Indices of channels to extract, comma‑separated.\nIncrease: include more channels.\nRange: 0–9",
-  czi_target_size: "Resize to this max side in pixels; empty to keep original.\nIncrease: bigger output (slower).\nRange: 512–8192",
-  czi_normalize: "Normalize each channel to 0–255.\nOn: consistent brightness.\nRange: true|false",
+  czi_channels: "Indices of channels to extract, comma-separated.\nIncrease: include more channels.\nRange: 0-9",
+  czi_target_size: "Resize to this max side in pixels; empty to keep original.\nIncrease: bigger output (slower).\nRange: 512-8192",
+  czi_normalize: "Normalize each channel to 0-255.\nOn: consistent brightness.\nRange: true|false",
   czi_overwrite: "Overwrite existing files.\nOn: regenerate outputs.\nRange: true|false",
   czi_save_per_channel: "Save one TIFF per channel (*_ch{i}.tif).\nRange: true|false",
-  czi_save_stack_tiff: "Save a multi‑channel stack (YXC or CYX).\nRange: true|false",
-  czi_save_rgb_preview: "Save a 3‑channel RGB preview mapping given channels.\nRange: true|false",
+  czi_save_stack_tiff: "Save a multi-channel stack (YXC or CYX).\nRange: true|false",
+  czi_save_rgb_preview: "Save a 3-channel RGB preview mapping given channels.\nRange: true|false",
   czi_stack_layout: "Axis order in saved stack.\nRange: YXC|CYX",
   czi_imagej_hyperstack: "Write ImageJ hyperstack metadata.\nBetter handling in ImageJ/Fiji.\nRange: true|false",
   czi_save_color_composite: "Blend all channels into one color composite.\nRange: true|false",
-  czi_channel_colors_container: "Per‑channel display colors (order follows channels list).",
+  czi_channel_colors_container: "Per-channel display colors (order follows channels list).",
   czi_rgb_channels: "Indices to map to R,G,B in preview.\nRange: 3 integers",
   czi_dtype: "Bit depth of outputs.\nuint8: small, uint16: larger dynamic range.\nRange: uint8|uint16",
   czi_save_colored_pages: "Save one colored page per channel in a multipage TIFF.\nRange: true|false",
-  czi_save_ome_colors: "Write OME‑TIFF with channel color metadata.\nRange: true|false"
+  czi_save_ome_colors: "Write OME-TIFF with channel color metadata.\nRange: true|false"
 };
 
 const HELP_DET = {
   det_input_dir: "TIFF input root. Should contain folders like ch*/ and optionally overlays/.\nRange: valid path",
   det_output_dir: "Output root for detection CSVs and overlays.\nRange: valid path",
-  det_channel_selector: "Wähle die Kanäle für die Detection aus und vergebe optionale Namen.\nMehrere Kanäle werden nacheinander verarbeitet.",
+  det_channel_selector: "Waehle die Kanaele fuer die Detection aus und vergebe optionale Namen.\nMehrere Kanaele werden nacheinander verarbeitet.",
   det_model_type: "Cellpose model to use (or cpsam for wrapper).\nRange: cyto2|cyto3|cyto|nuclei|cpsam",
   det_use_gpu: "Try to use GPU if available.\nRange: true|false",
-  det_batch_size: "Tiles per batch.\nIncrease: faster, more VRAM.\nRange: 1–64",
+  det_batch_size: "Tiles per batch.\nIncrease: faster, more VRAM.\nRange: 1-64",
   det_diameter: "Expected cell diameter (px). Empty = auto.\nIncrease: fewer segments; Decrease: more segments.",
-  det_test_mode: "Enable test mode to process only a few images per channel.",
-  det_test_samples: "Number of images per channel when test mode is enabled.",
-  det_test_seed: "Optional seed to reproduce the sampled images.",
+  det_test_mode: "Choose Disabled, Simple sampling, or Advanced sweep to iterate sensitivity levels.",
+  det_test_samples: "Images per channel (simple) or per level (advanced). Higher values increase runtime.",
+  det_test_seed: "Optional seed to reproduce sampled images. Leave blank for random selection.",
+  det_test_levels: "Advanced mode: select sensitivity levels to sweep. Leave empty to include all levels.",
+  det_test_image_pos: "Advanced mode: POS condition sample file (stored relative to the condition folder).",
+  det_test_image_neg: "Advanced mode: NEG condition sample file (stored relative to the condition folder).",
   'det-sensitivity': "Master sensitivity slider. Left=Conservative, Right=Liberal.\nMaps to multiple thresholds automatically.",
   det_save_overlay: "Write overlay images for QC.\nRange: true|false",
-  det_overlay_suffix: "Suffix of overlay image files. Must match co‑expression pipeline.\nExample: _overlay.png",
-  det_script_path: "Path to batch_segment.py.\nLeave empty to auto‑discover.\nRange: valid path or empty",
-  det_cpsam_channel: "Channel index to segment.\nRange: 0–7",
-  det_cpsam_resize_max: "Max image dimension for processing.\nIncrease: more detail (slower).\nRange: 1024–4096",
+  det_overlay_suffix: "Suffix of overlay image files. Must match co-expression pipeline.\nExample: _overlay.png",
+  det_script_path: "Path to batch_segment.py.\nLeave empty to auto-discover.\nRange: valid path or empty",
+  det_cpsam_channel: "Channel index to segment.\nRange: 0-7",
+  det_cpsam_resize_max: "Max image dimension for processing.\nIncrease: more detail (slower).\nRange: 1024-4096",
   det_cpsam_niter: "Number of model iterations.\nIncrease: potentially better masks (slower).",
   det_cpsam_pos_pattern: "Substring pattern for positive condition folders/files.",
   det_cpsam_neg_pattern: "Substring pattern for negative condition folders/files.",
@@ -1074,60 +1716,166 @@ const HELP_DET = {
 
 const HELP_COEXPR = {
   input_dir: "Results root (should contain ch*/ and overlays/).\nRange: valid path",
-  output_dir: "Folder to write co‑expression outputs.\nRange: valid path",
+  output_dir: "Folder to write co-expression outputs.\nRange: valid path",
   dataset_name: "Optional dataset label.\nRange: text",
-  active_hsv_range: "HSV preset used for visual extraction.\nRange: 0‑3",
-  channel_count: "Number of channels considered when composing combos.\nRange: 2‑10",
-  coexpr_test_mode: "Enable test mode to limit the number of sample keys processed.",
+  active_hsv_range: "HSV preset used for visual extraction.\nRange: 0-3",
+  channel_count: "Number of channels considered when composing combos.\nRange: 2-10",
   coexpr_test_samples: "Number of sample keys when test mode is enabled.",
   coexpr_test_seed: "Optional seed for reproducible sampling.",
   coexpr_use_masks: "Prefer *_mask.tif files generated by detection. Disable to force overlay thresholding.",
   coexpr_auto_threshold: "When enabled, automatically threshold overlays if no mask exists (fallback).",
   coexpr_save_figure: "If enabled, saves a composite figure (channel previews + co-expression) per sample.",
-  ov_color_k2: "Color for 2‑way overlays.",
-  ov_color_k3: "Color for 3‑way overlays.",
-  ov_color_k4: "Color for 4‑way overlays.",
+  coexpr_mode: "Choose how co-expression is determined: strict overlap, centroid distance, union, or intersection.",
+  coexpr_centroid_distance: "Maximum pixel distance between centroids when using centroid-based matching.",
+  centroid_overlap_fraction: "Minimum overlap percentage applied only when centroid logic is active.",
+  coexpr_test_mode_type: "Select basic behaviour: disabled, simple random sampling, or sweep on a fixed sample.",
+  coexpr_sweep_modes_container: "Pick the co-expression modes that should be tested when sweep mode is active.",
+  coexpr_sweep_sample: "Sample key that should be used for the sweep (must exist in all selected channels).",
+  ov_figure_type: "Choose between overlay preview or mask-only composite figure.",
+  ov_even_layout: "For even panel counts (>=4), choose single row or 2x block layout.",
+  ov_color_k2: "Color for 2-way overlays.",
+  ov_color_k3: "Color for 3-way overlays.",
+  ov_color_k4: "Color for 4-way overlays.",
   ov_line_width: "Line width for overlays.",
   ov_dpi: "DPI for overlay figures."
 };
 
 /* =================== FOLDER BROWSER =================== */
-let fbTarget=null, fbCurrent=null, fbSelected=null;
-async function openFileBrowser(targetId){
+let fbTarget=null, fbCurrent=null, fbSelected=null, fbSelectedType=null, fbOptions=null;
+const FB_DEFAULTS={includeFiles:false,pickFile:false,relativeTo:null,allowedExtensions:null,title:null,startFrom:null,storeRaw:false};
+function normalizeBrowserPath(path){ return (path||'.').trim()||'.'; }
+function normalizeExtList(list){
+  if(!Array.isArray(list)) return null;
+  return list.map(ext=>String(ext||'').trim().toLowerCase()).filter(Boolean);
+}
+function toRelativePath(path, base){
+  if(!path || !base) return path;
+  const normPath=path.replace(/\\/g,'/').replace(/\/+/g,'/');
+  let normBase=base.replace(/\\/g,'/').replace(/\/+/g,'/');
+  if(!normPath.toLowerCase().startsWith(normBase.toLowerCase())){
+    return path;
+  }
+  let rel=normPath.slice(normBase.length);
+  if(rel.startsWith('/')) rel=rel.slice(1);
+  return rel || '.';
+}
+async function openFileBrowser(targetId, options={}){
   fbTarget=targetId;
   const el=document.getElementById(targetId);
-  fbCurrent=(el?el.value:'.').trim()||'.';
+  const mergedOptions={...FB_DEFAULTS,...(options||{})};
+  if(mergedOptions.pickFile) mergedOptions.includeFiles=true;
+  mergedOptions.allowedExtensions=normalizeExtList(mergedOptions.allowedExtensions);
+  fbOptions=mergedOptions;
+  const startPath=normalizeBrowserPath(mergedOptions.startFrom!=null?mergedOptions.startFrom:(el?el.value:'.'));
+  fbCurrent=startPath;
   fbSelected=null;
+  fbSelectedType=null;
+  const titleEl=document.getElementById('fb-title');
+  if(titleEl){
+    titleEl.textContent=mergedOptions.title || (mergedOptions.pickFile?'Select file':'Select folder');
+  }
+  const confirmEl=document.getElementById('fb-confirm');
+  if(confirmEl){
+    confirmEl.textContent=mergedOptions.pickFile?'Select file':'Choose';
+  }
   document.getElementById('fb-modal')?.classList.add('active');
   await browseTo(fbCurrent);
 }
 async function browseTo(path){
   try{
-    const r=await fetch('/api/browse',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path})});
+    const payload={path};
+    if(fbOptions?.includeFiles) payload.include_files=true;
+    const r=await fetch('/api/browse',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const j=await r.json();
     fbCurrent=j.current_path;
+    fbSelected=null;
+    fbSelectedType=null;
     const pathEl=document.getElementById('fb-path'); if(pathEl) pathEl.textContent=fbCurrent;
     const list=document.getElementById('fb-list'); if(!list) return;
     list.innerHTML='';
+    const allowFiles=!!fbOptions?.includeFiles;
+    const allowedExts=fbOptions?.allowedExtensions;
     (j.items||[]).forEach(it=>{
-      if(!it.isDir) return;
+      if(!it.isDir){
+        if(!allowFiles) return;
+        if(it.type==='file' && Array.isArray(allowedExts)){
+          const lowerName=String(it.name||'').toLowerCase();
+          if(!allowedExts.some(ext=>lowerName.endsWith(ext))) return;
+        }
+      }
       const d=document.createElement('div');
       d.className='modal-item';
-      d.innerHTML=`<span>${it.type==='parent'?'⬆️':'📁'}</span><span>${it.name}</span>`;
-      d.onclick=()=>{ list.querySelectorAll('.modal-item').forEach(x=>x.classList.remove('selected')); d.classList.add('selected'); fbSelected=it.path; if(it.type==='parent') browseTo(it.path); };
-      d.ondblclick=()=>{ if(it.type!=='parent') browseTo(it.path); };
+      const isDir=!!it.isDir;
+      const label=isDir?(it.type==='parent'?'[..]':'[DIR]'):'[FILE]';
+      d.innerHTML=`<span>${label}</span><span>${it.name}</span>`;
+      d.onclick=()=>{
+        list.querySelectorAll('.modal-item').forEach(x=>x.classList.remove('selected'));
+        d.classList.add('selected');
+        fbSelected=it.path;
+        fbSelectedType=it.type;
+        if(isDir && it.type==='parent'){
+          fbSelected=null;
+          fbSelectedType=null;
+          browseTo(it.path);
+        }
+      };
+      d.ondblclick=()=>{
+        if(isDir && it.type!=='parent'){
+          browseTo(it.path);
+        }else if(!isDir && fbOptions?.pickFile){
+          fbSelected=it.path;
+          fbSelectedType='file';
+          confirmFileBrowserSelection();
+        }
+      };
       list.appendChild(d);
     });
   }catch(e){
     const list=document.getElementById('fb-list'); if(list) list.innerHTML=`<div class="modal-item">Error: ${e.message}</div>`;
   }
 }
-function selectDirectory(){
-  const pick=fbSelected||fbCurrent;
-  if(fbTarget && pick){ const el=document.getElementById(fbTarget); if(el) el.value=pick; }
+function confirmFileBrowserSelection(){
+  if(!fbTarget) return;
+  let pick=null;
+  if(fbOptions?.pickFile){
+    if(fbSelected && fbSelectedType==='file'){
+      pick=fbSelected;
+    }else{
+      alert('Please select a file.');
+      return;
+    }
+  }else{
+    pick=fbSelected||fbCurrent;
+  }
+  if(!pick) return;
+  let finalPath=pick;
+  if(fbOptions?.relativeTo){
+    const baseEl=document.getElementById(fbOptions.relativeTo);
+    const baseVal=baseEl?baseEl.value:String(fbOptions.relativeTo);
+    if(baseVal) finalPath=toRelativePath(finalPath, baseVal);
+  }
+  const el=document.getElementById(fbTarget);
+  if(el){
+    if(fbOptions?.storeRaw){
+      if(pick){
+        el.dataset.sourcePath = pick;
+      }else{
+        delete el.dataset.sourcePath;
+      }
+    }
+    el.value=finalPath;
+    el.dispatchEvent(new Event('change'));
+  }
   closeFileBrowser();
 }
-function closeFileBrowser(){ document.getElementById('fb-modal')?.classList.remove('active'); fbTarget=fbCurrent=fbSelected=null; }
+function closeFileBrowser(){
+  document.getElementById('fb-modal')?.classList.remove('active');
+  fbTarget=null;
+  fbCurrent=null;
+  fbSelected=null;
+  fbSelectedType=null;
+  fbOptions=null;
+}
 
 /* =================== CZI =================== */
 function parseCziChannels(){ return (document.getElementById('czi_channels')?.value||'').split(',').map(s=>parseInt(s.trim(),10)).filter(Number.isFinite); }
@@ -1135,16 +1883,16 @@ function renderCziChannelColors(existingColors){
   const cont=document.getElementById('czi_channel_colors_container'); if(!cont) return;
   cont.innerHTML='';
   const chs=parseCziChannels();
-  if(!chs.length){ cont.innerHTML='<div class="muted">Set “Channels to Extract” first.</div>'; return; }
+  if(!chs.length){ cont.innerHTML='<div class="muted">Set "Channels to Extract" first.</div>'; return; }
   chs.forEach((srcCh, idx)=>{
-    const selId=`czi_color_ch_${idx}`;
-    const current=normColor((existingColors && existingColors[idx])||'');
+    const inputId=`czi_color_ch_${idx}`;
+    const defaultPalette=['#ff0000','#00ff00','#0000ff','#ffff00'];
+    const fallback=defaultPalette[idx % defaultPalette.length];
+    const hexValue=toHexColorValue((existingColors && existingColors[idx])||fallback, fallback);
     const wrap=document.createElement('div');
     wrap.innerHTML=`
       <label>ch${srcCh} color</label>
-      <select id="${selId}">
-        ${CZI_COLOR_CHOICES.map(c=>`<option value="${c}" ${c===current?'selected':''}>${c}</option>`).join('')}
-      </select>`;
+      <input type="color" id="${inputId}" value="${hexValue}"/>`;
     cont.appendChild(wrap);
   });
 }
@@ -1176,7 +1924,10 @@ async function loadCziConfig(){
 }
 async function saveCziConfig(){
   const chs=parseCziChannels();
-  const channel_colors = chs.map((_,idx)=>document.getElementById(`czi_color_ch_${idx}`)?.value||'white');
+  const channel_colors = chs.map((_,idx)=>{
+    const raw=document.getElementById(`czi_color_ch_${idx}`)?.value || '#ffffff';
+    return fromColorInputValue(raw) || '#ffffff';
+  });
   const parseInts=(s)=>String(s||'').split(',').map(x=>parseInt(x.trim(),10)).filter(Number.isFinite);
   const cfg={
     input_root: document.getElementById('czi_input_dir')?.value||'',
@@ -1199,18 +1950,18 @@ async function saveCziConfig(){
   };
   const res=await fetch('/api/czi/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
   if(!res.ok) throw new Error('HTTP '+res.status);
-  alert('✅ CZI config saved');
+  alert('[OK] CZI config saved');
 }
 let cziPoll=null;
 async function startCzi(){
-  try{ await saveCziConfig(); }catch(e){ alert('❌ Save failed: '+e.message); return; }
+  try{ await saveCziConfig(); }catch(e){ alert('[ERROR] Save failed: '+e.message); return; }
   const logEl=document.getElementById('czi-log'); const startBtn=document.getElementById('czi-start'); const stopBtn=document.getElementById('czi-stop');
   if(startBtn) startBtn.style.display='none'; if(stopBtn) stopBtn.style.display='inline-block'; if(logEl) logEl.textContent='Starting...\n';
   try{
     const r=await fetch('/api/czi/start',{method:'POST'}); if(!r.ok) throw new Error('HTTP '+r.status);
     if(cziPoll) clearInterval(cziPoll);
     cziPoll=setInterval(pollCzi, 700);
-  }catch(e){ if(logEl) logEl.textContent+='❌ Start failed: '+e.message+'\n'; if(startBtn) startBtn.style.display='inline-block'; if(stopBtn) stopBtn.style.display='none'; }
+  }catch(e){ if(logEl) logEl.textContent+='[ERROR] Start failed: '+e.message+'\n'; if(startBtn) startBtn.style.display='inline-block'; if(stopBtn) stopBtn.style.display='none'; }
 }
 async function pollCzi(){
   try{
@@ -1234,9 +1985,9 @@ async function loadCziResults(){
     const r=await fetch('/api/czi/results'); if(!r.ok) throw new Error('HTTP '+r.status);
     const data=await r.json(); const files=Array.isArray(data.files)?data.files:[];
     if(!files.length){ el.innerHTML='<div class="muted">No files found.</div>'; return; }
-    const header=`<div class="muted" style="margin-bottom:8px">${data.total_files} files • ${(data.total_size/1024/1024).toFixed(1)} MB</div>`;
+    const header=`<div class="muted" style="margin-bottom:8px">${data.total_files} files - ${(data.total_size/1024/1024).toFixed(1)} MB</div>`;
     const grid='<div class="results-grid">'+files.map(f=>(
-      `<div class="results-card"><div><div><strong>🖼 ${f.name}</strong></div><div class="meta">${(f.size/1024/1024).toFixed(2)} MB • ${f.modified}</div></div><a class="btn" href="${f.download || ('/api/czi/download?path='+encodeURIComponent(f.path))}">⬇️</a></div>`
+      `<div class="results-card"><div><div><strong>     ${f.name}</strong></div><div class="meta">${(f.size/1024/1024).toFixed(2)} MB - ${f.modified}</div></div><a class="btn" href="${f.download || ('/api/czi/download?path='+encodeURIComponent(f.path))}">v   </a></div>`
     )).join('')+'</div>';
     el.innerHTML=header+grid;
   }catch(e){ el.textContent='Error: '+e.message; }
@@ -1244,17 +1995,48 @@ async function loadCziResults(){
 
 /* =================== DETECTION =================== */
 const SENSITIVITY_LEVELS=[
-  {label:'Level 1 · Only brightest',         cellprob:0.90, flow:1.10, snr:4.2, floorPct:98, absInt:45, itf:0.10},
-  {label:'Level 2 · Very conservative',      cellprob:0.78, flow:0.95, snr:3.8, floorPct:95, absInt:40, itf:0.22},
-  {label:'Level 3 · Strict',                 cellprob:0.64, flow:0.80, snr:3.3, floorPct:92, absInt:35, itf:0.36},
-  {label:'Level 4 · Semi-strict',            cellprob:0.50, flow:0.65, snr:2.8, floorPct:88, absInt:30, itf:0.52},
-  {label:'Level 5 · Balanced',               cellprob:0.36, flow:0.50, snr:2.3, floorPct:82, absInt:25, itf:0.72},
-  {label:'Level 6 · Moderate sensitivity',   cellprob:0.20, flow:0.32, snr:2.0, floorPct:74, absInt:21, itf:0.92},
-  {label:'Level 7 · Liberal',                cellprob:0.04, flow:0.15, snr:1.6, floorPct:64, absInt:16, itf:1.12},
-  {label:'Level 8 · Very liberal',           cellprob:-0.08, flow:0.00, snr:1.2, floorPct:52, absInt:11, itf:1.32},
-  {label:'Level 9 · High sensitivity',       cellprob:-0.16, flow:-0.12, snr:0.9, floorPct:36, absInt:7, itf:1.52},
-  {label:'Level 10 · Counts very weak',      cellprob:-0.24, flow:-0.22, snr:0.6, floorPct:20, absInt:3, itf:1.72}
+  {label:'Level 1    Only brightest',         cellprob:0.90, flow:1.10, snr:4.2, floorPct:98, absInt:45, itf:0.10},
+  {label:'Level 2    Very conservative',      cellprob:0.78, flow:0.95, snr:3.8, floorPct:95, absInt:40, itf:0.22},
+  {label:'Level 3    Strict',                 cellprob:0.64, flow:0.80, snr:3.3, floorPct:92, absInt:35, itf:0.36},
+  {label:'Level 4    Semi-strict',            cellprob:0.50, flow:0.65, snr:2.8, floorPct:88, absInt:30, itf:0.52},
+  {label:'Level 5    Balanced',               cellprob:0.36, flow:0.50, snr:2.3, floorPct:82, absInt:25, itf:0.72},
+  {label:'Level 6    Moderate sensitivity',   cellprob:0.20, flow:0.32, snr:2.0, floorPct:74, absInt:21, itf:0.92},
+  {label:'Level 7    Liberal',                cellprob:0.04, flow:0.15, snr:1.6, floorPct:64, absInt:16, itf:1.12},
+  {label:'Level 8    Very liberal',           cellprob:-0.08, flow:0.00, snr:1.2, floorPct:45, absInt:10, itf:1.32},
+  {label:'Level 9    High sensitivity',       cellprob:-0.16, flow:-0.12, snr:0.9, floorPct:36, absInt:7, itf:1.52},
+  {label:'Level 10    Counts very weak',      cellprob:-0.24, flow:-0.22, snr:0.6, floorPct:20, absInt:3, itf:1.72}
 ];
+
+function renderDetTestLevels(selectedLevels){
+  const container=document.getElementById('det_test_levels');
+  if(!container) return;
+  const fallbackSelected=Array.from(container.querySelectorAll('input[type="checkbox"]:checked'))
+    .map((el)=>parseInt(el.value,10))
+    .filter(Number.isFinite);
+  const incoming=Array.isArray(selectedLevels)?selectedLevels:fallbackSelected;
+  const selectedSet=new Set(incoming.map((v)=>parseInt(v,10)).filter(Number.isFinite));
+  const html=SENSITIVITY_LEVELS.map((entry,idx)=>{
+    const niceLabel=entry.label.replace(/\s{2,}/g,' - ');
+    const checked=selectedSet.has(idx)?'checked':'';
+    return `<label><input type="checkbox" value="${idx}" ${checked}/> ${niceLabel}</label>`;
+  }).join('');
+  container.innerHTML=html;
+}
+
+function syncDetTestModeUI(){
+  const mode=(document.getElementById('det_test_mode')?.value||'disabled');
+  const samples=document.getElementById('det_test_samples');
+  const seed=document.getElementById('det_test_seed');
+  const advancedBox=document.getElementById('det-test-advanced');
+  if(samples) samples.disabled = mode==='disabled';
+  if(seed) seed.disabled = mode==='disabled';
+  if(advancedBox){
+    advancedBox.style.display = mode==='advanced' ? 'grid' : 'none';
+    advancedBox.querySelectorAll('input,button').forEach((el)=>{
+      el.disabled = mode!=='advanced';
+    });
+  }
+}
 function mapSensitivityToParams(val){
   const raw = Number.parseInt(val, 10);
   const fallback = 4;
@@ -1311,9 +2093,22 @@ async function loadDetConfig(){
     m('det_overlay_suffix', cfg.overlay_suffix||'_overlay.png');
     m('det_script_path', cfg.det_script_path||'');
     const testing=cfg.testing||{};
-    m('det_test_mode', testing.enabled?'true':'false');
+    const testMode = typeof testing.mode === 'string' ? testing.mode.toLowerCase() : (testing.enabled ? 'simple' : 'disabled');
+    m('det_test_mode', testMode);
     m('det_test_samples', testing.samples_per_channel==null?'':testing.samples_per_channel);
     m('det_test_seed', testing.seed||'');
+    const advancedLevels=testMode==='advanced' && Array.isArray(testing.levels)?testing.levels:null;
+    renderDetTestLevels(advancedLevels);
+    const selectedImages = (testing.selected_images && typeof testing.selected_images === 'object') ? testing.selected_images : {};
+    const imagePosEl=document.getElementById('det_test_image_pos');
+    if(imagePosEl){
+      imagePosEl.value = selectedImages.pos || selectedImages.POS || testing.selected_image || '';
+    }
+    const imageNegEl=document.getElementById('det_test_image_neg');
+    if(imageNegEl){
+      imageNegEl.value = selectedImages.neg || selectedImages.NEG || '';
+    }
+    syncDetTestModeUI();
     const c=cfg.cpsam||{}; const cond=c.conditions||{}; const cp=c.cellpose||{}; const fil=c.filters||{}; const adv=c.advanced_filtering||{}; const proc=c.processing||{}; const ov=c.overlays||{}; const outp=c.outputs||{};
     m('det_cpsam_pos_pattern', cond.pos_pattern||''); m('det_cpsam_neg_pattern', cond.neg_pattern||'');
     m('det_cpsam_channel', cp.channel); m('det_cpsam_resize_max', cp.resize_max); m('det_cpsam_niter', cp.niter);
@@ -1334,10 +2129,16 @@ async function loadDetConfig(){
     m('det_cpsam_split_area_multiplier', proc.split_area_multiplier);
     m('det_cpsam_split_min_area', proc.split_min_area);
     m('det_cpsam_split_rel_peak', proc.split_rel_peak_threshold);
-    m('det_cpsam_overlay_mode', ov.overlay_mode||'contours'); m('det_cpsam_contour_color', ov.contour_color||'lime');
+    m('det_cpsam_overlay_mode', ov.overlay_mode||'contours');
+    const contourColorInput=document.getElementById('det_cpsam_contour_color');
+    if(contourColorInput){
+      contourColorInput.value = toHexColorValue(ov.contour_color || '#00ff00', '#00ff00');
+    }
     m('det_cpsam_line_width', ov.line_width); m('det_cpsam_dpi', ov.dpi);
     m('det_cpsam_figsize', Array.isArray(ov.figsize)?ov.figsize.join(','):'');
     m('det_cpsam_base_name', outp.base_name||'');
+    syncDetOverlayUI();
+    syncDetProcessingUI();
   }catch(e){ alert('Load detection config failed: '+e.message); }
 }
 
@@ -1360,6 +2161,12 @@ async function saveDetConfig(options={}){
 let detPoll=null;
 async function startDet(){
   switchSubTab('det','run');
+  const inputDir=document.getElementById('det_input_dir')?.value||'';
+  const outputDir=document.getElementById('det_output_dir')?.value||'';
+  if(!inputDir.trim() || !outputDir.trim()){
+    alert('Please set both the input TIFFs directory and output results directory before starting detection.');
+    return;
+  }
   let payload;
   try{
     payload = await saveDetConfig({silent:true});
@@ -1373,7 +2180,16 @@ async function startDet(){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload || buildDetConfigPayload())
     });
-    if(!response.ok) throw new Error('HTTP '+response.status);
+    if(!response.ok){
+      let errText='HTTP '+response.status;
+      try{
+        const errBody=await response.json();
+        if(errBody && errBody.message){
+          errText += ': '+errBody.message;
+        }
+      }catch(_){}
+      throw new Error(errText);
+    }
     document.getElementById('det-start').style.display='none';
     document.getElementById('det-stop').style.display='inline-block';
     if(!detPoll){
@@ -1403,10 +2219,11 @@ async function startDetTest(){
   const modeEl = document.getElementById('det_test_mode');
   const samplesEl = document.getElementById('det_test_samples');
   const seedEl = document.getElementById('det_test_seed');
-  const prevMode = modeEl ? modeEl.value : 'false';
+  const prevMode = modeEl ? modeEl.value : 'disabled';
   const prevSamples = samplesEl ? samplesEl.value : '';
   const prevSeed = seedEl ? seedEl.value : '';
-  if(modeEl) modeEl.value = 'true';
+  if(modeEl) modeEl.value = prevMode === 'advanced' ? 'advanced' : 'simple';
+  syncDetTestModeUI();
   if(samplesEl){
     const parsed = parseInt(samplesEl.value, 10);
     if(!Number.isFinite(parsed) || parsed <= 0) samplesEl.value = '2';
@@ -1417,6 +2234,7 @@ async function startDetTest(){
     if(modeEl) modeEl.value = prevMode;
     if(samplesEl) samplesEl.value = prevSamples;
     if(seedEl) seedEl.value = prevSeed;
+    syncDetTestModeUI();
     try{ await saveDetConfig({silent:true}); }catch(_){}
   }
 }
@@ -1452,7 +2270,9 @@ function collectChannelConfig(){
   const out=[]; const rows=cont.querySelectorAll('.channel-row'); rows.forEach((row,idx)=>{
     const enabled=row.querySelector('.ch-enabled')?.checked||false;
     const name=row.querySelector('.ch-name')?.value||'';
-    out.push({index:idx, enabled, name});
+    const colorInput=row.querySelector('.ch-color');
+    const color=colorInput ? fromColorInputValue(colorInput.value) : '';
+    out.push({index:idx, enabled, name, color});
   });
   return out;
 }
@@ -1464,58 +2284,161 @@ function collectSelectedCombos(){
 }
 function renderChannelConfig(cfg){
   const cont=document.getElementById('channel_config_container'); if(!cont) return;
+  const refreshCombos=()=>{
+    const snapshot=collectChannelConfig();
+    const limitInput=parseInt(document.getElementById('channel_count')?.value||'',10);
+    const fallbackLimit=Number.isFinite(limitInput)&&limitInput>0
+      ? limitInput
+      : (Number.isFinite(cfg.channels_limit)?cfg.channels_limit:Math.max(snapshot.length,2));
+    renderCombinations({
+      channel_config: snapshot,
+      channels_limit: fallbackLimit,
+      combos_enabled: collectCombosEnabled(),
+      selected_combos: collectSelectedCombos()
+    });
+  };
   const channelCfg=toArray(cfg.channel_config).map(entry=>{
     const idx=parseInt(entry?.index,10);
     return {
       index:Number.isFinite(idx)?idx:0,
       enabled: entry?.enabled!==false,
-      name: entry?.name||''
+      name: entry?.name||'',
+      color: entry?.color||''
     };
   });
   const count=parseInt(cfg.channels_limit,10);
   const maxCount=Number.isFinite(count)?count:Math.max(channelCfg.length,3);
-  cont.innerHTML='<h3>Configuration</h3>';
+  cont.innerHTML='';
   for(let i=0;i<maxCount;i++){
-    const ch=channelCfg.find(c=>c.index===i) || {index:i, enabled:true, name:''};
+    const ch=channelCfg.find(c=>c.index===i) || {index:i, enabled:true, name:'', color:''};
+    const preset=BLEND_CHANNEL_COLOR_PRESETS[i % BLEND_CHANNEL_COLOR_PRESETS.length];
+    const colorVal=toHexColorValue(ch.color, preset);
     const row=document.createElement('div'); row.className='channel-row row'; row.innerHTML=`
       <div><label>Channel ${i}</label><div class="inline" style="align-items:center;gap:6px;"><input type="checkbox" class="ch-enabled" ${ch.enabled?'checked':''}/><span>Enabled</span></div></div>
-      <div><label>Name</label><input type="text" class="ch-name" value="${escapeHtml(ch.name||'')}" placeholder="e.g. GAL"/></div>`;
+      <div><label>Name</label><input type="text" class="ch-name" value="${escapeHtml(ch.name||'')}" placeholder="e.g. GAL"/></div>
+      <div><label>Color</label><input type="color" class="ch-color" value="${colorVal}"/></div>`;
     cont.appendChild(row);
+    const enabledInput=row.querySelector('.ch-enabled');
+    if(enabledInput) enabledInput.addEventListener('change', refreshCombos);
+    const nameInput=row.querySelector('.ch-name');
+    if(nameInput) nameInput.addEventListener('input', refreshCombos);
   }
+  syncOverlayStyleUI();
 }
 function renderCombinations(cfg){
   const toggleCont=document.getElementById('way_toggles'); const cbCont=document.getElementById('combo_checkboxes_container');
   if(!toggleCont||!cbCont) return;
-  const count=parseInt(cfg.channels_limit,10);
-  const maxCount=Number.isFinite(count)?count:3;
-  const enabled=toArray(cfg.combos_enabled).map(v=>parseInt(v,10)).filter(Number.isFinite);
+  const baseConfigArray=toArray(cfg.channel_config);
+  const sourceChannelConfig=baseConfigArray.length?baseConfigArray:collectChannelConfig();
+  const parseChannelEntries=toArray(sourceChannelConfig).map(entry=>{
+    const idx=parseInt(entry?.index,10);
+    return {
+      index:Number.isFinite(idx)?idx:0,
+      enabled: entry?.enabled!==false,
+      name: (entry?.name||'').trim()
+    };
+  });
+  const limit=parseInt(cfg.channels_limit,10);
+  const maxCount=Number.isFinite(limit)?limit:Math.max(parseChannelEntries.length,3);
+  const channels=[];
+  for(let i=0;i<maxCount;i++){
+    const existing=parseChannelEntries.find(c=>c.index===i);
+    channels.push({
+      index:i,
+      enabled: existing ? existing.enabled!==false : true,
+      name: (existing?.name||'').trim()
+    });
+  }
+  const enabledChannelIndices=channels.filter(ch=>ch.enabled).map(ch=>ch.index);
+  const enabledKsRaw=toArray(cfg.combos_enabled).map(v=>parseInt(v,10)).filter(Number.isFinite);
+  const defaultKs=enabledChannelIndices.length>=2?[2]:[];
+  const enabledKs=Array.from(new Set((enabledKsRaw.length?enabledKsRaw:defaultKs).filter(k=>k>=2))).sort((a,b)=>a-b);
   toggleCont.innerHTML='';
   for(let k=2;k<=Math.min(maxCount,6);k++){
-    const checked=enabled.includes(k)?'checked':'';
-    toggleCont.innerHTML+=`<label style="display:inline-flex;gap:6px;margin-right:12px;"><input type="checkbox" class="way-toggle" data-k="${k}" ${checked}/> ${k}-way</label>`;
+    const checked=enabledKs.includes(k)?'checked':'';
+    const label=document.createElement('label');
+    label.style.display='inline-flex';
+    label.style.gap='6px';
+    label.style.marginRight='12px';
+    label.style.alignItems='center';
+    label.innerHTML=`<input type="checkbox" class="way-toggle" data-k="${k}" ${checked}/> ${k}-way`;
+    toggleCont.appendChild(label);
   }
-  cbCont.innerHTML='';
-  const selected=toArray(cfg.selected_combos).map(item=>{
-    if(Array.isArray(item)) return item;
+  toggleCont.querySelectorAll('.way-toggle').forEach(el=>{
+    el.addEventListener('change', ()=>{
+      renderCombinations({
+        channel_config: collectChannelConfig(),
+        channels_limit: parseInt(document.getElementById('channel_count')?.value||String(maxCount),10),
+        combos_enabled: collectCombosEnabled(),
+        selected_combos: collectSelectedCombos()
+      });
+    });
+  });
+  const selectedCombos=toArray(cfg.selected_combos).map(item=>{
+    if(Array.isArray(item)) return item.map(v=>parseInt(v,10)).filter(Number.isFinite);
     if(typeof item==='string'){
       try{
         const parsed=JSON.parse(item);
-        return Array.isArray(parsed)?parsed:null;
+        if(Array.isArray(parsed)) return parsed.map(v=>parseInt(v,10)).filter(Number.isFinite);
       }catch(_){}
     }
     return null;
   }).filter(Boolean);
-  if(selected.length){
-    selected.forEach(combo=>{
-      const label=combo.join(',');
-      cbCont.innerHTML+=`
-        <label class="results-card" style="cursor:pointer">
-          <input type="checkbox" class="combo-cb" data-combo='${JSON.stringify(combo)}' checked/>
-          <span>ch${label}</span>
-        </label>`;
+  selectedCombos.forEach(combo=>combo.sort((a,b)=>a-b));
+  const hasExplicitSelection=selectedCombos.length>0;
+  const selectedSet=new Set(selectedCombos.map(combo=>JSON.stringify(combo)));
+  cbCont.innerHTML='';
+  if(enabledChannelIndices.length<2){
+    cbCont.innerHTML='<div class="muted">Enable at least two channels to see combinations.</div>';
+    return;
+  }
+  if(enabledKs.length===0){
+    cbCont.innerHTML='<div class="muted">Toggle at least one k-way option to list combinations.</div>';
+    return;
+  }
+  let rendered=0;
+  const comboKeyFormatter=(combo)=>{
+    const indicesText=combo.map(idx=>`ch${idx}`).join(' + ');
+    const nameParts=combo.map(idx=>channels.find(ch=>ch.index===idx)?.name||'').filter(Boolean);
+    return nameParts.length ? `${indicesText} (${nameParts.join(' + ')})` : indicesText;
+  };
+  const generateCombos=(indices,k)=>{
+    const out=[];
+    const pick=[];
+    const n=indices.length;
+    const helper=(start)=>{
+      if(pick.length===k){ out.push(pick.slice()); return; }
+      for(let i=start;i<=n-(k-pick.length);i++){
+        pick.push(indices[i]);
+        helper(i+1);
+        pick.pop();
+      }
+    };
+    helper(0);
+    return out;
+  };
+  enabledKs.forEach(k=>{
+    if(k>enabledChannelIndices.length) return;
+    const combos=generateCombos(enabledChannelIndices,k);
+    if(!combos.length) return;
+    const group=document.createElement('div'); group.className='combo-group';
+    const title=document.createElement('h4'); title.textContent=`${k}-way combinations`; group.appendChild(title);
+    const grid=document.createElement('div'); grid.className='combo-grid';
+    combos.forEach(combo=>{
+      const key=JSON.stringify(combo);
+      const isChecked=hasExplicitSelection ? selectedSet.has(key) : true;
+      const label=document.createElement('label'); label.className='combo-chip';
+      const checkbox=document.createElement('input'); checkbox.type='checkbox'; checkbox.className='combo-cb'; checkbox.dataset.combo=key; if(isChecked) checkbox.checked=true;
+      const span=document.createElement('span'); span.textContent=comboKeyFormatter(combo);
+      label.appendChild(checkbox); label.appendChild(span);
+      grid.appendChild(label);
+      rendered++;
     });
-  }else{
-    cbCont.innerHTML='<div class="muted">No combinations selected yet.</div>';
+    group.appendChild(grid);
+    cbCont.appendChild(group);
+  });
+  if(rendered===0){
+    cbCont.innerHTML='<div class="muted">No combinations available for the current selection.</div>';
   }
 }
 
@@ -1525,29 +2448,287 @@ async function loadOverlayUi(){
     const cfg=await res.json();
     const oc=cfg.overlay_colors||{}; const op=cfg.overlay_params||{};
     const get=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v; };
-    get('ov_color_k2', oc['2-way']||oc['2']||'red');
-    get('ov_color_k3', oc['3-way']||oc['3']||'magenta');
-    get('ov_color_k4', oc['4-way']||oc['4']||'cyan');
+    const setColor=(id,val,fallback)=>{ const el=document.getElementById(id); if(el) el.value = toHexColorValue(val, fallback); };
+    const colorsByK=op.colors_by_k||{};
+    setColor('ov_color_k2', colorsByK['2']||oc['2-way']||oc['2']||'#ff0000', '#ff0000');
+    setColor('ov_color_k3', colorsByK['3']||oc['3-way']||oc['3']||'#ff00ff', '#ff00ff');
+    setColor('ov_color_k4', colorsByK['4']||oc['4-way']||oc['4']||'#00ffff', '#00ffff');
+    setColor('ov_single_color', op.single_positive_color||'#808080', '#808080');
+    const baseCh=op.base_channel_index;
+    get('ov_base_channel', baseCh===undefined || baseCh===null ? '' : baseCh);
+    get('ov_figure_type', op.figure_type||'overlay');
+    get('ov_even_layout', op.even_layout||'line');
+    get('ov_overlay_style', op.overlay_style||'mixed');
+    get('ov_fill_alpha', op.fill_alpha??0.45);
     get('ov_line_width', op.line_width??3);
     get('ov_dpi', op.dpi??150);
-  }catch(e){ alert('❌ Load overlay settings failed: '+e.message); }
+    get('ov_centroid_heatmap', op.save_centroid_heatmap?'true':'false');
+    get('ov_centroid_size', op.centroid_marker_size??80);
+  }catch(e){ alert('[ERROR] Load overlay settings failed: '+e.message); }
 }
 async function saveOverlayUi(){
   try{
     const cur=await (await fetch('/api/config')).json();
     const oc=cur.overlay_colors||{};
-    oc['2-way']=document.getElementById('ov_color_k2')?.value||'red';
-    oc['3-way']=document.getElementById('ov_color_k3')?.value||'magenta';
-    oc['4-way']=document.getElementById('ov_color_k4')?.value||'cyan';
+    oc['2-way']=fromColorInputValue(document.getElementById('ov_color_k2')?.value||'#ff0000')||'#ff0000';
+    oc['3-way']=fromColorInputValue(document.getElementById('ov_color_k3')?.value||'#ff00ff')||'#ff00ff';
+    oc['4-way']=fromColorInputValue(document.getElementById('ov_color_k4')?.value||'#00ffff')||'#00ffff';
     cur.overlay_colors=oc;
     const op=cur.overlay_params||{};
+    op.colors_by_k = op.colors_by_k || {};
+    op.colors_by_k['2']=oc['2-way'];
+    op.colors_by_k['3']=oc['3-way'];
+    op.colors_by_k['4']=oc['4-way'];
     op.line_width=parseInt(document.getElementById('ov_line_width')?.value||'3',10);
     op.dpi=parseInt(document.getElementById('ov_dpi')?.value||'150',10);
+    const singleColor=document.getElementById('ov_single_color')?.value;
+    const parsedSingle=fromColorInputValue(singleColor||'#808080')||'#808080';
+    op.single_positive_color=parsedSingle;
+    const baseChannelRaw=document.getElementById('ov_base_channel')?.value?.trim();
+    if(baseChannelRaw){
+      const parsed=parseInt(baseChannelRaw,10);
+      op.base_channel_index=Number.isFinite(parsed)?parsed:null;
+    }else{
+      op.base_channel_index=null;
+    }
+    op.figure_type=document.getElementById('ov_figure_type')?.value||'overlay';
+    op.even_layout=document.getElementById('ov_even_layout')?.value||'line';
+    const overlayStyle=(document.getElementById('ov_overlay_style')?.value||'mixed').toLowerCase();
+    op.overlay_style=['contour','filled','mixed'].includes(overlayStyle)?overlayStyle:'mixed';
+    let fillAlpha=parseFloat(document.getElementById('ov_fill_alpha')?.value||'0.45');
+    if(!Number.isFinite(fillAlpha)) fillAlpha=0.45;
+    op.fill_alpha=Math.min(Math.max(fillAlpha,0),1);
+    op.save_centroid_heatmap=(document.getElementById('ov_centroid_heatmap')?.value||'false')==='true';
+    let centroidSize=parseInt(document.getElementById('ov_centroid_size')?.value||'80',10);
+    if(!Number.isFinite(centroidSize)||centroidSize<=0) centroidSize=80;
+    op.centroid_marker_size=centroidSize;
     cur.overlay_params=op;
     const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cur)});
     if(!r.ok) throw new Error('HTTP '+r.status);
-    alert('✅ Overlay settings saved');
-  }catch(e){ alert('❌ Save overlay settings failed: '+e.message); }
+    alert('[OK] Overlay settings saved');
+  }catch(e){ alert('[ERROR] Save overlay settings failed: '+e.message); }
+}
+
+const COEXPR_MODE_OPTIONS = [
+  { value: 'overlap', label: 'Mask overlap' },
+  { value: 'either', label: 'Overlap OR centroid' },
+  { value: 'intersection', label: 'Overlap AND centroid' },
+  { value: 'centroid', label: 'Centroid only' },
+  { value: 'blend', label: 'Blend heatmap (overlap highlight)' },
+];
+const BLEND_CHANNEL_COLOR_PRESETS = ['#40c4ff','#ff7043','#f472b6','#7dd3fc','#c084fc','#34d399','#fbbf24','#a3a3a3'];
+
+function deriveCoexprSampleKey(raw){
+  if(!raw) return '';
+  let key = String(raw).trim();
+  if(!key) return '';
+  key = key.replace(/\\/g,'/');
+  if(key.includes('/')){
+    const parts = key.split('/');
+    key = parts.filter(Boolean).pop() || key;
+  }
+  key = key.replace(/\.[^.]+$/,'');
+  key = key.replace(/_mask$/i,'');
+  key = key.replace(/\s+/g,'');
+  return key;
+}
+
+function renderCoexprSweepModes(selected){
+  const container = document.getElementById('coexpr_sweep_modes_container');
+  if(!container) return;
+  const selectedSet = new Set((selected || []).map(v => String(v).toLowerCase()));
+  container.innerHTML = '';
+  COEXPR_MODE_OPTIONS.forEach(opt => {
+    const id = `coexpr_sweep_mode_${opt.value}`;
+    const label = document.createElement('label');
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.value = opt.value;
+    input.id = id;
+    if(selectedSet.has(opt.value)) input.checked = true;
+    const span = document.createElement('span');
+    span.textContent = opt.label;
+    label.appendChild(input);
+    label.appendChild(span);
+    container.appendChild(label);
+  });
+  if(!container.children.length){
+    container.textContent = 'No modes available';
+  }
+}
+
+function getSelectedSweepModes(){
+  const container = document.getElementById('coexpr_sweep_modes_container');
+  if(!container) return [];
+  return Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map(el => el.value);
+}
+
+function collectCoexprSettings(existing){
+  const block = { ...(existing||{}) };
+  const mode = document.getElementById('coexpr_mode')?.value || 'overlap';
+  block.mode = mode;
+  let centroid = parseFloat(document.getElementById('coexpr_centroid_distance')?.value || '');
+  if(Number.isFinite(centroid) && centroid >= 0){
+    block.centroid_max_distance = centroid;
+  }else if('centroid_max_distance' in block){
+    delete block.centroid_max_distance;
+  }
+  block.blend_base_color = document.getElementById('blend_base_color')?.value || '#b9b9b9';
+  block.blend_other_color = document.getElementById('blend_other_color')?.value || '#40c4ff';
+  block.blend_overlap_color = document.getElementById('blend_overlap_color')?.value || '#ff4080';
+  const blendPercent = parseFloat(document.getElementById('blend_overlap_fraction')?.value || '');
+  if(Number.isFinite(blendPercent)){
+    block.blend_overlap_fraction = Math.max(0, Math.min(100, blendPercent)) / 100;
+  }else if('blend_overlap_fraction' in block){
+    delete block.blend_overlap_fraction;
+  }
+  const centroidPercent = parseFloat(document.getElementById('centroid_overlap_fraction')?.value || '');
+  if(Number.isFinite(centroidPercent)){
+    block.centroid_overlap_fraction = Math.max(0, Math.min(100, centroidPercent)) / 100;
+  }else if('centroid_overlap_fraction' in block){
+    delete block.centroid_overlap_fraction;
+  }
+  
+  // Blend channel colors werden automatisch aus der Channel-Konfiguration übernommen
+  const channelConfig = collectChannelConfig();
+  const channelColors = {};
+  channelConfig.forEach(ch => {
+    if(ch.color){
+      channelColors[ch.index] = ch.color;
+    }
+  });
+  block.blend_channel_colors = channelColors;
+  
+  // Collect output formats
+  const blendFormats = [];
+  if(document.getElementById('blend_fmt_png')?.checked) blendFormats.push('png');
+  if(document.getElementById('blend_fmt_tiff')?.checked) blendFormats.push('tiff');
+  if(document.getElementById('blend_fmt_jpg')?.checked) blendFormats.push('jpg');
+  block.blend_output_formats = blendFormats.length > 0 ? blendFormats : ['png'];
+  
+  const overlayFormats = [];
+  if(document.getElementById('overlay_fmt_png')?.checked) overlayFormats.push('png');
+  if(document.getElementById('overlay_fmt_tiff')?.checked) overlayFormats.push('tiff');
+  if(document.getElementById('overlay_fmt_jpg')?.checked) overlayFormats.push('jpg');
+  block.overlay_output_formats = overlayFormats.length > 0 ? overlayFormats : ['png'];
+  
+  const testType = document.getElementById('coexpr_test_mode_type')?.value || 'off';
+  const sweepEnabled = testType === 'sweep';
+  let sweepModes = sweepEnabled ? getSelectedSweepModes() : [];
+  if(sweepEnabled && sweepModes.length === 0){
+    sweepModes = ['overlap','either','intersection','blend'];
+  }
+  sweepModes = Array.from(new Set(sweepModes.map(v => v.toLowerCase())));
+  sweepModes = sweepModes.filter(m => COEXPR_MODE_OPTIONS.some(opt => opt.value === m));
+  if(sweepEnabled && sweepModes.length === 0){
+    sweepModes = ['overlap'];
+  }
+  const sweepSample = sweepEnabled ? (document.getElementById('coexpr_sweep_sample')?.value || '').trim() : '';
+  block.sweep = {
+    enabled: sweepEnabled,
+    modes: sweepModes,
+    sample_key: deriveCoexprSampleKey(sweepSample),
+  };
+  return block;
+}
+
+function toggleCoexprSections(){
+  const type = document.getElementById('coexpr_test_mode_type')?.value || 'off';
+  const simpleRow = document.getElementById('coexpr_test_simple_options');
+  const sweepBlock = document.getElementById('coexpr_sweep_block');
+  if(simpleRow) simpleRow.style.display = type === 'simple' ? '' : 'none';
+  if(sweepBlock) sweepBlock.style.display = type === 'sweep' ? '' : 'none';
+  if(type === 'sweep' && getSelectedSweepModes().length === 0){
+    renderCoexprSweepModes(['overlap','either','intersection','blend']);
+  }
+}
+
+function syncCoexprModeUI(){
+  const mode=(document.getElementById('coexpr_mode')?.value||'overlap').toLowerCase();
+  const overlayStyle=(document.getElementById('ov_overlay_style')?.value||'mixed').toLowerCase();
+  const colorBlock=document.getElementById('blend-color-settings');
+  if(colorBlock){
+    colorBlock.style.display = (mode==='blend' || overlayStyle==='blend') ? '' : 'none';
+  }
+  const overlapBlock=document.getElementById('overlap-threshold-field');
+  const overlapModes=new Set(['overlap','either','intersection','union','all','blend','both']);
+  if(overlapBlock){
+    overlapBlock.style.display = overlapModes.has(mode) ? '' : 'none';
+  }
+  const centroidBlock=document.getElementById('centroid_distance_field');
+  const centroidModes=new Set(['centroid','either','intersection','union','all','both']);
+  if(centroidBlock){
+    centroidBlock.style.display = centroidModes.has(mode) ? '' : 'none';
+  }
+  const centroidOverlapField=document.getElementById('centroid-overlap-field');
+  if(centroidOverlapField){
+    centroidOverlapField.style.display = centroidModes.has(mode) ? '' : 'none';
+  }
+}
+function syncOverlayStyleUI(){
+  const style=(document.getElementById('ov_overlay_style')?.value||'mixed').toLowerCase();
+  const section=document.getElementById('channel_color_section');
+  if(section){
+    section.style.display = style==='blend' ? '' : 'none';
+  }
+  syncCoexprModeUI();
+}
+
+function syncDetOverlayUI(){
+  const mode=(document.getElementById('det_cpsam_overlay_mode')?.value||'contours').toLowerCase();
+  const showContour = mode !== 'masks';
+  const contourField=document.getElementById('det_contour_color_field');
+  const lineField=document.getElementById('det_line_width_field');
+  if(contourField) contourField.style.display = showContour ? '' : 'none';
+  if(lineField) lineField.style.display = showContour ? '' : 'none';
+}
+
+function syncDetProcessingUI(){
+  const tophatEnabled=(document.getElementById('det_cpsam_tophat')?.value||'false')==='true';
+  const tophatField=document.getElementById('det_tophat_radius_field');
+  if(tophatField) tophatField.style.display = tophatEnabled ? '' : 'none';
+  const contrastEnabled=(document.getElementById('det_cpsam_contrast_stretch')?.value||'false')==='true';
+  const stretchField=document.getElementById('det_stretch_field');
+  if(stretchField) stretchField.style.display = contrastEnabled ? '' : 'none';
+  const splitEnabled=(document.getElementById('det_cpsam_split_touching')?.value||'false')==='true';
+  const splitFields=document.getElementById('det_split_fields');
+  if(splitFields) splitFields.style.display = splitEnabled ? '' : 'none';
+  const advEnabled=(document.getElementById('det_cpsam_enable_adv')?.value||'false')==='true';
+  const advFields=document.getElementById('det_adv_fields');
+  if(advFields) advFields.style.display = advEnabled ? '' : 'none';
+}
+
+function browseCoexprSample(){
+  const baseInput = document.getElementById('input_dir');
+  const currentInput = document.getElementById('coexpr_sweep_sample');
+  const startFrom = currentInput?.dataset?.sourcePath || baseInput?.value || '.';
+  openFileBrowser('coexpr_sweep_sample', {
+    pickFile: true,
+    includeFiles: true,
+    relativeTo: baseInput ? 'input_dir' : undefined,
+    title: 'Select sample mask/overlay',
+    allowedExtensions: ['.tif','.tiff','.png'],
+    startFrom,
+    storeRaw: true
+  });
+}
+
+function handleCoexprSampleChange(){
+  const input = document.getElementById('coexpr_sweep_sample');
+  if(!input) return;
+  const raw = input.value || '';
+  const key = deriveCoexprSampleKey(raw);
+  if(!raw){
+    delete input.dataset.sourcePath;
+    input.value = '';
+    return;
+  }
+  if(!input.dataset.sourcePath){
+    input.dataset.sourcePath = raw;
+  }
+  if(key !== raw){
+    input.value = key;
+  }
 }
 
 async function loadConfig(){
@@ -1563,30 +2744,73 @@ async function loadConfig(){
     m('coexpr_use_masks', cfg.use_detection_masks===false?'false':'true');
     m('coexpr_auto_threshold', cfg.fallback_from_overlays===false?'false':'true');
     m('coexpr_save_figure', cfg.save_composite_figure===false?'false':'true');
+    const coexprCfg = cfg.coexpression || {};
+    m('coexpr_mode', coexprCfg.mode || 'overlap');
+    m('coexpr_centroid_distance', coexprCfg.centroid_max_distance==null?'':coexprCfg.centroid_max_distance);
+    m('blend_base_color', coexprCfg.blend_base_color || '#b9b9b9');
+    m('blend_other_color', coexprCfg.blend_other_color || '#40c4ff');
+    m('blend_overlap_color', coexprCfg.blend_overlap_color || '#ff4080');
+    const blendPct = coexprCfg.blend_overlap_fraction==null ? 2 : Math.round(coexprCfg.blend_overlap_fraction * 1000) / 10;
+    m('blend_overlap_fraction', blendPct);
+    const centroidPct = coexprCfg.centroid_overlap_fraction==null ? 0.5 : Math.round(coexprCfg.centroid_overlap_fraction * 1000) / 10;
+    m('centroid_overlap_fraction', centroidPct);
+    syncCoexprModeUI();
+    const sweepCfg = coexprCfg.sweep || {};
+    renderCoexprSweepModes(sweepCfg.enabled ? sweepCfg.modes : []);
+    m('coexpr_sweep_sample', sweepCfg.sample_key || '');
+    handleCoexprSampleChange();
     const testing=cfg.testing||{};
-    m('coexpr_test_mode', testing.enabled?'true':'false');
+    const storedMode = typeof testing.mode === 'string' ? testing.mode.toLowerCase() : null;
+    let testType = 'off';
+    if(storedMode === 'sweep'){
+      testType = 'sweep';
+    }else if(storedMode === 'simple'){
+      testType = testing.enabled ? 'simple' : 'off';
+    }else{
+      testType = testing.enabled ? (sweepCfg.enabled ? 'sweep' : 'simple') : 'off';
+    }
+    m('coexpr_test_mode_type', testType);
     m('coexpr_test_samples', testing.samples_per_channel==null?'':testing.samples_per_channel);
     m('coexpr_test_seed', testing.seed||'');
+    toggleCoexprSections();
+    
+    // Load output formats
+    const blendFormats = coexprCfg.blend_output_formats || ['png'];
+    document.getElementById('blend_fmt_png').checked = blendFormats.includes('png');
+    document.getElementById('blend_fmt_tiff').checked = blendFormats.includes('tiff') || blendFormats.includes('tif');
+    document.getElementById('blend_fmt_jpg').checked = blendFormats.includes('jpg') || blendFormats.includes('jpeg');
+    
+    const overlayFormats = coexprCfg.overlay_output_formats || ['png'];
+    document.getElementById('overlay_fmt_png').checked = overlayFormats.includes('png');
+    document.getElementById('overlay_fmt_tiff').checked = overlayFormats.includes('tiff') || overlayFormats.includes('tif');
+    document.getElementById('overlay_fmt_jpg').checked = overlayFormats.includes('jpg') || overlayFormats.includes('jpeg');
+    
     // Render dynamic
-    renderChannelConfig(cfg);
-    renderCombinations(cfg);
-  }catch(e){ alert('❌ Load co‑expr config failed: '+e.message); }
+    renderChannelConfig({
+      channel_config: cfg.channel_config,
+      channels_limit: cfg.channels_limit,
+    });
+    renderCombinations({
+      channel_config: cfg.channel_config,
+      channels_limit: cfg.channels_limit,
+      combos_enabled: cfg.combos_enabled,
+      selected_combos: cfg.selected_combos,
+    });
+  }catch(e){ alert('[ERROR] Load co-expr config failed: '+e.message); }
 }
 async function saveConfig(options={}){
   try{
-    const testMode=(document.getElementById('coexpr_test_mode')?.value||'false')==='true';
-    let testSamples=parseInt(document.getElementById('coexpr_test_samples')?.value||'0',10);
-    if(!Number.isFinite(testSamples) || testSamples<=0) testSamples=undefined;
-    const testSeed=(document.getElementById('coexpr_test_seed')?.value||'').trim();
-    const testingBlock={ enabled:testMode };
-    if(testSamples!==undefined) testingBlock.samples_per_channel=testSamples;
-    if(testSeed) testingBlock.seed=testSeed;
+  const testModeType=document.getElementById('coexpr_test_mode_type')?.value||'off';
+  let testSamples=parseInt(document.getElementById('coexpr_test_samples')?.value||'0',10);
+  if(!Number.isFinite(testSamples) || testSamples<=0) testSamples=undefined;
+  const testSeed=(document.getElementById('coexpr_test_seed')?.value||'').trim();
+  const testingBlock={ enabled:testModeType!=='off', mode:testModeType };
+  if(testModeType==='simple' && testSamples!==undefined) testingBlock.samples_per_channel=testSamples;
+  if(testModeType==='simple' && testSeed) testingBlock.seed=testSeed;
     const cfg={
       paths:{ base_results_dir: document.getElementById('input_dir')?.value||'',
               output_dir: document.getElementById('output_dir')?.value||'' },
-      dataset_name: document.getElementById('dataset_name')?.value||'',
       channels_limit: parseInt(document.getElementById('channel_count')?.value||'3',10),
-      detection:{ active_hsv_range_index: parseInt(document.getElementById('active_hsv_range')?.value||'0',10) },
       channel_config: collectChannelConfig(),
       combos_enabled: collectCombosEnabled(),
       selected_combos: collectSelectedCombos(),
@@ -1596,26 +2820,49 @@ async function saveConfig(options={}){
       testing: testingBlock,
       debug: document.getElementById('cb_debug')?.checked||false
     };
+    const datasetInput=document.getElementById('dataset_name');
+    const hsvEl=document.getElementById('active_hsv_range');
+    if(datasetInput) cfg.dataset_name=datasetInput.value||'';
+    if(hsvEl){
+      cfg.detection = Object.assign({}, cfg.detection||{}, {
+        active_hsv_range_index: parseInt(hsvEl.value||'0',10)
+      });
+    }
+    let existing;
+    try{
+      existing=await (await fetch('/api/config')).json();
+      if(existing && typeof existing==='object'){
+        if(!datasetInput && Object.prototype.hasOwnProperty.call(existing,'dataset_name')){
+          cfg.dataset_name = existing.dataset_name;
+        }
+        if(!hsvEl && existing.detection){
+          cfg.detection = existing.detection;
+        }
+        if(existing.overlay_params) cfg.overlay_params = existing.overlay_params;
+        if(existing.overlay_colors) cfg.overlay_colors = existing.overlay_colors;
+      }
+    }catch(_){}
+    cfg.coexpression = collectCoexprSettings(existing?.coexpression || {});
     const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
     if(!r.ok) throw new Error('HTTP '+r.status);
-    if(!options?.silent){ alert('✅ Config saved'); }
-  }catch(e){ alert('❌ Save config failed: '+e.message); }
+    if(!options?.silent){ alert('[OK] Config saved'); }
+  }catch(e){ alert('[ERROR] Save config failed: '+e.message); }
 }
 async function startAnalysis(){
   try{ await saveConfig({silent:true}); }catch(_){}
-  const testMode=(document.getElementById('coexpr_test_mode')?.value||'false')==='true';
+  const testModeType=document.getElementById('coexpr_test_mode_type')?.value||'off';
   let testSamples=parseInt(document.getElementById('coexpr_test_samples')?.value||'0',10);
   if(!Number.isFinite(testSamples) || testSamples<=0) testSamples=undefined;
   const testSeed=(document.getElementById('coexpr_test_seed')?.value||'').trim();
-  const testingBlock={ enabled:testMode };
-  if(testSamples!==undefined) testingBlock.samples_per_channel=testSamples;
-  if(testSeed) testingBlock.seed=testSeed;
+  const testingBlock={ enabled:testModeType!=='off', mode:testModeType };
+  if(testModeType==='simple' && testSamples!==undefined) testingBlock.samples_per_channel=testSamples;
+  if(testModeType==='simple' && testSeed) testingBlock.seed=testSeed;
+  const datasetInput=document.getElementById('dataset_name');
+  const hsvEl=document.getElementById('active_hsv_range');
   const cfg={
     paths:{ base_results_dir: document.getElementById('input_dir')?.value||'',
             output_dir: document.getElementById('output_dir')?.value||'' },
-    dataset_name: document.getElementById('dataset_name')?.value||'',
     channels_limit: parseInt(document.getElementById('channel_count')?.value||'3',10),
-    detection:{ active_hsv_range_index: parseInt(document.getElementById('active_hsv_range')?.value||'0',10) },
     channel_config: collectChannelConfig(),
     combos_enabled: collectCombosEnabled(),
     selected_combos: collectSelectedCombos(),
@@ -1625,6 +2872,23 @@ async function startAnalysis(){
     testing: testingBlock,
     debug: document.getElementById('cb_debug')?.checked||false
   };
+  if(datasetInput) cfg.dataset_name=datasetInput.value||'';
+  if(hsvEl){
+    cfg.detection = Object.assign({}, cfg.detection||{}, {
+      active_hsv_range_index: parseInt(hsvEl.value||'0',10)
+    });
+  }
+  try{
+    const existing=await (await fetch('/api/config')).json();
+    if(existing && typeof existing==='object'){
+      if(existing.overlay_params) cfg.overlay_params = existing.overlay_params;
+      if(existing.overlay_colors) cfg.overlay_colors = existing.overlay_colors;
+      cfg.coexpression = collectCoexprSettings(existing.coexpression||{});
+    }else{
+      cfg.coexpression = collectCoexprSettings({});
+    }
+  }catch(_){}
+  if(!cfg.coexpression) cfg.coexpression = collectCoexprSettings({});
   try{
     const r=await fetch('/api/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
     if(!r.ok) throw new Error('HTTP '+r.status);
@@ -1639,7 +2903,7 @@ async function startAnalysis(){
         }catch(_){}
       },800);
     }
-  }catch(e){ alert('❌ Start analysis failed: '+e.message); }
+  }catch(e){ alert('[ERROR] Start analysis failed: '+e.message); }
 }
 async function stopAnalysis(){
   try{ await fetch('/api/stop',{method:'POST'});}catch(_){}
@@ -1648,14 +2912,13 @@ async function stopAnalysis(){
   document.getElementById('stop-btn').style.display='none';
 }
 async function startAnalysisTest(){
-  const modeEl=document.getElementById('coexpr_test_mode');
+  const modeEl=document.getElementById('coexpr_test_mode_type');
   const samplesEl=document.getElementById('coexpr_test_samples');
-  const seedEl=document.getElementById('coexpr_test_seed');
-  const prevMode=modeEl?modeEl.value:'false';
+  const prevMode=modeEl?modeEl.value:'off';
   const prevSamples=samplesEl?samplesEl.value:'';
-  const prevSeed=seedEl?seedEl.value:'';
-  if(modeEl) modeEl.value='true';
-  if(samplesEl){
+  if(modeEl) modeEl.value = prevMode === 'sweep' ? 'sweep' : 'simple';
+  toggleCoexprSections();
+  if(samplesEl && modeEl?.value === 'simple'){
     const parsed=parseInt(samplesEl.value,10);
     if(!Number.isFinite(parsed)||parsed<=0) samplesEl.value='2';
   }
@@ -1664,7 +2927,7 @@ async function startAnalysisTest(){
   }finally{
     if(modeEl) modeEl.value=prevMode;
     if(samplesEl) samplesEl.value=prevSamples;
-    if(seedEl) seedEl.value=prevSeed;
+    toggleCoexprSections();
     try{ await saveConfig({silent:true}); }catch(_){}
   }
 }
@@ -1675,7 +2938,7 @@ async function loadResults(){
     const files=await res.json();
     if(!Array.isArray(files) || !files.length){ el.innerHTML='<div class="muted">No results found.</div>'; return; }
     const grid='<div class="results-grid">'+files.map(f=>(
-      `<div class="results-card"><div><div><strong>📄 ${f.name}</strong></div><div class="meta">${(f.size/1024).toFixed(1)} KB • ${f.modified}</div></div><a class="btn" href="/api/download/${encodeURIComponent(f.name)}">⬇️</a></div>`
+      `<div class="results-card"><div><div><strong>   ae ${f.name}</strong></div><div class="meta">${(f.size/1024).toFixed(1)} KB - ${f.modified}</div></div><a class="btn" href="/api/download/${encodeURIComponent(f.name)}">v   </a></div>`
     )).join('')+'</div>';
     el.innerHTML=grid;
   }catch(e){ el.textContent='Error: '+e.message; }
@@ -1683,19 +2946,63 @@ async function loadResults(){
 
 /* =================== INIT =================== */
 document.addEventListener('DOMContentLoaded', ()=>{
+  renderDetTestLevels();
+  syncDetTestModeUI();
+  const detModeEl=document.getElementById('det_test_mode');
+  if(detModeEl){
+    detModeEl.addEventListener('change', syncDetTestModeUI);
+  }
+  renderCoexprSweepModes();
+  toggleCoexprSections();
+  const coexprTestModeEl=document.getElementById('coexpr_test_mode_type');
+  if(coexprTestModeEl){
+    coexprTestModeEl.addEventListener('change', toggleCoexprSections);
+  }
+  const coexprSampleInput=document.getElementById('coexpr_sweep_sample');
+  if(coexprSampleInput){
+    coexprSampleInput.addEventListener('change', handleCoexprSampleChange);
+  }
+  const coexprModeEl=document.getElementById('coexpr_mode');
+  if(coexprModeEl){
+    coexprModeEl.addEventListener('change', syncCoexprModeUI);
+  }
+  const detOverlayModeEl=document.getElementById('det_cpsam_overlay_mode');
+  if(detOverlayModeEl){
+    detOverlayModeEl.addEventListener('change', syncDetOverlayUI);
+  }
+  const overlayStyleEl=document.getElementById('ov_overlay_style');
+  if(overlayStyleEl){
+    overlayStyleEl.addEventListener('change', syncOverlayStyleUI);
+  }
+  ['det_cpsam_tophat','det_cpsam_contrast_stretch','det_cpsam_split_touching','det_cpsam_enable_adv'].forEach((id)=>{
+    const el=document.getElementById(id);
+    if(el){
+      el.addEventListener('change', syncDetProcessingUI);
+    }
+  });
+  syncCoexprModeUI();
+  syncOverlayStyleUI();
+  syncDetOverlayUI();
+  syncDetProcessingUI();
   switchMainTab('czi',{target:document.querySelector('.main-tab')});
   loadCziConfig(); loadOverlayUi();
   loadDetConfig(); loadConfig();
   injectHelp(HELP_CZI); injectHelp(HELP_DET); injectHelp(HELP_COEXPR);
+  initChatbotUi();
   // Set initial sensitivity reflection
   applySensitivity(document.getElementById('det-sensitivity')?.value||4);
   const channelCountInput=document.getElementById('channel_count');
   if(channelCountInput){
     channelCountInput.addEventListener('change', ()=>{
       const current=collectChannelConfig();
-      const target=parseInt(channelCountInput.value,10);
-      renderChannelConfig({channel_config: current, channels_limit: target});
+      const parsed=parseInt(channelCountInput.value,10);
+      const target=Number.isFinite(parsed)&&parsed>0?parsed:Math.max(current.length,2);
+      renderChannelConfig({
+        channel_config: current,
+        channels_limit: target,
+      });
       renderCombinations({
+        channel_config: current,
         channels_limit: target,
         combos_enabled: collectCombosEnabled(),
         selected_combos: collectSelectedCombos()
@@ -1706,3 +3013,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
