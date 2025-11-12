@@ -20,6 +20,7 @@ from src.analysis import (
     create_summary_report,
 )
 from src.batch_segment import segment_dirs
+from src.config_archiver import save_config_snapshot
 
 
 def _print_env() -> None:
@@ -127,6 +128,24 @@ def main(argv: list[str] | None = None) -> int:
 
     tmp_cfg_path = _write_temp_cfg(run_cfg)
     try:
+        # Save config snapshot before starting analysis
+        output_root = Path(run_cfg["paths"]["output_root"]).resolve()
+        runtime_params = {
+            "command_line_args": vars(args),
+            "save_masks": final_save_masks,
+            "split_regions": split_regions,
+            "create_overlays": create_overlays,
+            "testing_config": testing_cfg,
+            "config_file": str(cfg_path),
+        }
+        save_config_snapshot(
+            output_dir=output_root,
+            config_file=cfg_path,
+            config_dict=run_cfg,
+            runtime_params=runtime_params,
+            snapshot_name="pipeline_config",
+        )
+        
         segment_dirs(tmp_cfg_path)
     finally:
         try:

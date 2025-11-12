@@ -1,32 +1,84 @@
 channel_config:
-- enabled: true
+- color: yellow
+  enabled: true
   index: 0
   name: PomC
-- enabled: true
+- color: '#00ff28'
+  enabled: true
   index: 1
   name: DREADD
-- enabled: true
+- color: magenta
+  enabled: true
   index: 2
-  name: Fos
-- enabled: true
+  name: FOS
+- color: cyan
+  enabled: true
   index: 3
   name: Gal
 channels_limit: 4
+coexpression:
+  blend_base_color: '#b9b9b9'
+  blend_channel_colors:
+    '0': yellow
+    '1': '#00ff28'
+    '2': magenta
+    '3': cyan
+  blend_other_color: '#40c4ff'
+  blend_output_formats:
+  - png
+  - tiff
+  - jpg
+  blend_overlap_color: '#ff0000'
+  blend_overlap_fraction: 0.4
+  centroid_max_distance: 10
+  centroid_overlap_fraction: 0.005
+  mode: blend
+  overlay_output_formats:
+  - png
+  sweep:
+    enabled: false
+    modes: []
+    sample_key: ''
 combos_enabled:
 - 2
 - 3
 - 4
-dataset_name: ''
-debug: true
-detection:
-  active_hsv_range_index: 0
-fallback_from_overlays: true
+debug: false
+fallback_from_overlays: false
+overlay_colors:
+  2-way: blue
+  3-way: green
+  4-way: cyan
+overlay_params:
+  base_channel_index: 2
+  centroid_marker_size: 10
+  colors_by_k:
+    '2': blue
+    '3': green
+    '4': cyan
+  dpi: 800
+  even_layout: grid
+  figure_type: mask
+  fill_alpha: 1
+  line_width: 5
+  overlay_style: mixed
+  save_centroid_heatmap: true
+  single_positive_color: gray
 paths:
-  base_results_dir: /app/results/Test2
-  output_dir: /app/results/Coex
+  base_results_dir: /app/results/Final/TV2
+  output_dir: /app/results/TV2_Coex_heat_8
 save_composite_figure: true
-selected_combos: []
+selected_combos:
+- - 0
+  - 1
+- - 0
+  - 2
+  - 3
+- - 0
+  - 1
+  - 2
+  - 3
 testing:
-  enabled: false
-  samples_per_channel: 2
+  enabled: true
+  mode: simple
 use_detection_masks: true

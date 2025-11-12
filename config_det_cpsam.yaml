@@ -1,36 +1,39 @@
 advanced_filtering:
   abs_floor_percentile: 74
-  foreground_block_size: 1001
-  foreground_offset: 10
+  foreground_block_size: 501
+  foreground_offset: 15
   snr_min: 2
 cellpose:
-  batch_size: 64
+  batch_size: 16
   cellprob_threshold: 0.2
-  channel: 2
-  diameter: 20
+  channel: 0
+  diameter: 12
   flow_threshold: 0.32
   model_name: cpsam
   niter: 1000
   resize_max: 4096
-  save_masks: true
+  save_masks: false
   split_regions: false
   use_gpu: true
 conditions:
-  neg_pattern: Input_neg_
-  pos_pattern: Input_pos_
+  neg_pattern: Input_neg
+  pos_pattern: Input_pos
 enable_advanced_filtering: true
 filters:
   intensity_threshold_factor: 0.92
-  max_area: 8000
+  max_area: 32000
   max_circularity: 1
-  max_hole_ratio: 0.7
+  max_hole_ratio: 0.8
   min_area: 20
-  min_circularity: 0.01
+  min_circularity: 0
+microscope:
+  current_magnification: 10.0
+  reference_magnification: 10.0
 outputs:
   base_name: cell_analysis
 overlays:
-  contour_color: magenta
-  dpi: 300
+  contour_color: red
+  dpi: 1000
   figsize:
   - 12
   - 12
@@ -39,22 +42,22 @@ overlays:
 paths:
   input_neg: /app/data/Input/TV2/Input_neg
   input_pos: /app/data/Input/TV2/Input_pos
-  output_root: /app/results/Test2
+  output_root: /app/results/final/TV2
 processing:
-  contrast_stretch: true
+  contrast_stretch: false
   intensity_threshold: 21
   merge_adjacent_cells: false
   remove_edge_cells: false
-  split_area_multiplier: 2
+  split_area_multiplier: 2.5
   split_min_area: 0
-  split_min_distance: 50
+  split_min_distance: 15
   split_rel_peak_threshold: 0.4
-  split_touching_cells: true
+  split_touching_cells: false
   stretch_percentiles:
-  - 1
+  - 5
   - 100
-  tophat: true
-  tophat_radius: 20
+  tophat: false
+  tophat_radius: 15
 testing:
   enabled: true
   samples_per_channel: 2

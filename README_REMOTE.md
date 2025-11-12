@@ -38,6 +38,25 @@ Wenn der Remote-Rechner eine NVIDIA-GPU besitzt, kann die GPU-Variante genutzt w
 
 1. NVIDIA-Treiber auf dem Host installieren (`nvidia-smi` sollte funktionieren).
 2. `nvidia-container-toolkit` einrichten: <https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html>
+
+## Quickstart Guide
+1. **CZI → TIFF:** Im Tab *CZI Conversion* Eingabe- und Ausgabeordner setzen, optional Kanäle festlegen und den Lauf starten.  
+2. **Detection:** Im Tab *Detection* Kanäle/Sensitivitäten wählen, Config speichern und `Start Detection` ausführen.  
+3. **Co-Expression:** Im Tab *Co-Expression* den gewünschten Modus (z. B. Blend-Heatmap) wählen und Analysen bzw. Sweeps starten.  
+4. **Review & Export:** Resultate (CSV, Overlays, Heatmaps) über die jeweiligen *Results*-Subtabs herunterladen.
+
+## Impressum
+Cell Analysis Pipeline (Remote)  
+Forschungscampus Datenwerk  
+Musterstraße 12  
+10999 Berlin, Deutschland
+
+Kontakt: remote-support@cell-analysis.example  
+Telefon: +49 30 123456-0  
+Verantwortlich gem. §5 TMG: Projektleitung Cell Analysis  
+USt-IdNr.: DE999999999
+
+> **Hinweis:** Bitte ergänzen/ersetzen Sie diese Angaben bei Bedarf mit den offiziellen Daten Ihres Teams oder Instituts.
 3. GPU-Compose-Datei verwenden:
    ```bash
    HOST_DATA=/srv/cell_data HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
@@ -65,6 +84,20 @@ Wenn der Remote-Rechner eine NVIDIA-GPU besitzt, kann die GPU-Variante genutzt w
 - `GOOGLE_DRIVE_SYNC_PATH`: Pfadangabe (z. B. `G:\CellAnalysisData\Input`), die im Dashboard angezeigt wird, damit alle User denselben Drive-Ordner sehen.
 - `GOOGLE_DRIVE_EMBED_URL`: Optionaler Embed-Link (`https://drive.google.com/embeddedfolderview?id=<FOLDER_ID>#list`), um den Drive-Ordner direkt im Upload-Tab einzubetten.
 - Nach dem Setzen neuer Variablen den Container neu starten, damit Flask die Werte uebernimmt.
+- Im Detection-Tab steuert 'Current Magnification' die automatische Skalierung der zellgroessenabhaengigen Parameter (Durchmesser, Min/Max-Area usw.).
+- Der Button `Upload folder...` (Chrome/Edge) ermoeglicht das Hochladen kompletter Ordner samt Unterstruktur in einem Schritt.
+
+### Co-Expression Einstellungen
+- **Modus (Overlap/Centroid/Union/Intersection)**: Im Co-Expression-Tab per Dropdown waehlen. 
+  - `Overlap` (Standard) liefert die robustesten Ergebnisse, solange die Masken je Kanal präzise auf derselben Position liegen.
+  - `Union` (Overlap OR Centroid) ist tolerant gegen leichte Masken-Offsets und eignet sich fuer Serien mit minimalen Kanalverschiebungen.
+  - `Centroid` oder `Intersection` nur einsetzen, wenn explizit Zentroid-Abstaende bzw. sehr strenge Uebereinstimmungen gefordert sind.
+- **Centroid Max Distance**: Einflussradius fuer die centroid-basierten Modi. 
+  - Für typische 10x-Aufnahmen hat sich ein Wert von **8 px** bewaehrt.
+  - Bei stark vergroesserten Bildern (&gt;10x) auf 10–12 px erhoehen, bei 5x-Aufnahmen ggf. auf 5–6 px reduzieren.
+- **Test Mode**: `Simple` waehlt pro Lauf eine kleine Zufallsstichprobe (Anzahl/Seed konfigurierbar); `Sweep` fixiert einen Sample Key und prueft mehrere Methoden hintereinander.
+- **Co-Expression Figuren**: `Figure Type = mask` zeigt reine Maskenpanels, `overlay` kombiniert Original-Overlay plus farbige Konturen/Füllungen.
+- **Sweep Test**: Im Test Mode `Sweep` koennen mehrere Methoden parallel angehakt werden (z. B. `overlap`, `either`, `intersection`) und laufen nacheinander auf dem gewaehlten Sample Key. Ergebnisse landen unter `__sweep__/<modus>` im Output.
 
 ## Google Remote Desktop
 - Google Remote Desktop fuer den Leistungs-PC einrichten und in der Sitzung angemeldet bleiben.

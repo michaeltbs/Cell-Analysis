@@ -13,3 +13,4 @@ imagecodecs==2024.1.1
 opencv-python==4.10.0.84
 scipy==1.13.1
 tifffile>=2024.8.30
+requests>=2.31.0

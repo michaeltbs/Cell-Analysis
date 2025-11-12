@@ -1,4 +1,5 @@
-﻿from flask import Flask, render_template, request, jsonify, send_file, after_this_request
+from flask import Flask, render_template, request, jsonify, send_file, after_this_request
+import requests
 import os
 import yaml
 import subprocess
@@ -11,11 +12,13 @@ from urllib.parse import quote
 import tempfile, zipfile
 import copy
 import csv  # added
+import re
+from src.config_archiver import save_config_snapshot
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-# Globale Variablen fÃ¼r Analyse-Status
+# Globale Variablen fuer Analyse-Status
 analysis_status = {
     'running': False,
     'progress': 0,
@@ -23,7 +26,7 @@ analysis_status = {
     'log': []
 }
 
-# Globale Variable fÃ¼r Prozesssteuerung
+# Globale Variable fuer Prozesssteuerung
 analysis_process = None
 
 # NEU: CZI Conversion Status
@@ -81,9 +84,248 @@ det_process = None
 DET_CONFIG_PATH = 'config.yaml'
 # NEW: separate CPSAM config that matches batch_segment.py schema
 DET_CPSAM_CONFIG_PATH = 'config_det_cpsam.yaml'
+AI_CONFIG_PATH = 'config_ai.yaml'
 
+SENSITIVITY_LEVELS = [
+    {"label": "Level 1 - Strict", "cellprob": 0.64, "flow": 0.80, "snr": 3.30, "floor_pct": 92, "abs_int": 35, "itf": 0.36},
+    {"label": "Level 2 - Semi-strict", "cellprob": 0.5511, "flow": 0.6978, "snr": 3.03, "floor_pct": 85.8, "abs_int": 31.89, "itf": 0.4889},
+    {"label": "Level 3 - Balanced", "cellprob": 0.4622, "flow": 0.5956, "snr": 2.77, "floor_pct": 79.6, "abs_int": 28.78, "itf": 0.6178},
+    {"label": "Level 4 - Balanced+", "cellprob": 0.3733, "flow": 0.4933, "snr": 2.50, "floor_pct": 73.3, "abs_int": 25.67, "itf": 0.7467},
+    {"label": "Level 5 - Moderate", "cellprob": 0.2844, "flow": 0.3911, "snr": 2.23, "floor_pct": 67.1, "abs_int": 22.56, "itf": 0.8756},
+    {"label": "Level 6 - Medium-high", "cellprob": 0.1956, "flow": 0.2889, "snr": 1.97, "floor_pct": 60.9, "abs_int": 19.44, "itf": 1.0044},
+    {"label": "Level 7 - Sensitive", "cellprob": 0.1067, "flow": 0.1867, "snr": 1.70, "floor_pct": 54.7, "abs_int": 16.33, "itf": 1.1333},
+    {"label": "Level 8 - High sensitivity", "cellprob": 0.0178, "flow": 0.0844, "snr": 1.43, "floor_pct": 48.4, "abs_int": 13.22, "itf": 1.2622},
+    {"label": "Level 9 - Very high sensitivity", "cellprob": -0.0711, "flow": -0.0178, "snr": 1.17, "floor_pct": 42.2, "abs_int": 10.11, "itf": 1.3911},
+    {"label": "Level 10 - Ultra sensitive", "cellprob": -0.16, "flow": -0.12, "snr": 0.90, "floor_pct": 36, "abs_int": 7, "itf": 1.52},
+]
+
+def _normalize_channel_levels(raw):
+    """
+    Normalize incoming per-channel sensitivity levels.
+
+    Returns (list_for_config, level_map) where list_for_config is ready to persist.
+    """
+    level_map: dict[int, int] = {}
+    if isinstance(raw, list):
+        for entry in raw:
+            if not isinstance(entry, dict):
+                continue
+            idx = entry.get('index')
+            level = entry.get('level')
+            try:
+                idx_int = int(idx)
+                level_int = int(level)
+            except Exception:
+                continue
+            if SENSITIVITY_LEVELS:
+                level_int = max(0, min(len(SENSITIVITY_LEVELS) - 1, level_int))
+            level_map[idx_int] = level_int
+    elif isinstance(raw, dict):
+        for key, value in raw.items():
+            try:
+                idx_int = int(key)
+                level_int = int(value)
+            except Exception:
+                continue
+            if SENSITIVITY_LEVELS:
+                level_int = max(0, min(len(SENSITIVITY_LEVELS) - 1, level_int))
+            level_map[idx_int] = level_int
+    normalized = [{'index': idx, 'level': level_map[idx]} for idx in sorted(level_map)]
+    return normalized, level_map
+
+DEFAULT_AI_CONFIG = {
+    'base_url': os.environ.get('OPENWEBUI_BASE_URL', 'http://localhost:8090'),
+    'api_key': os.environ.get('OPENWEBUI_API_KEY', ''),
+    'model_id': os.environ.get('OPENWEBUI_MODEL_ID', '5ce5a9ac1cc0'),
+    'temperature': float(os.environ.get('OPENWEBUI_TEMPERATURE', 0.2)),
+    'max_tokens': int(os.environ.get('OPENWEBUI_MAX_TOKENS', 800)),
+}
+
+def load_ai_config() -> dict:
+    cfg = DEFAULT_AI_CONFIG.copy()
+    if os.path.exists(AI_CONFIG_PATH):
+        try:
+            with open(AI_CONFIG_PATH, 'r', encoding='utf-8') as f:
+                disk_cfg = yaml.safe_load(f) or {}
+            if isinstance(disk_cfg, dict):
+                for key in ('base_url', 'api_key', 'model_id', 'temperature', 'max_tokens'):
+                    val = disk_cfg.get(key)
+                    if val not in (None, ''):
+                        cfg[key] = val
+        except Exception as e:
+            print(f"[config] Failed to load AI config: {e}")
+    else:
+        try:
+            sample = {
+                'base_url': cfg['base_url'],
+                'api_key': '',
+                'model_id': cfg['model_id'],
+                'temperature': cfg['temperature'],
+                'max_tokens': cfg['max_tokens'],
+            }
+            with open(AI_CONFIG_PATH, 'w', encoding='utf-8') as f:
+                yaml.safe_dump(sample, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+        except Exception:
+            pass
+    try:
+        cfg['temperature'] = float(cfg.get('temperature', 0.2))
+    except Exception:
+        cfg['temperature'] = 0.2
+    try:
+        cfg['max_tokens'] = int(cfg.get('max_tokens', 800))
+    except Exception:
+        cfg['max_tokens'] = 800
+    return cfg
+
+
+def _prepare_detection_ai_context() -> dict:
+    cfg = load_det_config() or {}
+    snapshot = copy.deepcopy(cfg)
+    try:
+        cpsam_full = _load_yaml(DET_CPSAM_CONFIG_PATH)
+        if isinstance(cpsam_full, dict) and cpsam_full:
+            snapshot['cpsam'] = cpsam_full
+    except Exception:
+        pass
+    log_tail = det_status.get('log', [])[-20:]
+    return {
+        'detection_config': snapshot,
+        'recent_log_tail': log_tail,
+        'timestamp': datetime.now().isoformat(),
+    }
+
+
+CONFIG_UPDATE_PATTERN = re.compile(r"`config_update\s*(\{.*?\})\s*`", re.DOTALL)
+
+
+def _extract_config_update(raw_text: str) -> tuple[str, dict | None]:
+    if not raw_text:
+        return "", None
+    match = CONFIG_UPDATE_PATTERN.search(raw_text)
+    if not match:
+        return raw_text.strip(), None
+    block = match.group(1)
+    update_payload = None
+    try:
+        update_payload = json.loads(block)
+    except Exception:
+        update_payload = None
+    cleaned = CONFIG_UPDATE_PATTERN.sub('', raw_text).strip()
+    return cleaned, update_payload
+
+
+def _call_assistant_chat(messages: list[dict], include_detection: bool = True) -> tuple[str, dict | None]:
+    ai_cfg = load_ai_config()
+    base_url = (ai_cfg.get('base_url') or '').strip()
+    if not base_url:
+        raise ValueError('AI base URL is not configured. Set OPENWEBUI_BASE_URL or edit config_ai.yaml.')
+    endpoint = f"{base_url.rstrip('/')}/v1/chat/completions"
+    api_key = (ai_cfg.get('api_key') or '').strip()
+    headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    }
+    if api_key:
+        headers['Authorization'] = f"Bearer {api_key}"
+
+    context_sections: list[str] = []
+    if include_detection:
+        detection_context = _prepare_detection_ai_context()
+        try:
+            context_yaml = yaml.safe_dump(detection_context, allow_unicode=True, sort_keys=False)
+        except Exception:
+            context_yaml = json.dumps(detection_context, indent=2, ensure_ascii=False)
+        context_sections.append("Detection Kontext:\n`yaml\n" + context_yaml + "\n`")
+
+    system_lines = [
+        (
+            "ROLLE: Du bist der integrierte Assistent fuer die Cell Analysis Pipeline. "
+            "ANTWORTSPRACHE: Deutsch mit kurzer 'du'-Ansprache. "
+            "UMFANG: Unterstuetze bei CZI-Konvertierung, Zellsegmentierung (Cellpose/CPSAM) und Co-Expression-Analyse. "
+            "Nutze nur Fakten aus uebergebenem Kontext."
+        ),
+        (
+            "STANDARDSTIL: "
+            "- Liefere zwei bis drei praegnante Bullet Points. "
+            "- Bei ausdruecklichen Nachfragen nach Erklaerung oder Details ergaenze eine kurze strukturierte Erlaeuterung. "
+            "- Fuehre nur relevante Pfade, Parameter oder Logs an."
+        ),
+        (
+            "KONTEXT: "
+            "- Verwende detection_config nur fuer vorhandene Schluessel. "
+            "- Logs (det_status, analysis_status, czi_status) nur nennen, wenn sie fuer die Antwort wichtig sind. "
+            "- Fehlen Informationen, sage dies knapp und frage zielgerichtet nach."
+        ),
+        (
+            "KONFIG-AENDERUNGEN: "
+            "- Nutze `config_update {\"target\":\"...\",\"changes\":{...},\"reason\":\"...\"}` in Backticks. "
+            "- Gueltige Ziele: det, cpsam, czi, analysis, ai. "
+            "- Begruende Aenderungen konservativ; Alternativen ggf. getrennt anbieten."
+        ),
+        (
+            "ZUSTIMMUNG: "
+            "- Bitte vor dem Anwenden immer um JA oder NEIN. "
+            "- Ohne JA keine Umsetzung; fehlende Pflichtwerte zuerst erfragen."
+        ),
+        (
+            "RISIKEN & PFADREGELN: "
+            "- Weise auf moegliche Nebenwirkungen (RAM/VRAM, Laufzeit, Datenueberschreibung) hin. "
+            "- Erinnere bei Bedarf an Pfad-Mappings (Windows -> /host_mnt/<drive>/, /mnt/<drive>/, /app/data)."
+        ),
+        (
+            "CHECKLISTE: "
+            "- CZI: input_root/output_base, Kanalauswahl, Normalisierung, OME/Stack-Optionen, overwrite. "
+            "- Detection: input_tiffs_dir/output_results_dir, channels, thresholds, magnification, GPU/CPU. "
+            "- CPSAM: filters, processing, advanced_filtering, overlays, microscope, testing. "
+            "- Co-Expression: Ergebnis-Pfade, CSV-Ausgaben, Overlay-Abhaengigkeiten."
+        ),
+        (
+            "ABSCHLUSS: "
+            "- Frage am Ende nach JA/NEIN oder ob weitere Details benoetigt werden."
+        ),
+    ]
+    if context_sections:
+        system_lines.append("Kontext:\n" + "\n\n".join(context_sections))
+    payload_messages = [
+        {'role': 'system', 'content': "\n\n".join(system_lines)}
+    ]
+    for msg in messages:
+        if not isinstance(msg, dict):
+            continue
+        role = msg.get('role')
+        content = msg.get('content')
+        if role not in ('user', 'assistant'):
+            continue
+        if not isinstance(content, str):
+            continue
+        payload_messages.append({'role': role, 'content': content})
+    if len(payload_messages) == 1:
+        raise ValueError('No valid messages provided for assistant chat.')
+
+    payload = {
+        'model': ai_cfg.get('model_id') or DEFAULT_AI_CONFIG['model_id'],
+        'messages': payload_messages,
+        'temperature': float(ai_cfg.get('temperature', 0.2)),
+        'max_tokens': int(ai_cfg.get('max_tokens', 800)),
+    }
+
+    response = requests.post(endpoint, json=payload, headers=headers, timeout=120)
+    response.raise_for_status()
+    data = response.json()
+    try:
+        raw_text = data['choices'][0]['message']['content']
+    except Exception:
+        raw_text = json.dumps(data, indent=2, ensure_ascii=False)
+    return _extract_config_update(raw_text)
+def _call_detection_assistant(user_notes: str | None = None) -> str:
+    base_message = "Analysiere die aktuelle Detection-Konfiguration und gib konkrete, priorisierte Empfehlungen."
+    if user_notes:
+        base_message += f"\n\nBenutzerhinweis: {user_notes}"
+    base_message += "\n\nGib Hinweise zu Risiken, Validierungen und moeglichen Parametern zum Anpassen."
+    reply_text, _ = _call_assistant_chat([{'role': 'user', 'content': base_message}], include_detection=True)
+    return reply_text
 def load_config():
-    """LÃ¤dt die Konfiguration aus config_analysis.yaml"""
+    """Laedt die Konfiguration aus config_analysis.yaml"""
     config_path = 'config_analysis.yaml'
     if os.path.exists(config_path):
         with open(config_path, 'r', encoding='utf-8') as f:
@@ -98,7 +340,7 @@ def save_config(config):
 
 # NEU: CZI Config Funktionen
 def load_czi_config():
-    """LÃ¤dt CZI-Konvertierungs-Konfiguration"""
+    """Laedt CZI-Konvertierungs-Konfiguration"""
     defaults = {
         'input_root': '',
         'output_base': '',
@@ -139,13 +381,13 @@ def save_czi_config(config):
         yaml.dump(config, f, default_flow_style=False, allow_unicode=True)
 
 def run_czi_conversion_thread(config):
-    """FÃ¼hrt CZI-Konvertierung in separatem Thread aus"""
+    """Fuehrt CZI-Konvertierung in separatem Thread aus"""
     global czi_status, czi_process
     try:
         czi_status['running'] = True
         czi_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] CZI Konvertierung gestartet...")
 
-        # Speichere Config temporÃ¤r
+        # Speichere Config temporaer
         save_czi_config(config)
 
         # Pre-count total .czi files for progress (best-effort)
@@ -219,25 +461,25 @@ def run_czi_conversion_thread(config):
 
         if czi_process.returncode == 0:
             czi_status['progress'] = 100
-            czi_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] âœ… Konvertierung erfolgreich! ({czi_status['done']} files)")
+            czi_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Konvertierung erfolgreich! ({czi_status['done']} files)")
         else:
-            czi_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] âŒ Konvertierung fehlgeschlagen (Code: {czi_process.returncode})")
+            czi_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Konvertierung fehlgeschlagen (Code: {czi_process.returncode})")
 
     except Exception as e:
-        czi_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] âŒ Fehler: {str(e)}")
+        czi_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Fehler: {str(e)}")
     finally:
         czi_status['running'] = False
         czi_process = None
 
 def run_analysis_thread(config):
-    """FÃ¼hrt die Analyse in einem separaten Thread aus"""
+    """Fuehrt die Analyse in einem separaten Thread aus"""
     global analysis_status, analysis_process
     
     try:
         analysis_status['running'] = True
         analysis_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Analyse gestartet...")
         
-        # Speichere temporÃ¤re Konfiguration
+        # Speichere temporaere Konfiguration
         save_config(config)
         
         # Debug-Flag aus Payload lesen
@@ -256,7 +498,7 @@ def run_analysis_thread(config):
             cwd=os.getcwd()
         )
         
-        # Lese Output Zeile fÃ¼r Zeile
+        # Lese Output Zeile fuer Zeile
         for line in analysis_process.stdout:
             analysis_status['log'].append(line.strip())
             # Begrenze Log auf letzte 100 Zeilen
@@ -266,25 +508,31 @@ def run_analysis_thread(config):
         analysis_process.wait()
         
         if analysis_process.returncode == 0:
-            analysis_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] âœ… Analyse erfolgreich abgeschlossen!")
+            analysis_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Analyse erfolgreich abgeschlossen!")
         else:
-            analysis_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] âŒ Analyse fehlgeschlagen (Code: {analysis_process.returncode})")
+            analysis_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Analyse fehlgeschlagen (Code: {analysis_process.returncode})")
             
     except Exception as e:
-        analysis_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] âŒ Fehler: {str(e)}")
+        analysis_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Fehler: {str(e)}")
     finally:
         analysis_status['running'] = False
         analysis_status['progress'] = 100
         analysis_process = None
 
 def load_det_config():
-    """LÃ¤dt Detection-Konfiguration (config.yaml)"""
+    """Laedt Detection-Konfiguration (config.yaml)"""
     if os.path.exists(DET_CONFIG_PATH):
         with open(DET_CONFIG_PATH, 'r', encoding='utf-8') as f:
             cfg = yaml.safe_load(f) or {}
             # ensure new key exists to roundtrip with UI
             cfg.setdefault('det_script_path', '')
             cfg.setdefault('verbose', False)  # NEW
+            scope = cfg.setdefault('microscope', {})
+            if not isinstance(scope, dict):
+                scope = {}
+            scope.setdefault('reference_magnification', 10)
+            scope.setdefault('current_magnification', scope.get('reference_magnification', 10))
+            cfg['microscope'] = scope
             return cfg
     return {
         'input_tiffs_dir': '',
@@ -303,6 +551,10 @@ def load_det_config():
         # NEW: path to batch_segment.py (optional)
         'det_script_path': '',
         'verbose': False,  # NEW
+        'microscope': {
+            'reference_magnification': 10,
+            'current_magnification': 10,
+        },
     }
 
 # Helper: default CPSAM config template (all parameters as requested)
@@ -368,6 +620,10 @@ def _default_cpsam_config() -> dict:
         'outputs': {
             'base_name': "cell_analysis",
         },
+        'microscope': {
+            'reference_magnification': 10,
+            'current_magnification': 10,
+        },
     }
 
 def _deep_update(dst: dict, src: dict):
@@ -391,7 +647,7 @@ def _build_cpsam_config(ui_cfg: dict, base: dict | None = None) -> dict:
     # Ensure required sections exist
     for section in (
         'paths', 'conditions', 'cellpose', 'filters',
-        'advanced_filtering', 'processing', 'overlays', 'outputs'
+        'advanced_filtering', 'processing', 'overlays', 'outputs', 'microscope'
     ):
         cfg.setdefault(section, {})
 
@@ -403,10 +659,95 @@ def _build_cpsam_config(ui_cfg: dict, base: dict | None = None) -> dict:
     # 2) Paths from top-level UI (preferred)
     inp_root = (ui_cfg.get('input_tiffs_dir') or '').strip()
     out_root = (ui_cfg.get('output_results_dir') or '').strip()
+    cond_cfg = cfg.setdefault('conditions', {}) or {}
+
+    def _tokenize_patterns(value):
+        tokens: list[str] = []
+        if isinstance(value, str):
+            for piece in re.split(r'[;,/]+|\s+', value):
+                piece = piece.strip().lower()
+                if piece:
+                    tokens.append(piece)
+        elif isinstance(value, (list, tuple, set)):
+            for item in value:
+                tokens.extend(_tokenize_patterns(item))
+        return tokens
+
+    def _merge_tokens(primary, fallback):
+        merged: list[str] = []
+        for tok in list(primary) + list(fallback):
+            tok = (tok or '').strip().lower()
+            if tok and tok not in merged:
+                merged.append(tok)
+        return tuple(merged)
+
+    pos_tokens = _merge_tokens(
+        _tokenize_patterns(cond_cfg.get('pos_pattern')),
+        ('input_pos', 'pos', 'positive')
+    )
+    neg_tokens = _merge_tokens(
+        _tokenize_patterns(cond_cfg.get('neg_pattern')),
+        ('input_neg', 'neg', 'negative')
+    )
+
+    def _guess_condition_dir(root: str, tokens: tuple[str, ...], fallback_other: str | None = None) -> str:
+        if not root:
+            return ''
+        root_norm = os.path.normpath(root)
+        tokens = tuple(tok.lower() for tok in tokens if tok)
+        token_set = set(tokens)
+        if os.path.isdir(root_norm):
+            try:
+                entries = list(os.scandir(root_norm))
+            except Exception:
+                entries = []
+            # direct files?
+            if any(entry.is_file() and entry.name.lower().endswith(('.tif', '.tiff')) for entry in entries):
+                return root_norm
+            # token match in immediate subdirs
+            for entry in entries:
+                if entry.is_dir():
+                    name = entry.name.lower()
+                    if token_set and any(tok in name for tok in token_set):
+                        return entry.path
+            # single subdir fallback
+            dirs_only = [entry.path for entry in entries if entry.is_dir()]
+            if len(dirs_only) == 1:
+                return dirs_only[0]
+        # fallback: search deeper up to limited depth
+        matches_token: list[str] = []
+        matches_general: list[str] = []
+        for dirpath, dirnames, filenames in os.walk(root_norm):
+            if any(fn.lower().endswith(('.tif', '.tiff')) for fn in filenames):
+                candidate = dirpath
+                try:
+                    if fallback_other and os.path.samefile(candidate, fallback_other):
+                        continue
+                except Exception:
+                    pass
+                base_name = os.path.basename(candidate).lower()
+                if token_set and any(tok in base_name for tok in token_set):
+                    matches_token.append(candidate)
+                else:
+                    matches_general.append(candidate)
+        if matches_token:
+            return matches_token[0]
+        if matches_general:
+            return matches_general[0]
+        return ''
+
     if inp_root:
         cfg.setdefault('paths', {})
-        cfg['paths']['input_pos'] = os.path.join(inp_root, 'Input_pos')
-        cfg['paths']['input_neg'] = os.path.join(inp_root, 'Input_neg')
+        pos_dir = _guess_condition_dir(inp_root, pos_tokens)
+        neg_dir = _guess_condition_dir(inp_root, neg_tokens, fallback_other=pos_dir or None)
+        if pos_dir:
+            cfg['paths']['input_pos'] = pos_dir
+        else:
+            cfg['paths'].pop('input_pos', None)
+        if neg_dir and (not pos_dir or not os.path.samefile(pos_dir, neg_dir)):
+            cfg['paths']['input_neg'] = neg_dir
+        else:
+            cfg['paths'].pop('input_neg', None)
     if out_root:
         cfg.setdefault('paths', {})
         cfg['paths']['output_root'] = out_root
@@ -430,6 +771,29 @@ def _build_cpsam_config(ui_cfg: dict, base: dict | None = None) -> dict:
     fil = cfg.setdefault('filters', {})
     if isinstance(ui_cfg.get('min_area'), (int, float)):
         fil['min_area'] = int(ui_cfg['min_area'])
+
+    scope_cfg = cfg.setdefault('microscope', {})
+    if not isinstance(scope_cfg, dict):
+        scope_cfg = {}
+        cfg['microscope'] = scope_cfg
+
+    def _coerce_positive_float(val):
+        try:
+            f = float(val)
+            return f if f > 0 else None
+        except Exception:
+            return None
+
+    ui_scope = ui_cfg.get('microscope') or {}
+    if isinstance(ui_scope, dict):
+        cur = _coerce_positive_float(ui_scope.get('current_magnification'))
+        ref = _coerce_positive_float(ui_scope.get('reference_magnification'))
+        if ref is not None:
+            scope_cfg['reference_magnification'] = ref
+        if cur is not None:
+            scope_cfg['current_magnification'] = cur
+    scope_cfg.setdefault('reference_magnification', 10)
+    scope_cfg.setdefault('current_magnification', scope_cfg.get('reference_magnification', 10))
 
     return cfg
 
@@ -539,18 +903,18 @@ def _normalize_master_csvs(base_dir: str, label_map: dict[int, str] | None = Non
         except Exception as e:
             det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] WARN: CSV normalize failed at {fp}: {e}")
 
-def _merge_master_csvs(base_dir: str):
+def _merge_master_csvs(base_dir: str) -> str | None:
     """Merge per-channel CSVs and keep channel labels."""
     import csv
     base = os.path.abspath(base_dir)
     if not os.path.isdir(base):
-        return
+        return None
     target = os.path.join(base, 'All_Counts_Master.csv')
     legacy_order = [
         'filename','condition','region','channel','channel_index','cell_count',
         'mean_area_per_cell','mean_intensity_per_cell','mean_integrated_density_per_cell'
     ]
-    rows, sources = [], []
+    rows = []
     for root, _, files in os.walk(base):
         for fn in files:
             if fn != 'All_Counts_Master.csv':
@@ -563,9 +927,107 @@ def _merge_master_csvs(base_dir: str):
                     reader = csv.DictReader(f)
                     for r in reader:
                         rows.append({k: r.get(k, '') for k in legacy_order})
-                sources.append(fp)
             except Exception:
                 continue
+    if not rows:
+        return None
+    rows.sort(key=lambda r: (
+        str(r.get('channel_index', '')),
+        str(r.get('condition', '')),
+        str(r.get('region', '')),
+        str(r.get('filename', ''))
+    ))
+    try:
+        with open(target, 'w', encoding='utf-8', newline='') as w:
+            writer = csv.DictWriter(w, fieldnames=legacy_order)
+            writer.writeheader()
+            writer.writerows(rows)
+        return target
+    except Exception:
+        return None
+
+def _collect_level_counts(level_root: str):
+    """Read All_Counts_Master.csv files under a level output and aggregate counts per condition."""
+    results = []
+    aggregate_cells = 0
+    aggregate_images = 0
+    base = Path(level_root)
+    if not base.exists():
+        return results
+    for condition_dir in base.iterdir():
+        if not condition_dir.is_dir():
+            continue
+        csv_path = condition_dir / "All_Counts_Master.csv"
+        if not csv_path.exists():
+            continue
+        condition = condition_dir.name
+        total_cells = 0
+        image_count = 0
+        try:
+            with csv_path.open('r', encoding='utf-8', newline='') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    image_count += 1
+                    try:
+                        total_cells += int(float(row.get('cell_count', 0) or 0))
+                    except Exception:
+                        continue
+        except Exception:
+            continue
+        aggregate_cells += total_cells
+        aggregate_images += image_count
+        results.append({
+            'condition': condition,
+            'images': image_count,
+            'total_cells': total_cells,
+        })
+    if aggregate_images or aggregate_cells:
+        results.append({
+            'condition': 'ALL',
+            'images': aggregate_images,
+            'total_cells': aggregate_cells,
+        })
+    return results
+
+def _write_sweep_summary(ch_root: str, entries) -> str | None:
+    """Write a sweep summary CSV for a channel."""
+    if not entries:
+        return None
+    sorted_entries = sorted(
+        entries,
+        key=lambda x: (
+            x.get('level_idx', 0),
+            1 if (x.get('condition') or '').upper() == 'ALL' else 0,
+            x.get('condition', ''),
+        )
+    )
+    summary_path = Path(ch_root) / "sweep_counts_summary.csv"
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    with summary_path.open('w', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            "channel",
+            "level_index",
+            "level_label",
+            "condition",
+            "images",
+            "total_cells",
+            "mean_cells_per_image",
+        ])
+        for entry in sorted_entries:
+            images = entry.get('images') or 0
+            total = entry.get('total_cells') or 0
+            mean = (total / images) if images else 0.0
+            writer.writerow([
+                f"ch{entry.get('channel')}",
+                ((entry.get('level_idx') or 0) + 1) if entry.get('level_idx') is not None else "",
+                entry.get('level_label', ''),
+                entry.get('condition', ''),
+                images,
+                total,
+                f"{mean:.2f}",
+            ])
+    return str(summary_path)
 
 def _prune_empty_dirs(root_dir: str, keep: set[str] | None = None):
     """Remove empty directories under root_dir except those in keep."""
@@ -616,13 +1078,11 @@ def _reorganize_outputs(ch_out: str):
                 continue
 
 def run_det_thread(cfg: dict):
-    """Startet batch_segment.py und streamt Logs (unterstützt Multi-Channel)."""
+    """Startet batch_segment.py und streamt Logs (unterstuetzt Multi-Channel)."""
     global det_status, det_process
     try:
         det_status['running'] = True
         det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Detection gestartet...")
-
-        save_det_config(cfg)
 
         try:
             existing_cpsam = _load_yaml(DET_CPSAM_CONFIG_PATH)
@@ -632,6 +1092,16 @@ def run_det_thread(cfg: dict):
             existing_cpsam = {}
         cpsam_cfg = _build_cpsam_config(cfg, existing_cpsam)
         cpsam_cfg_path = str(Path(DET_CPSAM_CONFIG_PATH).resolve())
+
+        normalized_levels, channel_levels_map = _normalize_channel_levels(
+            cfg.get('channel_levels') or cfg.get('det_channel_levels') or []
+        )
+        if normalized_levels:
+            cfg['channel_levels'] = normalized_levels
+        else:
+            cfg.pop('channel_levels', None)
+
+        save_det_config(cfg)
 
         labels: dict[int, str] = {}
         for item in cfg.get('channel_labels') or []:
@@ -644,22 +1114,95 @@ def run_det_thread(cfg: dict):
             labels[idx] = (item.get('name') or '').strip()
 
         raw_testing = cfg.get('testing') if isinstance(cfg.get('testing'), dict) else {}
+        raw_mode = raw_testing.get('mode')
+        if isinstance(raw_mode, str):
+            raw_mode = raw_mode.lower()
+        else:
+            raw_mode = None
         testing_cfg = {
             'enabled': bool(raw_testing.get('enabled')),
             'samples_per_channel': int(raw_testing.get('samples_per_channel') or 0),
+            'mode': raw_mode,
+            'levels': copy.deepcopy(raw_testing.get('levels')) if isinstance(raw_testing.get('levels'), (list, tuple)) else None,
         }
+        raw_selected_image = raw_testing.get('selected_image')
+        raw_selected_images = raw_testing.get('selected_images') if isinstance(raw_testing.get('selected_images'), dict) else {}
+        selected_images: dict[str, str] = {}
+        if isinstance(raw_selected_images, dict):
+            for key, value in raw_selected_images.items():
+                cleaned = _clean_relative_path_value(value)
+                if cleaned:
+                    selected_images[key.lower()] = cleaned
+        for key in ('pos', 'neg'):
+            alt_val = _clean_relative_path_value(raw_testing.get(f'selected_image_{key}'))
+            if alt_val:
+                selected_images[key] = alt_val
+        single_image = _clean_relative_path_value(raw_selected_image)
+        if single_image:
+            selected_images.setdefault('pos', single_image)
         seed_val = raw_testing.get('seed')
         if seed_val not in (None, ''):
             testing_cfg['seed'] = str(seed_val)
-        cpsam_cfg['testing'] = testing_cfg
+        advanced_mode = testing_cfg.get('mode') == 'advanced'
+        sweep_levels = []
+        if advanced_mode:
+            levels_val = testing_cfg.get('levels') or []
+            if isinstance(levels_val, (list, tuple)):
+                for value in levels_val:
+                    try:
+                        idx = int(value)
+                    except Exception:
+                        continue
+                    if 0 <= idx < len(SENSITIVITY_LEVELS):
+                        sweep_levels.append(idx)
+            if not sweep_levels:
+                sweep_levels = list(range(len(SENSITIVITY_LEVELS)))
+            testing_cfg['levels'] = sweep_levels
+        if advanced_mode and not testing_cfg.get('seed'):
+            if not (selected_images.get('pos') or selected_images.get('neg') or '').strip():
+                testing_cfg['seed'] = '__advanced_sweep__'
+        if selected_images:
+            refined_images: dict[str, str] = {}
+            for cond_key, rel_path in selected_images.items():
+                refined_val = _refine_selected_image_reference(
+                    rel_path,
+                    cfg.get('input_tiffs_dir'),
+                    cpsam_cfg.get('paths')
+                )
+                if refined_val:
+                    refined_images[cond_key] = refined_val
+                elif rel_path:
+                    refined_images[cond_key] = rel_path
+            if refined_images:
+                testing_cfg['selected_images'] = refined_images
+                primary = refined_images.get('pos') or next(iter(refined_images.values()))
+                if primary:
+                    testing_cfg['selected_image'] = primary
+        else:
+            testing_cfg.pop('selected_images', None)
+        if not advanced_mode:
+            testing_cfg.pop('levels', None)
+        cpsam_cfg['testing'] = copy.deepcopy(testing_cfg)
         testing_enabled = testing_cfg['enabled'] and testing_cfg.get('samples_per_channel', 0) > 0
         if testing_enabled:
             seed_info = f" seed={testing_cfg['seed']}" if testing_cfg.get('seed') else ''
-            det_status['log'].append("[{}] [info] Test mode active: samples_per_channel={}{}".format(
-                datetime.now().strftime('%H:%M:%S'),
-                testing_cfg['samples_per_channel'],
-                seed_info
-            ))
+            if advanced_mode:
+                det_status['log'].append("[{}] [info] Advanced sweep active: levels={} samples_per_channel={}{}".format(
+                    datetime.now().strftime('%H:%M:%S'),
+                    len(sweep_levels),
+                    testing_cfg['samples_per_channel'],
+                    seed_info
+                ))
+            else:
+                det_status['log'].append("[{}] [info] Test mode active: samples_per_channel={}{}".format(
+                    datetime.now().strftime('%H:%M:%S'),
+                    testing_cfg['samples_per_channel'],
+                    seed_info
+                ))
+        if not testing_enabled and advanced_mode:
+            advanced_mode = False
+            testing_cfg.pop('levels', None)
+            sweep_levels = []
 
         paths = cpsam_cfg.setdefault('paths', {})
         base_out_raw = (paths.get('output_root') or '').strip() or cfg.get('output_results_dir') or './results_det'
@@ -674,6 +1217,10 @@ def run_det_thread(cfg: dict):
         if testing_enabled:
             base_out_root = os.path.join(base_out_root, '__test__')
             det_status['log'].append('[{}] [info] Test outputs -> {}'.format(datetime.now().strftime('%H:%M:%S'), base_out_root))
+            if advanced_mode:
+                base_out_root = os.path.join(base_out_root, '__sweep__')
+                det_status['log'].append('[{}] [info] Advanced sweep outputs -> {}'.format(
+                    datetime.now().strftime('%H:%M:%S'), base_out_root))
 
         cp_block = cpsam_cfg.setdefault('cellpose', {})
 
@@ -687,6 +1234,57 @@ def run_det_thread(cfg: dict):
         selected_channels = list(dict.fromkeys(selected_channels))
         if not selected_channels:
             selected_channels = [0]
+
+        if channel_levels_map:
+            level_notes = []
+            for idx, lvl in sorted(channel_levels_map.items()):
+                if 0 <= lvl < len(SENSITIVITY_LEVELS):
+                    label = SENSITIVITY_LEVELS[lvl].get('label', '').replace('  ', ' ')
+                    level_notes.append(f"ch{idx}=L{lvl+1:02d} {label}")
+                else:
+                    level_notes.append(f"ch{idx}=L{lvl+1:02d}")
+            det_status['log'].append(
+                "[{}] [info] Per-channel sensitivity -> {}".format(
+                    datetime.now().strftime('%H:%M:%S'),
+                    '; '.join(level_notes)
+                )
+            )
+
+        snapshot_dir = None
+        try:
+            snapshot_root = (Path(base_out_root) / '__config__').resolve()
+            snapshot_payload = {
+                'ui_config': copy.deepcopy(cfg),
+                'cpsam_config': copy.deepcopy(cpsam_cfg),
+                'channel_levels_map': dict(sorted(channel_levels_map.items())),
+                'selected_channels': list(selected_channels),
+            }
+            runtime_meta = {
+                'started_at': datetime.now().isoformat(),
+                'advanced_mode': bool(advanced_mode),
+                'testing': copy.deepcopy(testing_cfg),
+                'sweep_levels': list(sweep_levels) if advanced_mode else [],
+                'base_output': str(base_out_root),
+            }
+            snapshot_dir = save_config_snapshot(
+                snapshot_root,
+                config_dict=snapshot_payload,
+                runtime_params=runtime_meta,
+                snapshot_name='detection_run'
+            )
+            det_status['log'].append(
+                "[{}] [info] Config snapshot gespeichert: {}".format(
+                    datetime.now().strftime('%H:%M:%S'),
+                    snapshot_dir
+                )
+            )
+        except Exception as snapshot_err:
+            det_status['log'].append(
+                "[{}] WARN: Config snapshot fehlgeschlagen: {}".format(
+                    datetime.now().strftime('%H:%M:%S'),
+                    snapshot_err
+                )
+            )
 
         tried = []
         script = None
@@ -716,7 +1314,7 @@ def run_det_thread(cfg: dict):
             )
 
         if script is None:
-            det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ batch_segment.py nicht gefunden.")
+            det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] batch_segment.py nicht gefunden.")
             det_status['log'].append("  Tried:")
             for entry in tried:
                 det_status['log'].append(f"   - {entry}")
@@ -744,122 +1342,234 @@ def run_det_thread(cfg: dict):
             env['VERBOSE'] = '1'
             env['PYTHONUNBUFFERED'] = '1'
 
+
         overall_success = True
         completed_channels: list[int] = []
 
         for ch_idx in selected_channels:
             label_suffix = f" ({labels.get(ch_idx)})" if labels.get(ch_idx) else ""
-            ch_out = os.path.normpath(os.path.join(base_out_root, f"ch{ch_idx}"))
-            det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ▶ Kanal ch{ch_idx}{label_suffix}: output -> {ch_out}")
-
-            cp_block['channel'] = ch_idx
-            paths['output_root'] = ch_out
-
-            tmp_cfg_path = None
-            try:
-                tmp_handle = tempfile.NamedTemporaryFile('w', suffix='.yaml', delete=False)
-                yaml.safe_dump(cpsam_cfg, tmp_handle, default_flow_style=False, allow_unicode=True)
-                tmp_cfg_path = tmp_handle.name
-            finally:
-                try:
-                    tmp_handle.close()
-                except Exception:
-                    pass
-
-            try:
-                cp_view = cpsam_cfg.get('cellpose', {}) or {}
-                fil = cpsam_cfg.get('filters', {}) or {}
-                proc = cpsam_cfg.get('processing', {}) or {}
-                adv = cpsam_cfg.get('advanced_filtering', {}) or {}
-                overlays = cpsam_cfg.get('overlays', {}) or {}
-                det_status['log'].append(
-                    f"  model={cp_view.get('model_name','cpsam')} channel={cp_view.get('channel')} "
-                    f"batch={cp_view.get('batch_size')} diameter={cp_view.get('diameter')} use_gpu={cp_view.get('use_gpu')}"
-                )
-                det_status['log'].append(
-                    f"  flow_thr={cp_view.get('flow_threshold')} cellprob_thr={cp_view.get('cellprob_threshold')} "
-                    f"resize_max={cp_view.get('resize_max')} niter={cp_view.get('niter')}"
-                )
-                det_status['log'].append(
-                    "  filters: min_area={min_area} max_area={max_area} circ=[{min_circularity},{max_circularity}] "
-                    "hole={max_hole_ratio} itf={intensity_threshold_factor}".format(**{
-                        'min_area': fil.get('min_area'),
-                        'max_area': fil.get('max_area'),
-                        'min_circularity': fil.get('min_circularity'),
-                        'max_circularity': fil.get('max_circularity'),
-                        'max_hole_ratio': fil.get('max_hole_ratio'),
-                        'intensity_threshold_factor': fil.get('intensity_threshold_factor')
-                    })
-                )
-                det_status['log'].append(
-                    f"  advanced: enabled={cpsam_cfg.get('enable_advanced_filtering')} "
-                    f"snr_min={adv.get('snr_min')} abs_floor={adv.get('abs_floor_percentile')} "
-                    f"fg_block={adv.get('foreground_block_size')} fg_offset={adv.get('foreground_offset')}"
-                )
-                det_status['log'].append(
-                    f"  processing: tophat={proc.get('tophat')} radius={proc.get('tophat_radius')} "
-                    f"stretch={proc.get('contrast_stretch')} stretch_pct={proc.get('stretch_percentiles')} "
-                    f"intensity={proc.get('intensity_threshold')}"
-                )
-                det_status['log'].append(
-                    f"  overlays: mode={overlays.get('overlay_mode')} color={overlays.get('contour_color')} "
-                    f"line_width={overlays.get('line_width')} dpi={overlays.get('dpi')}"
-                )
-            except Exception as log_err:
-                det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Hinweis: Konfigurationsvorschau fehlgeschlagen: {log_err}")
-
-            cfg_to_use = tmp_cfg_path or cpsam_cfg_path
-            cmd = [sys.executable, str(script), '--config', cfg_to_use]
-            det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ▶ Starte Kanal ch{ch_idx}: {cmd}")
-
-            det_process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                bufsize=1,
-                cwd=str(script.parent),
-                env=env
-            )
-            for line in det_process.stdout:
-                det_status['log'].append(line.rstrip())
-                if len(det_status['log']) > 200:
-                    det_status['log'] = det_status['log'][-200:]
-            det_process.wait()
-
-            if det_process.returncode == 0:
-                try:
-                    out_root = cpsam_cfg.get('paths', {}).get('output_root', '')
-                    if out_root:
-                        _reorganize_outputs(out_root)
-                        _normalize_master_csvs(out_root, label_map=labels)
-                        _merge_master_csvs(out_root)
-                        _prune_empty_dirs(out_root, keep={os.path.join(out_root, 'overlays'), os.path.join(out_root, 'masks')})
-                except Exception as post_err:
-                    det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] WARN: Postprocess fehlgeschlagen (ch{ch_idx}): {post_err}")
-                det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ Kanal ch{ch_idx}{label_suffix} abgeschlossen.")
-                completed_channels.append(ch_idx)
+            ch_root_base = os.path.normpath(os.path.join(base_out_root, f"ch{ch_idx}"))
+            channel_level_idx = channel_levels_map.get(ch_idx)
+            channel_level_info = None
+            simple_level_note = ""
+            if channel_level_idx is not None and 0 <= channel_level_idx < len(SENSITIVITY_LEVELS):
+                channel_level_info = SENSITIVITY_LEVELS[channel_level_idx]
+                label_text = channel_level_info.get('label', '').replace('  ', ' ')
+                simple_level_note = f" [Level {channel_level_idx+1:02d} {label_text}]"
+            if advanced_mode:
+                det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ? Kanal ch{ch_idx}{label_suffix}: sweep ({len(sweep_levels)} Stufen) -> {ch_root_base}")
             else:
-                det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ Kanal ch{ch_idx}{label_suffix} fehlgeschlagen (Code: {det_process.returncode})")
-                overall_success = False
-                break
-            det_process = None
-            if tmp_cfg_path and os.path.exists(tmp_cfg_path):
-                try:
-                    os.remove(tmp_cfg_path)
-                except Exception:
-                    pass
+                det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ? Kanal ch{ch_idx}{label_suffix}: output -> {ch_root_base}{simple_level_note}")
 
+            cp_base = copy.deepcopy(cpsam_cfg.get('cellpose', {}) or {})
+            filters_base = copy.deepcopy(cpsam_cfg.get('filters', {}) or {})
+            adv_base = copy.deepcopy(cpsam_cfg.get('advanced_filtering', {}) or {})
+            proc_base = copy.deepcopy(cpsam_cfg.get('processing', {}) or {})
+            testing_base = copy.deepcopy(testing_cfg)
+
+            variants = []
+            if advanced_mode:
+                for level_idx in sweep_levels:
+                    level_info = SENSITIVITY_LEVELS[level_idx]
+                    variant_out = os.path.normpath(os.path.join(ch_root_base, f"L{level_idx+1:02d}"))
+                    variants.append({
+                        'level_idx': level_idx,
+                        'info': level_info,
+                        'output_root': variant_out,
+                    })
+            else:
+                variants.append({
+                    'level_idx': None,
+                    'info': None,
+                    'output_root': ch_root_base,
+                })
+
+            channel_summary_entries = []
+            channel_success = True
+
+            for variant in variants:
+                cpsam_cfg['cellpose'] = copy.deepcopy(cp_base)
+                cpsam_cfg['filters'] = copy.deepcopy(filters_base)
+                cpsam_cfg['advanced_filtering'] = copy.deepcopy(adv_base)
+                cpsam_cfg['processing'] = copy.deepcopy(proc_base)
+                current_testing = copy.deepcopy(testing_base)
+
+                if advanced_mode and variant['info'] is not None:
+                    current_testing['current_level'] = variant['level_idx']
+                    current_testing['current_label'] = variant['info']['label']
+                else:
+                    current_testing.pop('levels', None)
+                    if channel_level_info is not None:
+                        current_testing['current_level'] = channel_level_idx
+                        current_testing['current_label'] = channel_level_info.get('label')
+                    else:
+                        current_testing.pop('current_level', None)
+                        current_testing.pop('current_label', None)
+                cpsam_cfg['testing'] = current_testing
+
+                cp_block = cpsam_cfg['cellpose']
+                filters_block = cpsam_cfg['filters']
+                adv_block = cpsam_cfg['advanced_filtering']
+                proc_block = cpsam_cfg['processing']
+                paths['output_root'] = variant['output_root']
+                cp_block['channel'] = ch_idx
+
+                if advanced_mode and variant['info'] is not None:
+                    level_info = variant['info']
+                    cp_block['flow_threshold'] = round(level_info['flow'], 4)
+                    cp_block['cellprob_threshold'] = round(level_info['cellprob'], 4)
+                    filters_block['intensity_threshold_factor'] = round(level_info['itf'], 4)
+                    adv_block['snr_min'] = round(level_info['snr'], 2)
+                    adv_block['abs_floor_percentile'] = int(round(level_info['floor_pct']))
+                    proc_block['intensity_threshold'] = int(round(level_info['abs_int']))
+                elif channel_level_info is not None:
+                    cp_block['flow_threshold'] = round(channel_level_info['flow'], 4)
+                    cp_block['cellprob_threshold'] = round(channel_level_info['cellprob'], 4)
+                    filters_block['intensity_threshold_factor'] = round(channel_level_info['itf'], 4)
+                    adv_block['snr_min'] = round(channel_level_info['snr'], 2)
+                    adv_block['abs_floor_percentile'] = int(round(channel_level_info['floor_pct']))
+                    proc_block['intensity_threshold'] = int(round(channel_level_info['abs_int']))
+
+                tmp_cfg_path = None
+                try:
+                    tmp_handle = tempfile.NamedTemporaryFile('w', suffix='.yaml', delete=False)
+                    yaml.safe_dump(cpsam_cfg, tmp_handle, default_flow_style=False, allow_unicode=True)
+                    tmp_cfg_path = tmp_handle.name
+                finally:
+                    try:
+                        tmp_handle.close()
+                    except Exception:
+                        pass
+
+                try:
+                    cp_view = cpsam_cfg.get('cellpose', {}) or {}
+                    fil = cpsam_cfg.get('filters', {}) or {}
+                    proc = cpsam_cfg.get('processing', {}) or {}
+                    adv = cpsam_cfg.get('advanced_filtering', {}) or {}
+                    overlays = cpsam_cfg.get('overlays', {}) or {}
+                    scope_cfg = cpsam_cfg.get('microscope') or {}
+                    det_status['log'].append(
+                        f"  model={cp_view.get('model_name','cpsam')} channel={cp_view.get('channel')} "
+                        f"batch={cp_view.get('batch_size')} diameter={cp_view.get('diameter')} use_gpu={cp_view.get('use_gpu')}"
+                    )
+                    det_status['log'].append(
+                        f"  flow_thr={cp_view.get('flow_threshold')} cellprob_thr={cp_view.get('cellprob_threshold')} "
+                        f"resize_max={cp_view.get('resize_max')} niter={cp_view.get('niter')}"
+                    )
+                    if scope_cfg:
+                        det_status['log'].append(
+                            f"  magnification current={scope_cfg.get('current_magnification','?')}x "
+                            f"(reference {scope_cfg.get('reference_magnification','?')}x)"
+                        )
+                    det_status['log'].append(
+                        "  filters: min_area={min_area} max_area={max_area} circ=[{min_circularity},{max_circularity}] "
+                        "hole={max_hole_ratio} itf={intensity_threshold_factor}".format(**{
+                            'min_area': fil.get('min_area'),
+                            'max_area': fil.get('max_area'),
+                            'min_circularity': fil.get('min_circularity'),
+                            'max_circularity': fil.get('max_circularity'),
+                            'max_hole_ratio': fil.get('max_hole_ratio'),
+                            'intensity_threshold_factor': fil.get('intensity_threshold_factor')
+                        })
+                    )
+                    det_status['log'].append(
+                        f"  advanced: enabled={cpsam_cfg.get('enable_advanced_filtering')} "
+                        f"snr_min={adv.get('snr_min')} abs_floor={adv.get('abs_floor_percentile')} "
+                        f"fg_block={adv.get('foreground_block_size')} fg_offset={adv.get('foreground_offset')}"
+                    )
+                    det_status['log'].append(
+                        f"  processing: tophat={proc.get('tophat')} radius={proc.get('tophat_radius')} "
+                        f"stretch={proc.get('contrast_stretch')} stretch_pct={proc.get('stretch_percentiles')} "
+                        f"intensity={proc.get('intensity_threshold')}"
+                    )
+                    det_status['log'].append(
+                        f"  overlays: mode={overlays.get('overlay_mode')} color={overlays.get('contour_color')} "
+                        f"line_width={overlays.get('line_width')} dpi={overlays.get('dpi')}"
+                    )
+                except Exception as log_err:
+                    det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Hinweis: Konfigurationsvorschau fehlgeschlagen: {log_err}")
+
+                cfg_to_use = tmp_cfg_path or cpsam_cfg_path
+                run_label = ''
+                if advanced_mode and variant['info'] is not None:
+                    run_label = f" [L{variant['level_idx']+1:02d} {variant['info']['label']}]"
+                elif channel_level_info is not None:
+                    run_label = f" [L{channel_level_idx+1:02d} {channel_level_info.get('label')}]"
+                cmd = [sys.executable, str(script), '--config', cfg_to_use]
+                det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ? Starte Kanal ch{ch_idx}{run_label}: {cmd}")
+
+                det_process = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1,
+                    cwd=str(script.parent),
+                    env=env
+                )
+                for line in det_process.stdout:
+                    det_status['log'].append(line.rstrip())
+                    if len(det_status['log']) > 200:
+                        det_status['log'] = det_status['log'][-200:]
+                det_process.wait()
+
+                if det_process.returncode == 0:
+                    try:
+                        out_root = cpsam_cfg.get('paths', {}).get('output_root', '')
+                        if out_root:
+                            _reorganize_outputs(out_root)
+                            _normalize_master_csvs(out_root, label_map=labels)
+                            merged_path = _merge_master_csvs(out_root)
+                            if merged_path:
+                                det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Master CSV saved: {merged_path}")
+                            _prune_empty_dirs(out_root, keep={os.path.join(out_root, 'overlays'), os.path.join(out_root, 'masks')})
+                    except Exception as post_err:
+                        det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] WARN: Postprocess fehlgeschlagen (ch{ch_idx}): {post_err}")
+                    if advanced_mode and variant['info'] is not None:
+                        stats_entries = _collect_level_counts(variant['output_root'])
+                        for stat in stats_entries:
+                            channel_summary_entries.append({
+                                'channel': ch_idx,
+                                'level_idx': variant['level_idx'],
+                                'level_label': variant['info']['label'],
+                                'condition': stat.get('condition'),
+                                'images': stat.get('images'),
+                                'total_cells': stat.get('total_cells'),
+                            })
+                        det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ? Kanal ch{ch_idx}{label_suffix} [L{variant['level_idx']+1:02d}] abgeschlossen.")
+                    else:
+                        det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ? Kanal ch{ch_idx}{label_suffix}{simple_level_note} abgeschlossen.")
+                else:
+                    det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ? Kanal ch{ch_idx}{label_suffix}{simple_level_note} fehlgeschlagen (Code: {det_process.returncode})")
+                    overall_success = False
+                    channel_success = False
+                    break
+                det_process = None
+                if tmp_cfg_path and os.path.exists(tmp_cfg_path):
+                    try:
+                        os.remove(tmp_cfg_path)
+                    except Exception:
+                        pass
+
+            if channel_success:
+                completed_channels.append(ch_idx)
+                if advanced_mode:
+                    summary_path = _write_sweep_summary(ch_root_base, channel_summary_entries)
+                    det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ? Kanal ch{ch_idx}{label_suffix} (Advanced Sweep) abgeschlossen.")
+                    if summary_path:
+                        det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Sweep summary saved: {summary_path}")
+            else:
+                break
         if overall_success and completed_channels:
             suffix = 'e' if len(completed_channels) != 1 else ''
-            det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ Detection erfolgreich ({len(completed_channels)} Kanal{suffix}).")
+            det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Detection erfolgreich ({len(completed_channels)} Kanal{suffix}).")
         elif not completed_channels:
-            det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ Detection konnte nicht gestartet werden.")
+            det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Detection konnte nicht gestartet werden.")
         else:
-            det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ Detection vorzeitig beendet.")
+            det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Detection vorzeitig beendet.")
 
     except Exception as e:
-        det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ Fehler: {e}")
+        det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Fehler: {e}")
     finally:
         det_status['running'] = False
         det_process = None
@@ -876,19 +1586,90 @@ def _safe_join(base: Path, *parts: str) -> Path:
 def _map_incoming_path(p: str) -> str:
     """
     Map incoming paths for the current runtime:
-    - Windows-style paths (e.g. C:\\...) â†’ /mnt/<drive>/... (WSL)
+    - Windows-style paths (e.g. C:\\...)          /mnt/<drive>/... (WSL)
     - Leave /mnt/... and other POSIX paths unchanged
     Note: Do NOT rewrite to /host_mnt; that is Docker-specific and breaks on native WSL.
     """
     if not p:
         return os.getcwd()
-    # Windows path â†’ WSL path
+    # Windows path -> WSL path
     if '\\' in p and ':' in p:
         drive = p[0].lower()
         rest = p[2:].replace('\\', '/')
         return f"/mnt/{drive}/{rest}"
-    # Already POSIX (/mnt/..., /home/..., etc.) â†’ leave as is
+    # Already POSIX (/mnt/..., /home/..., etc.)          leave as is
     return p
+
+
+def _clean_relative_path_value(value):
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        value = str(value)
+    if not isinstance(value, str):
+        return None
+    cleaned = value.strip()
+    return cleaned or None
+
+
+def _refine_selected_image_reference(selected: str, input_root: str | None, paths_cfg: dict | None = None) -> str:
+    """
+    Normalize a selected test image so it becomes relative to the detected condition directory.
+    Removes duplicated leading folders (e.g. 'old/...' when condition path already points to /.../old).
+    """
+    if not selected:
+        return selected
+    cleaned = selected.strip().replace('\\', '/')
+    if cleaned.startswith('./'):
+        cleaned = cleaned[2:]
+    if not cleaned:
+        return cleaned
+
+    def _coerce_path(val: str | None) -> Path | None:
+        if not val:
+            return None
+        try:
+            path_obj = Path(val)
+        except Exception:
+            return None
+        try:
+            return path_obj.resolve()
+        except Exception:
+            return path_obj
+
+    input_root_path = _coerce_path(input_root)
+    paths_cfg = paths_cfg or {}
+    entries: list[tuple[tuple[str, ...], str | None]] = []
+    for key in ('input_pos', 'input_neg'):
+        candidate = _coerce_path(paths_cfg.get(key))
+        if not candidate:
+            continue
+        prefix_parts: tuple[str, ...] = ()
+        if input_root_path:
+            try:
+                rel = candidate.relative_to(input_root_path)
+                prefix_parts = tuple(part.lower() for part in rel.parts if part not in ('.',))
+            except Exception:
+                prefix_parts = ()
+        if not prefix_parts and candidate.name:
+            prefix_parts = (candidate.name.lower(),)
+        entries.append((prefix_parts, candidate.name.lower() if candidate.name else None))
+
+    parts = tuple(part for part in Path(cleaned).parts if part not in ('.',))
+    if not parts:
+        return cleaned
+    lowered_parts = tuple(part.lower() for part in parts)
+
+    for prefix_parts, fallback_name in entries:
+        if prefix_parts and len(lowered_parts) >= len(prefix_parts) and lowered_parts[:len(prefix_parts)] == prefix_parts:
+            trimmed = parts[len(prefix_parts):]
+            if trimmed:
+                return Path(*trimmed).as_posix()
+        elif fallback_name and lowered_parts and lowered_parts[0] == fallback_name:
+            trimmed = parts[1:]
+            if trimmed:
+                return Path(*trimmed).as_posix()
+    return cleaned
 
 def _existing_dirs(paths):
     out = []
@@ -1034,7 +1815,7 @@ def start_czi_conversion():
     global czi_status
     
     if czi_status['running']:
-        return jsonify({'status': 'error', 'message': 'Konvertierung lÃ¤uft bereits'}), 400
+        return jsonify({'status': 'error', 'message': 'Konvertierung laeuft bereits'}), 400
     
     config = load_czi_config()
     
@@ -1055,7 +1836,7 @@ def stop_czi_conversion():
     global czi_process, czi_status
     
     if not czi_status['running']:
-        return jsonify({'status': 'error', 'message': 'Keine Konvertierung lÃ¤uft'}), 400
+        return jsonify({'status': 'error', 'message': 'Keine Konvertierung laeuft'}), 400
     
     if czi_process:
         try:
@@ -1064,7 +1845,7 @@ def stop_czi_conversion():
         except subprocess.TimeoutExpired:
             czi_process.kill()
         
-        czi_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] âš ï¸ Konvertierung gestoppt")
+        czi_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Konvertierung gestoppt")
         czi_status['running'] = False
         czi_process = None
         
@@ -1118,7 +1899,7 @@ def list_czi_results():
 
 @app.route('/api/czi/download')
 def download_czi_file():
-    """LÃ¤dt eine konvertierte TIFF-Datei herunter"""
+    """Laedt eine konvertierte TIFF-Datei herunter"""
     config = load_czi_config()
     base = os.path.abspath(config.get('output_base', ''))
     req_path = request.args.get('path', '')
@@ -1140,9 +1921,9 @@ def download_czi_all_zip():
     config = load_czi_config()
     base = os.path.abspath(config.get('output_base', ''))
     if not base or not os.path.isdir(base):
-        return jsonify({'status': 'error', 'message': 'Output-Verzeichnis ungÃ¼ltig'}), 400
+        return jsonify({'status': 'error', 'message': 'Output-Verzeichnis ungueltig'}), 400
 
-    # TemporÃ¤re ZIP-Datei
+    # Temporaere ZIP-Datei
     tmp_dir = tempfile.mkdtemp(prefix='czi_zip_')
     ts = datetime.now().strftime('%Y%m%d_%H%M%S')
     zip_path = os.path.join(tmp_dir, f'czi_converted_{ts}.zip')
@@ -1221,7 +2002,7 @@ def start_analysis():
     global analysis_status
     
     if analysis_status['running']:
-        return jsonify({'status': 'error', 'message': 'Analyse lÃ¤uft bereits'}), 400
+        return jsonify({'status': 'error', 'message': 'Analyse laeuft bereits'}), 400
     
     config = request.json
     
@@ -1238,7 +2019,7 @@ def stop_analysis():
     global analysis_process, analysis_status
     
     if not analysis_status['running']:
-        return jsonify({'status': 'error', 'message': 'Keine Analyse lÃ¤uft'}), 400
+        return jsonify({'status': 'error', 'message': 'Keine Analyse laeuft'}), 400
     
     if analysis_process:
         try:
@@ -1247,7 +2028,7 @@ def stop_analysis():
         except subprocess.TimeoutExpired:
             analysis_process.kill()
         
-        analysis_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] âš ï¸ Analyse vom Benutzer gestoppt")
+        analysis_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Analyse vom Benutzer gestoppt")
         analysis_status['running'] = False
         analysis_process = None
         
@@ -1262,7 +2043,7 @@ def get_status():
 
 @app.route('/api/results', methods=['GET'])
 def list_results():
-    """Listet verfÃ¼gbare Ergebnis-Dateien"""
+    """Listet verfuegbare Ergebnis-Dateien"""
     config = load_config()
     output_dir = config.get('paths', {}).get('output_dir', 'coexpression_lea2_new')
     
@@ -1283,7 +2064,7 @@ def list_results():
 
 @app.route('/api/download/<filename>')
 def download_file(filename):
-    """LÃ¤dt eine Ergebnis-Datei herunter"""
+    """Laedt eine Ergebnis-Datei herunter"""
     config = load_config()
     output_dir = config.get('paths', {}).get('output_dir', 'coexpression_lea2_new')
     file_path = os.path.join(output_dir, filename)
@@ -1300,7 +2081,7 @@ def download_all_coexpr_zip():
     output_dir = config.get('paths', {}).get('output_dir', '')
     base = os.path.abspath(output_dir or '')
     if not base or not os.path.isdir(base):
-        return jsonify({'status': 'error', 'message': 'Output-Verzeichnis ungÃ¼ltig'}), 400
+        return jsonify({'status': 'error', 'message': 'Output-Verzeichnis ungueltig'}), 400
 
     tmp_dir = tempfile.mkdtemp(prefix='coexpr_zip_')
     ts = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -1325,7 +2106,7 @@ def download_all_coexpr_zip():
     def cleanup(response):
         try:
             if os.path.exists(zip_path): os.remove(zip_path)
-            if os.isdir(tmp_dir): os.rmdir(tmp_dir)
+            if os.path.isdir(tmp_dir): os.rmdir(tmp_dir)
         except Exception:
             pass
         return response
@@ -1350,22 +2131,47 @@ def upload_files():
     if not files:
         return jsonify({'error': 'No files uploaded'}), 400
 
+    rel_hints = request.form.getlist('relative_paths') or []
+
+    def _sanitize_relative(rel: str, fallback: str) -> list[str]:
+        rel = (rel or '').replace('\\', '/').strip()
+        parts = [segment for segment in rel.split('/') if segment and segment not in ('.', '..')]
+        if not parts:
+            safe = secure_filename(fallback) or fallback
+            return [safe]
+        safe_parts = []
+        for segment in parts:
+            safe = secure_filename(segment) or segment
+            if safe:
+                safe_parts.append(safe)
+        if not safe_parts:
+            safe_parts = [secure_filename(fallback) or fallback]
+        return safe_parts
+
     saved = []
-    for storage in files:
+    for idx, storage in enumerate(files):
         if not storage or not storage.filename:
             continue
-        safe_name = secure_filename(storage.filename)
+        original_name = storage.filename
+        safe_name = secure_filename(original_name) or original_name
         if not safe_name:
             continue
-        dest_path = target_dir / safe_name
+        rel_hint = rel_hints[idx] if idx < len(rel_hints) else safe_name
+        relative_parts = _sanitize_relative(rel_hint, safe_name)
+        dest_path = target_dir.joinpath(*relative_parts)
         try:
-            storage.save(dest_path)
-            stat = dest_path.stat()
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
+        except Exception as exc:
+            return jsonify({'error': f'Unable to prepare folder for {storage.filename}: {exc}'}), 500
+        final_path = Path(_unique_path(str(dest_path)))
+        try:
+            storage.save(final_path)
+            stat = final_path.stat()
             saved.append({
-                'name': safe_name,
+                'name': final_path.name,
                 'size': stat.st_size,
                 'modified': datetime.fromtimestamp(stat.st_mtime).isoformat(),
-                'relative_path': str(dest_path.relative_to(DATA_ROOT))
+                'relative_path': str(final_path.relative_to(DATA_ROOT))
             })
         except Exception as exc:
             return jsonify({'error': f'Failed to save {storage.filename}: {exc}'}), 500
@@ -1424,9 +2230,10 @@ def download_uploaded_file():
 
 @app.route('/api/browse', methods=['POST'])
 def browse_directory():
-    """Durchsucht Verzeichnisse und gibt Struktur zurÃ¼ck"""
+    """Durchsucht Verzeichnisse und gibt Struktur zurueck"""
     data = request.json or {}
     raw_path = (data.get('path') or '').strip()
+    include_files = bool(data.get('include_files'))
 
     # Preferred start dir if none provided
     if not raw_path or raw_path in ('.', '~'):
@@ -1472,9 +2279,10 @@ def browse_directory():
         for item in sorted(os.listdir(path)):
             item_path = os.path.join(path, item)
             try:
-                is_dir = os.path.isdir(item_path)
-                if is_dir:
+                if os.path.isdir(item_path):
                     items.append({'name': item, 'path': item_path, 'type': 'directory', 'isDir': True})
+                elif include_files and os.path.isfile(item_path):
+                    items.append({'name': item, 'path': item_path, 'type': 'file', 'isDir': False})
             except PermissionError:
                 continue
         return jsonify({'current_path': path, 'items': items})
@@ -1485,7 +2293,7 @@ def browse_directory():
 
 @app.route('/api/validate-path', methods=['POST'])
 def validate_path():
-    """PrÃ¼ft ob ein Pfad existiert und welchen Typ er hat"""
+    """Prueft ob ein Pfad existiert und welchen Typ er hat"""
     data = request.json
     path = data.get('path', '')
     
@@ -1503,7 +2311,7 @@ def validate_path():
     
     is_dir = os.path.isdir(path)
     
-    # PrÃ¼fe ob es ein valides Input-Verzeichnis ist (enthÃ¤lt ch0, ch1, etc.)
+    # Pruefe ob es ein valides Input-Verzeichnis ist (enthaelt ch0, ch1, etc.)
     has_channels = False
     if is_dir:
         try:
@@ -1530,24 +2338,36 @@ def _load_yaml(path: str) -> dict:
 
 @app.route('/api/det/config', methods=['GET'])
 def det_get_config():
-    cfg = load_det_config() or {}
-    # merge shared regions from co-expression config
     try:
-        co = load_config() or {}
-        if isinstance(co.get('region_mapping'), dict):
-            cfg['region_mapping'] = co['region_mapping']
-        if isinstance(co.get('regions_enabled'), list):
-            cfg['regions_enabled'] = co['regions_enabled']
-    except Exception:
-        pass
-    # load cpsam nested config so UI can prefill all parameters
-    try:
-        cpsam_full = _load_yaml(DET_CPSAM_CONFIG_PATH)
-        if isinstance(cpsam_full, dict) and cpsam_full:
-            cfg['cpsam'] = cpsam_full
-    except Exception:
-        pass
-    return jsonify(cfg)
+        cfg = load_det_config() or {}
+        # merge shared regions from co-expression config
+        try:
+            co = load_config() or {}
+            if isinstance(co.get('region_mapping'), dict):
+                cfg['region_mapping'] = co['region_mapping']
+            if isinstance(co.get('regions_enabled'), list):
+                cfg['regions_enabled'] = co['regions_enabled']
+        except Exception:
+            pass
+        # load cpsam nested config so UI can prefill all parameters
+        try:
+            cpsam_full = _load_yaml(DET_CPSAM_CONFIG_PATH)
+            if isinstance(cpsam_full, dict) and cpsam_full:
+                cfg['cpsam'] = cpsam_full
+                if 'microscope' in cpsam_full and 'microscope' not in cfg:
+                    cfg['microscope'] = cpsam_full['microscope']
+        except Exception:
+            pass
+        cfg.setdefault('microscope', {
+            'reference_magnification': 10,
+            'current_magnification': 10
+        })
+        return jsonify(cfg)
+    except Exception as e:
+        import traceback
+        error_msg = f"Error loading detection config: {str(e)}\n{traceback.format_exc()}"
+        print(error_msg)
+        return jsonify({'error': error_msg}), 500
 
 @app.route('/api/det/config', methods=['POST'])
 def det_set_config():
@@ -1575,13 +2395,129 @@ def det_set_config():
         base = copy.deepcopy(existing) if existing else {}
         merged = _deep_update(base, ui_cpsam_full) if base else copy.deepcopy(ui_cpsam_full)
         for block in ('paths', 'conditions', 'cellpose', 'filters',
-                      'advanced_filtering', 'processing', 'overlays', 'outputs'):
+                      'advanced_filtering', 'processing', 'overlays', 'outputs', 'microscope'):
             merged.setdefault(block, {})
         _save_yaml(DET_CPSAM_CONFIG_PATH, merged)
     except Exception as e:
         det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] WARN: CPSAM-Config Merge fehlgeschlagen: {e}")
 
     return jsonify({'status':'success'})
+
+
+@app.route('/api/assistant/detect', methods=['POST'])
+def assistant_detect_advice():
+    payload = request.get_json(silent=True) or {}
+    notes = payload.get('notes') if isinstance(payload, dict) else None
+    try:
+        ai_response = _call_detection_assistant(notes)
+        return jsonify({'status': 'success', 'response': ai_response})
+    except ValueError as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except requests.HTTPError as exc:
+        details = None
+        if exc.response is not None:
+            try:
+                details = exc.response.json()
+            except Exception:
+                details = exc.response.text
+        return jsonify({'status': 'error', 'message': str(exc), 'details': details}), 502
+    except requests.RequestException as exc:
+        return jsonify({'status': 'error', 'message': f'Connection error: {exc}'}), 502
+    except Exception as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+@app.route('/api/assistant/chat', methods=['POST'])
+def assistant_chat():
+    payload = request.get_json(silent=True) or {}
+    raw_messages = payload.get('messages') if isinstance(payload, dict) else None
+    if not isinstance(raw_messages, list) or not raw_messages:
+        return jsonify({'status': 'error', 'message': 'messages must be a non-empty list'}), 400
+    include_detection = bool(payload.get('include_detection', True))
+
+    sanitized: list[dict] = []
+    for entry in raw_messages:
+        if not isinstance(entry, dict):
+            continue
+        role = entry.get('role')
+        content = entry.get('content')
+        if role not in ('user', 'assistant'):
+            continue
+        if not isinstance(content, str) or not content.strip():
+            continue
+        sanitized.append({'role': role, 'content': content})
+    if not sanitized or sanitized[-1]['role'] != 'user':
+        return jsonify({'status': 'error', 'message': 'last message must be a user message'}), 400
+
+    try:
+        reply_text, config_update = _call_assistant_chat(sanitized, include_detection=include_detection)
+        return jsonify({'status': 'success', 'response': reply_text, 'config_update': config_update})
+    except ValueError as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except requests.HTTPError as exc:
+        details = None
+        if exc.response is not None:
+            try:
+                details = exc.response.json()
+            except Exception:
+                details = exc.response.text
+        return jsonify({'status': 'error', 'message': str(exc), 'details': details}), 502
+    except requests.RequestException as exc:
+        return jsonify({'status': 'error', 'message': f'Connection error: {exc}'}), 502
+    except Exception as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/assistant/apply', methods=['POST'])
+def assistant_apply_update():
+    payload = request.get_json(silent=True) or {}
+    confirmation = str(payload.get('confirmation') or '').strip().upper()
+    if confirmation != 'JA':
+        return jsonify({'status': 'error', 'message': 'Aenderung nicht bestaetigt (JA erforderlich).'}), 400
+    target = payload.get('target')
+    if target != 'detection':
+        return jsonify({'status': 'error', 'message': 'Unsupported target for config update.'}), 400
+
+    changes = payload.get('changes')
+    if not isinstance(changes, dict) or not changes:
+        return jsonify({'status': 'error', 'message': 'Changes must be a non-empty object.'}), 400
+
+    reason = payload.get('reason') if isinstance(payload, dict) else None
+
+    try:
+        current_cfg = load_det_config() or {}
+        updated_cfg = _deep_update(copy.deepcopy(current_cfg), changes)
+        save_det_config(updated_cfg)
+
+        try:
+            existing_cpsam = _load_yaml(DET_CPSAM_CONFIG_PATH)
+            if not isinstance(existing_cpsam, dict):
+                existing_cpsam = {}
+        except Exception:
+            existing_cpsam = {}
+        merged_cpsam = _build_cpsam_config(updated_cfg, existing_cpsam)
+        try:
+            _save_yaml(DET_CPSAM_CONFIG_PATH, merged_cpsam)
+        except Exception:
+            pass
+
+        snapshot_dir = None
+        try:
+            snapshot_dir = save_config_snapshot(DATA_ROOT / 'config_snapshots', config_dict=updated_cfg, snapshot_name='assistant_detection_update')
+        except Exception:
+            snapshot_dir = None
+
+        log_msg = f"[{datetime.now().strftime('%H:%M:%S')}] Assistant applied config update."
+        if reason:
+            log_msg += f" Grund: {reason}"
+        det_status['log'].append(log_msg)
+
+        response_payload = {'status': 'success', 'config': updated_cfg}
+        if snapshot_dir:
+            response_payload['snapshot'] = str(snapshot_dir)
+        return jsonify(response_payload)
+    except Exception as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
 
 @app.route('/api/det/start', methods=['POST'])
 def det_start():
@@ -1594,6 +2530,8 @@ def det_start():
         cellpose_block = cpsam_block.setdefault('cellpose', {})
         filters_block = cpsam_block.setdefault('filters', {})
         processing_block = cpsam_block.setdefault('processing', {})
+        scope_block = cpsam_block.setdefault('microscope', {})
+        target.setdefault('microscope', scope_block)
         return cpsam_block, cellpose_block, filters_block, processing_block
 
     payload = request.get_json(silent=True)
@@ -1604,7 +2542,7 @@ def det_start():
     structured_keys = (
         'input_tiffs_dir', 'output_results_dir', 'channels', 'cpsam',
         'model_type', 'batch_size', 'flow_threshold', 'cellprob_threshold',
-        'save_overlay', 'overlay_suffix', 'use_gpu', 'det_script_path'
+        'save_overlay', 'overlay_suffix', 'use_gpu', 'det_script_path', 'microscope'
     )
 
     def _payload_bool(val):
@@ -1626,6 +2564,8 @@ def det_start():
                 cfg = payload
         else:
             cpsam_block, cellpose_block, filters_block, processing_block = ensure_nested(cfg)
+            scope_block = cpsam_block.setdefault('microscope', {})
+            cfg.setdefault('microscope', scope_block)
 
             def _as_bool(val):
                 if isinstance(val, bool):
@@ -1700,6 +2640,16 @@ def det_start():
                 processing_block['tophat'] = _as_bool(payload['tophat'])
             if 'contrast_stretch' in payload:
                 processing_block['contrast_stretch'] = _as_bool(payload['contrast_stretch'])
+            if 'current_magnification' in payload:
+                try:
+                    scope_block['current_magnification'] = float(payload['current_magnification'])
+                except Exception:
+                    pass
+            if 'reference_magnification' in payload:
+                try:
+                    scope_block['reference_magnification'] = float(payload['reference_magnification'])
+                except Exception:
+                    pass
     else:
         ensure_nested(cfg)
 
@@ -1772,22 +2722,91 @@ def det_start():
                 continue
     cfg['det_channel_selection'] = [idx for idx in channel_indices if idx in dict.fromkeys(normalized_selection)]
 
+    normalized_levels, _ = _normalize_channel_levels(
+        cfg.get('channel_levels') or cfg.get('det_channel_levels') or []
+    )
+    if normalized_levels:
+        cfg['channel_levels'] = normalized_levels
+    else:
+        cfg.pop('channel_levels', None)
+
     testing_cfg = cfg.get('testing') if isinstance(cfg.get('testing'), dict) else {}
     testing_payload = None
     if isinstance(payload, dict):
         testing_payload = payload.get('testing')
     if isinstance(testing_payload, dict):
         testing_cfg.update(testing_payload)
-    testing_cfg['enabled'] = _payload_bool(testing_cfg.get('enabled'))
+
+    mode_raw = testing_cfg.get('mode')
+    mode = str(mode_raw).lower() if isinstance(mode_raw, str) else ''
+    enabled_flag = _payload_bool(testing_cfg.get('enabled'))
     try:
-        testing_cfg['samples_per_channel'] = max(0, int(testing_cfg.get('samples_per_channel') or 0))
+        samples = max(0, int(testing_cfg.get('samples_per_channel') or 0))
     except Exception:
-        testing_cfg['samples_per_channel'] = 0
-    seed_val = testing_cfg.get('seed')
-    if seed_val in (None, ''):
-        testing_cfg.pop('seed', None)
+        samples = 0
+    selected_images_cfg = testing_cfg.get('selected_images') if isinstance(testing_cfg.get('selected_images'), dict) else {}
+    normalized_selected_images: dict[str, str] = {}
+    if isinstance(selected_images_cfg, dict):
+        for key, value in selected_images_cfg.items():
+            cleaned = _clean_relative_path_value(value)
+            if cleaned:
+                normalized_selected_images[key.lower()] = cleaned
+    for key in ('pos', 'neg'):
+        alt_key = f'selected_image_{key}'
+        alt_val = _clean_relative_path_value(testing_cfg.get(alt_key))
+        if alt_val:
+            normalized_selected_images[key] = alt_val
+        if alt_key in testing_cfg:
+            testing_cfg.pop(alt_key, None)
+    single_image_cfg = _clean_relative_path_value(testing_cfg.get('selected_image'))
+    if single_image_cfg:
+        normalized_selected_images.setdefault('pos', single_image_cfg)
+    if normalized_selected_images:
+        testing_cfg['selected_images'] = normalized_selected_images
+        primary_val = normalized_selected_images.get('pos') or next(iter(normalized_selected_images.values()))
+        if primary_val:
+            testing_cfg['selected_image'] = primary_val
+        else:
+            testing_cfg.pop('selected_image', None)
     else:
-        testing_cfg['seed'] = str(seed_val)
+        testing_cfg.pop('selected_images', None)
+        testing_cfg.pop('selected_image', None)
+
+    if mode not in ('disabled', 'simple', 'advanced'):
+        mode = 'simple' if enabled_flag else 'disabled'
+
+    sweep_levels: list[int] = []
+    if mode == 'advanced':
+        enabled_flag = True
+        if samples <= 0:
+            samples = 1
+        levels_raw = testing_cfg.get('levels')
+        sanitized_levels: list[int] = []
+        if isinstance(levels_raw, (list, tuple)):
+            for value in levels_raw:
+                try:
+                    idx = int(value)
+                except Exception:
+                    continue
+                if 0 <= idx < len(SENSITIVITY_LEVELS):
+                    sanitized_levels.append(idx)
+        if not sanitized_levels:
+            sanitized_levels = list(range(len(SENSITIVITY_LEVELS)))
+        sweep_levels = sorted(dict.fromkeys(sanitized_levels))
+        testing_cfg['levels'] = sweep_levels
+    else:
+        if 'levels' in testing_cfg:
+            testing_cfg.pop('levels', None)
+
+    if mode == 'simple':
+        enabled_flag = enabled_flag and samples > 0
+    elif mode == 'disabled':
+        enabled_flag = False
+        samples = 0
+
+    testing_cfg['mode'] = mode
+    testing_cfg['enabled'] = enabled_flag
+    testing_cfg['samples_per_channel'] = samples
     cfg['testing'] = testing_cfg
 
     if not cfg.get('input_tiffs_dir') or not cfg.get('output_results_dir'):
@@ -1807,14 +2826,14 @@ def det_start():
 def det_stop():
     global det_process, det_status
     if not det_status['running']:
-        return jsonify({'status':'error','message':'Keine Detection lÃ¤uft'}), 400
+        return jsonify({'status':'error','message':'Keine Detection laeuft'}), 400
     if det_process:
         try:
             det_process.terminate()
             det_process.wait(timeout=5)
         except subprocess.TimeoutExpired:
             det_process.kill()
-        det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] âš ï¸ Detection gestoppt")
+        det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Detection gestoppt")
         det_status['running'] = False
         det_process = None
         return jsonify({'status':'success'})
@@ -1902,7 +2921,7 @@ def det_download_all_csv():
     cfg = load_det_config()
     base = os.path.abspath(cfg.get('output_results_dir',''))
     if not base or not os.path.isdir(base):
-        return jsonify({'status':'error','message':'Output-Verzeichnis ungÃ¼ltig'}), 400
+        return jsonify({'status':'error','message':'Output-Verzeichnis ungueltig'}), 400
     tmp_dir = tempfile.mkdtemp(prefix='det_csv_')
     ts = datetime.now().strftime('%Y%m%d_%H%M%S')
     zip_path = os.path.join(tmp_dir, f'detection_csv_{ts}.zip')
@@ -1920,8 +2939,8 @@ def det_download_all_csv():
     @after_this_request
     def cleanup(response):
         try:
-            if os.exists(zip_path): os.remove(zip_path)
-            if os.isdir(tmp_dir): os.rmdir(tmp_dir)
+            if os.path.exists(zip_path): os.remove(zip_path)
+            if os.path.isdir(tmp_dir): os.rmdir(tmp_dir)
         except Exception:
             pass
         return response
@@ -1932,7 +2951,7 @@ def det_download_all_overlays():
     cfg = load_det_config()
     base = os.path.abspath(cfg.get('output_results_dir',''))
     if not base or not os.path.isdir(base):
-        return jsonify({'status':'error','message':'Output-Verzeichnis ungÃ¼ltig'}), 400
+        return jsonify({'status':'error','message':'Output-Verzeichnis ungueltig'}), 400
     tmp_dir = tempfile.mkdtemp(prefix='det_ov_')
     ts = datetime.now().strftime('%Y%m%d_%H%M%S')
     zip_path = os.path.join(tmp_dir, f'detection_overlays_{ts}.zip')
@@ -1955,19 +2974,62 @@ def det_download_all_overlays():
     def cleanup(response):
         try:
             if os.path.exists(zip_path): os.remove(zip_path)
-            if os.isdir(tmp_dir): os.rmdir(tmp_dir)
+            if os.path.isdir(tmp_dir): os.rmdir(tmp_dir)
+        except Exception:
+            pass
+        return response
+    return send_file(zip_path, as_attachment=True, download_name=os.path.basename(zip_path))
+
+
+if __name__ == '__main__':
+    # Erstelle templates Ordner falls nicht vorhanden
+    os.makedirs('templates', exist_ok=True)
+
+    print("Starting Cell Analysis Web Interface...")
+    print("Pipeline: CZI Conversion -> Cell Detection -> Co-Expression")
+    print("Open browser at: http://localhost:5000")
+    app.run(debug=True, host='0.0.0.0', port=5000)
+@app.route('/api/det/overlays/download-all')
+def det_download_all_overlays():
+    cfg = load_det_config()
+    base = os.path.abspath(cfg.get('output_results_dir',''))
+    if not base or not os.path.isdir(base):
+        return jsonify({'status':'error','message':'Output-Verzeichnis ungueltig'}), 400
+    tmp_dir = tempfile.mkdtemp(prefix='det_ov_')
+    ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+    zip_path = os.path.join(tmp_dir, f'detection_overlays_{ts}.zip')
+    with zipfile.ZipFile(zip_path, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
+        for root, _, files in os.walk(base):
+            if "__test__" in root:
+                continue
+            if os.path.basename(root) != 'overlays':
+                continue
+            for fn in files:
+                if not fn.lower().endswith('.png'):
+                    continue
+                full = os.path.join(root, fn)
+                abs_full = os.path.abspath(full)
+                if not abs_full.startswith(base):
+                    continue
+                rel = os.path.relpath(abs_full, base)
+                zf.write(abs_full, arcname=rel)
+    @after_this_request
+    def cleanup(response):
+        try:
+            if os.path.exists(zip_path): os.remove(zip_path)
+            if os.path.isdir(tmp_dir): os.rmdir(tmp_dir)
         except Exception:
             pass
         return response
     return send_file(zip_path, as_attachment=True, download_name=os.path.basename(zip_path))
 
 if __name__ == '__main__':
-    # Erstelle templates Ordner falls not vorhanden
+    # Erstelle templates Ordner falls nicht vorhanden
     os.makedirs('templates', exist_ok=True)
-    
-    print("ðŸŒ Starting Cell Analysis Web Interface...")
-    print("ðŸ“Š Pipeline: CZI Conversion â†’ Cell Detection â†’ Co-Expression")
-    print("ðŸ”— Open browser at: http://localhost:5000")
+
+    print("Starting Cell Analysis Web Interface...")
+    print("Pipeline: CZI Conversion -> Cell Detection -> Co-Expression")
+    print("Open browser at: http://localhost:5000")
     app.run(debug=True, host='0.0.0.0', port=5000)
 
 

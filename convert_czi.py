@@ -38,6 +38,13 @@ from skimage import img_as_ubyte
 from tqdm import tqdm
 
 try:
+    from src.config_archiver import save_config_snapshot
+except Exception:
+    # fallback if not available
+    def save_config_snapshot(*args, **kwargs):
+        pass
+
+try:
     import tifffile as tiff  # richer metadata handling
 except Exception:
     tiff = None  # we can still write with skimage as a fallback
@@ -557,6 +564,31 @@ def main(argv: Optional[List[str]] = None) -> int:
     if not grouped:
         print("[WARN] Keine CZI-Dateien gefunden.")
         return 0
+
+    # Save config snapshot for reproducibility
+    runtime_params = {
+        "input_root": str(in_root),
+        "output_base": str(out_base),
+        "channels": cfg.channels,
+        "target_size": cfg.target_size,
+        "per_channel_normalize": cfg.per_channel_normalize,
+        "dtype": cfg.dtype,
+        "overwrite": cfg.overwrite,
+        "save_per_channel": cfg.save_per_channel,
+        "save_stack_tiff": cfg.save_stack_tiff,
+        "save_rgb_preview": cfg.save_rgb_preview,
+        "save_color_composite": cfg.save_color_composite,
+        "n_conditions": len(grouped),
+        "n_total_files": sum(len(files) for regions in grouped.values() for files in regions.values()),
+    }
+    config_dict = cfg.__dict__.copy()
+    save_config_snapshot(
+        output_dir=out_base,
+        config_file=cfg_path if cfg_path.exists() else None,
+        config_dict=config_dict,
+        runtime_params=runtime_params,
+        snapshot_name="czi_conversion_config",
+    )
 
     stats: List[str] = []
     for group, regions in grouped.items():

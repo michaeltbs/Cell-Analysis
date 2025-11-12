@@ -1,6 +1,6 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
-batch_segment_v4.py â€” Detection with Cellpose v4 (CellposeModel) + multi-channel TIFF support
+batch_segment_v4.py — Detection with Cellpose v4 (CellposeModel) + multi-channel TIFF support
 
 - Works with Cellpose 4+ (falls back to older API if needed)
 - Accepts multi-channel images; you can select which channel to segment
@@ -53,7 +53,9 @@ import yaml
 import math
 import time
 import random
+import re
 import traceback
+import copy
 from pathlib import Path
 from typing import Iterable, Tuple, Optional, List, Dict, Any, Set
 
@@ -74,12 +76,98 @@ try:
 except Exception:
     def tqdm(x, **kwargs): return x  # no-op fallback
 
+try:
+    from src.config_archiver import save_config_snapshot
+except Exception:
+    # fallback if not available
+    def save_config_snapshot(*args, **kwargs):
+        pass
+
 # -----------------------------
 # Config I/O
 # -----------------------------
 def _load_yaml(path: Path) -> dict:
     with open(path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f) or {}
+
+
+def _apply_magnification_scaling(cfg: dict) -> dict:
+    """Return a config copy with size-dependent parameters scaled for the current objective."""
+    new_cfg = copy.deepcopy(cfg or {})
+    scope_cfg = new_cfg.get("microscope", {}) or {}
+
+    def _as_float(value, default):
+        try:
+            return float(value)
+        except Exception:
+            return float(default)
+
+    reference = scope_cfg.get("reference_magnification", 10.0)
+    current = scope_cfg.get("current_magnification", scope_cfg.get("magnification", reference))
+    reference = _as_float(reference, 10.0)
+    current = _as_float(current, reference)
+    if reference <= 0:
+        reference = 10.0
+    if current <= 0:
+        current = reference
+
+    scale = max(current / reference, 1e-3)
+    area_scale = scale * scale
+
+    scope_cfg["reference_magnification"] = reference
+    scope_cfg["current_magnification"] = current
+    scope_cfg["scale_factor"] = scale
+    new_cfg["microscope"] = scope_cfg
+
+    cp_cfg = new_cfg.get("cellpose")
+    if isinstance(cp_cfg, dict):
+        diameter = cp_cfg.get("diameter")
+        if isinstance(diameter, (int, float)) and diameter:
+            cp_cfg["diameter"] = max(1.0, float(diameter) * scale)
+        resize_max = cp_cfg.get("resize_max")
+        if isinstance(resize_max, (int, float)) and resize_max:
+            cp_cfg["resize_max"] = int(max(32, round(float(resize_max) * scale)))
+
+    processing_cfg = new_cfg.get("processing")
+    if isinstance(processing_cfg, dict):
+        radius = processing_cfg.get("tophat_radius")
+        if isinstance(radius, (int, float)) and radius:
+            processing_cfg["tophat_radius"] = int(max(1, round(float(radius) * scale)))
+        split_dist = processing_cfg.get("split_min_distance")
+        if isinstance(split_dist, (int, float)) and split_dist:
+            processing_cfg["split_min_distance"] = int(max(1, round(float(split_dist) * scale)))
+        split_area = processing_cfg.get("split_min_area")
+        if isinstance(split_area, (int, float)) and split_area:
+            processing_cfg["split_min_area"] = int(max(1, round(float(split_area) * area_scale)))
+
+    filters_cfg = new_cfg.get("filters")
+    if isinstance(filters_cfg, dict):
+        min_area = filters_cfg.get("min_area")
+        if isinstance(min_area, (int, float)) and min_area:
+            filters_cfg["min_area"] = int(max(1, round(float(min_area) * area_scale)))
+        max_area = filters_cfg.get("max_area")
+        if isinstance(max_area, (int, float)) and max_area:
+            filters_cfg["max_area"] = int(max(1, round(float(max_area) * area_scale)))
+
+    adv_cfg = new_cfg.get("advanced_filtering")
+    if isinstance(adv_cfg, dict):
+        block = adv_cfg.get("foreground_block_size")
+        if isinstance(block, (int, float)) and block:
+            block_scaled = int(max(3, round(float(block) * scale)))
+            if block_scaled % 2 == 0:
+                block_scaled += 1
+            adv_cfg["foreground_block_size"] = block_scaled
+        offset = adv_cfg.get("foreground_offset")
+        if isinstance(offset, (int, float)) and offset:
+            adv_cfg["foreground_offset"] = int(round(float(offset) * scale))
+
+    overlays_cfg = new_cfg.get("overlays")
+    if isinstance(overlays_cfg, dict):
+        line_width = overlays_cfg.get("line_width")
+        if isinstance(line_width, (int, float)) and line_width:
+            overlays_cfg["line_width"] = int(max(1, round(float(line_width) * scale)))
+
+    return new_cfg
 
 # -----------------------------
 # Cellpose v4 model loader
@@ -444,6 +532,74 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
 # -----------------------------
 IMG_EXTS = (".tif", ".tiff", ".png", ".jpg", ".jpeg")
 
+TOKEN_SPLIT_RE = re.compile(r'[_\s\-]+')
+
+def _split_tokens_for_sample(text: str) -> List[str]:
+    return [tok for tok in TOKEN_SPLIT_RE.split(text) if tok]
+
+def _extract_sample_tokens_from_rel_path(rel_path: Path) -> tuple[str | None, str | None]:
+    tokens: List[str] = []
+    for part in rel_path.parts:
+        tokens.extend(_split_tokens_for_sample(part))
+    tokens_lower = [tok.lower() for tok in tokens if tok]
+    sample_token = None
+    for tok in tokens_lower:
+        if any(ch.isdigit() for ch in tok) and len(tok) >= 3:
+            sample_token = tok
+            break
+    if sample_token is None:
+        for tok in tokens_lower:
+            if any(ch.isdigit() for ch in tok):
+                sample_token = tok
+                break
+    slice_token = None
+    for tok in tokens_lower:
+        if 'slice' in tok:
+            slice_token = tok
+            break
+    return sample_token, slice_token
+
+def _find_related_sample_paths(all_paths: List[Path], root: Path, reference: Path) -> List[Path]:
+    if not isinstance(reference, Path):
+        try:
+            reference = Path(reference)
+        except Exception:
+            return []
+    if reference.is_absolute():
+        try:
+            rel_reference = reference.relative_to(root)
+        except Exception:
+            rel_reference = reference
+    else:
+        rel_reference = reference
+    sample_token, slice_token = _extract_sample_tokens_from_rel_path(rel_reference)
+    if not sample_token and not slice_token:
+        return []
+    matched_by_region: Dict[str, List[Path]] = {}
+    for candidate in all_paths:
+        try:
+            rel = candidate.relative_to(root)
+        except ValueError:
+            continue
+        tokens: List[str] = []
+        for part in rel.parts:
+            tokens.extend(_split_tokens_for_sample(part))
+        tokens_lower = [tok.lower() for tok in tokens if tok]
+        if sample_token and sample_token not in tokens_lower:
+            continue
+        if slice_token and slice_token not in tokens_lower:
+            continue
+        region = rel.parts[0] if len(rel.parts) > 1 else '__root__'
+        matched_by_region.setdefault(region, []).append(candidate)
+    if not matched_by_region:
+        return []
+    selected: List[Path] = []
+    for region_name in sorted(matched_by_region.keys()):
+        region_candidates = sorted(matched_by_region[region_name], key=lambda p: p.as_posix())
+        if region_candidates:
+            selected.append(region_candidates[0])
+    return selected
+
 def _iter_images(root: Path) -> Iterable[Path]:
     for p in root.rglob("*"):
         if p.is_file() and p.suffix.lower() in IMG_EXTS:
@@ -548,10 +704,82 @@ def _segment_dir(
         return
 
     testing_cfg = testing_cfg or {}
+    mode_flag = str((testing_cfg.get("mode") or "").lower())
+    selection_map = testing_cfg.get("selected_images") if isinstance(testing_cfg.get("selected_images"), dict) else {}
+    selected_image_raw = ""
+    if isinstance(selection_map, dict):
+        selected_image_raw = selection_map.get(condition)
+        if not selected_image_raw:
+            selected_image_raw = selection_map.get(condition.lower()) or selection_map.get(condition.upper()) or ""
+    selected_image_raw = str(selected_image_raw or testing_cfg.get("selected_image") or "").strip()
     test_enabled = bool(testing_cfg.get("enabled"))
     test_limit = int(testing_cfg.get("samples_per_channel") or 0)
     test_seed = testing_cfg.get("seed")
+    if isinstance(test_seed, str) and not test_seed:
+        test_seed = None
     total_paths = len(paths)
+    selected_path = None
+    if selected_image_raw:
+        normalized_value = selected_image_raw.replace("\\", "/").strip()
+        candidate_path = Path(normalized_value)
+        candidate_paths: List[Path] = []
+        seen_candidates: Set[str] = set()
+
+        def _add_candidate_path(path_obj: Path):
+            if not isinstance(path_obj, Path):
+                return
+            try:
+                resolved = path_obj.resolve()
+            except Exception:
+                resolved = path_obj
+            key = resolved.as_posix()
+            if key not in seen_candidates:
+                seen_candidates.add(key)
+                candidate_paths.append(resolved)
+
+        if candidate_path.is_absolute():
+            _add_candidate_path(candidate_path)
+        else:
+            _add_candidate_path(root / candidate_path)
+
+        parts = [part for part in candidate_path.parts if part not in ('.',)]
+        trimmed_parts = list(parts)
+        while len(trimmed_parts) > 1:
+            trimmed_parts = trimmed_parts[1:]
+            _add_candidate_path(root / Path(*trimmed_parts))
+
+        try:
+            _add_candidate_path(candidate_path.resolve())
+        except Exception:
+            pass
+
+        for cand in candidate_paths:
+            try:
+                cand_resolved = Path(cand).resolve()
+            except Exception:
+                cand_resolved = cand
+            for p in paths:
+                try:
+                    if os.path.samefile(p, cand_resolved):
+                        selected_path = p
+                        break
+                except Exception:
+                    try:
+                        if Path(p).resolve() == cand_resolved:
+                            selected_path = p
+                            break
+                    except Exception:
+                        continue
+            if selected_path:
+                break
+        if selected_path:
+            print(f"[TEST] {condition}: using selected image -> {selected_path}")
+            paths = [selected_path]
+            test_enabled = True
+            test_limit = 1
+        else:
+            print(f"[WARN] {condition}: selected test image not found -> {selected_image_raw}")
+
     if test_enabled and test_limit > 0:
         region_buckets: Dict[str, List[Path]] = {}
         for img_path in paths:
@@ -565,13 +793,18 @@ def _segment_dir(
         for region_name, region_paths in region_buckets.items():
             region_paths_sorted = sorted(region_paths, key=lambda p: p.as_posix())
             if len(region_paths_sorted) > test_limit:
-                rng = random.Random()
-                if test_seed is not None:
-                    try:
-                        rng.seed(f"{test_seed}:{condition}:{region_name}")
-                    except Exception:
+                if mode_flag == 'advanced' and test_seed is None:
+                    sample = region_paths_sorted[:test_limit]
+                else:
+                    rng = random.Random()
+                    if test_seed is not None:
+                        try:
+                            rng.seed(f"{test_seed}:{condition}:{region_name}")
+                        except Exception:
+                            rng.seed()
+                    else:
                         rng.seed()
-                sample = rng.sample(region_paths_sorted, test_limit)
+                    sample = rng.sample(region_paths_sorted, test_limit)
                 print(
                     f"[TEST] {condition}/{region_name}: limiting to {len(sample)} of {len(region_paths_sorted)} images "
                     f"(samples_per_channel={test_limit})"
@@ -579,7 +812,7 @@ def _segment_dir(
             else:
                 sample = region_paths_sorted
                 print(
-                    f"[TEST] {condition}/{region_name}: {len(sample)} image(s) ≤ limit "
+                    f"[TEST] {condition}/{region_name}: {len(sample)} image(s) = limit "
                     f"(samples_per_channel={test_limit})"
                 )
             sampled_paths.extend(sample)
@@ -720,7 +953,17 @@ def _segment_dir(
 # CLI
 # -----------------------------
 def segment_dirs(config_path: Path) -> None:
-    cfg = _load_yaml(config_path)
+    cfg_raw = _load_yaml(config_path)
+    cfg = _apply_magnification_scaling(cfg_raw)
+    scope_cfg = cfg.get("microscope", {}) or {}
+    scale = float(scope_cfg.get("scale_factor", 1.0) or 1.0)
+    current_mag = scope_cfg.get("current_magnification")
+    reference_mag = scope_cfg.get("reference_magnification")
+    if abs(scale - 1.0) > 1e-3:
+        print(f"[INFO] Applying magnification scaling factor {scale:.3f} (current {current_mag}x vs reference {reference_mag}x)")
+    else:
+        if current_mag and reference_mag:
+            print(f"[INFO] Magnification set to {current_mag}x (reference {reference_mag}x) -> scale 1.0")
     paths = cfg.get("paths", {}) or {}
     testing_cfg = cfg.get("testing", {}) or {}
 
@@ -736,6 +979,22 @@ def segment_dirs(config_path: Path) -> None:
 
     out_root = Path(output_root).absolute()
     out_root.mkdir(parents=True, exist_ok=True)
+
+    # Save config snapshot for reproducibility
+    runtime_params = {
+        "testing_config": testing_cfg,
+        "regions_enabled": regions_enabled,
+        "magnification_scale": scale,
+        "current_magnification": current_mag,
+        "reference_magnification": reference_mag,
+    }
+    save_config_snapshot(
+        output_dir=out_root,
+        config_file=config_path,
+        config_dict=cfg,
+        runtime_params=runtime_params,
+        snapshot_name="segmentation_config",
+    )
 
     if input_pos:
         root = Path(input_pos).absolute()
@@ -765,5 +1024,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
 
 

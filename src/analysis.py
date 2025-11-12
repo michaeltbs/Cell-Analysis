@@ -7,6 +7,21 @@ from skimage.color import gray2rgb
 from skimage.measure import regionprops
 from matplotlib.patches import Circle
 import matplotlib.pyplot as plt
+from pathlib import Path
+
+try:
+    from .config_archiver import save_config_snapshot
+except Exception:
+    # fallback if not available
+    def save_config_snapshot(*args, **kwargs):
+        pass
+
+# Check if matplotlib is available
+try:
+    import matplotlib
+    MATPLOTLIB_AVAILABLE = True
+except ImportError:
+    MATPLOTLIB_AVAILABLE = False
 
 # Schema validation constants
 REQUIRED_BASE_COLS = ["filename", "condition", "region", "channel"]
@@ -50,8 +65,14 @@ def extract_animal_id(filename: str) -> str:
 	match = re.match(r'(M\d+)_\d+', filename)
 	return match.group(1) if match else "unknown"
 
-def calculate_animal_averages(csv_path: str, output_path: Optional[str] = None) -> pd.DataFrame:
-	"""Calculate per-animal averages from master CSV"""
+def calculate_animal_averages(csv_path: str, output_path: Optional[str] = None, save_config: bool = True) -> pd.DataFrame:
+	"""Calculate per-animal averages from master CSV
+	
+	Args:
+		csv_path: Path to the master CSV file
+		output_path: Optional path to save the results
+		save_config: If True, save a config snapshot for reproducibility
+	"""
 	# Load CSV
 	try:
 		df = pd.read_csv(csv_path, engine="pyarrow")
@@ -95,6 +116,26 @@ def calculate_animal_averages(csv_path: str, output_path: Optional[str] = None) 
 	# Save if requested
 	if output_path:
 		averages.to_csv(output_path, index=False)
+		
+		# Save config snapshot for reproducibility
+		if save_config:
+			output_dir = Path(output_path).parent
+			runtime_params = {
+				"csv_path": csv_path,
+				"output_path": output_path,
+				"n_animals": averages['animal_id'].nunique(),
+				"n_conditions": averages['condition'].nunique(),
+				"n_regions": averages['region'].nunique(),
+				"n_channels": averages['channel'].nunique(),
+				"total_records": len(averages),
+			}
+			save_config_snapshot(
+				output_dir=output_dir,
+				config_file=None,
+				config_dict={"analysis_type": "animal_averages", "metrics": metrics},
+				runtime_params=runtime_params,
+				snapshot_name="analysis_config",
+			)
 	
 	return averages
 
