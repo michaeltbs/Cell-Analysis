@@ -982,7 +982,8 @@ def _run_coexpression_mode(
                     params.blend_other_color,
                     params.blend_overlap_color,
                     background_img=base_preview,
-                    min_overlap_fraction=overlap_fraction,  # NEU: Threshold übergeben
+                    min_overlap_fraction=overlap_fraction,
+                    output_formats=params.blend_output_formats,
                 )
             else:
                 # Verwende multichannel overlay wenn Channel-Farben verfügbar
@@ -1029,7 +1030,8 @@ def _run_coexpression_mode(
                     params.blend_channel_colors,
                     params.blend_other_color,
                     params.blend_overlap_color,
-                    min_overlap_fraction=overlap_fraction,  # NEU: Threshold übergeben
+                    min_overlap_fraction=overlap_fraction,
+                    output_formats=params.blend_output_formats,
                 )
             if cfg.overlay_params.save_centroid_heatmap and params.mode in CENTROID_MODES:
                 centroid_png = out_dir / f"{key}_coexpr_centroid.png"
@@ -1627,6 +1629,11 @@ def _save_blend_mask(
     # Channel-Farben direkt verwenden (channel_color_map ist bereits korrekt aufbereitet)
     base_channel_id = combo_channels[base_idx] if base_idx < len(combo_channels) else combo_channels[0]
     
+    # DEBUG: Print color mapping
+    print(f"[DEBUG BLEND] base_channel_id={base_channel_id}, combo_channels={combo_channels}")
+    print(f"[DEBUG BLEND] channel_color_map={channel_color_map}")
+    print(f"[DEBUG BLEND] base_color={base_color}, other_color={other_color}, overlap_color={overlap_color}")
+    
     # Partner-Masken sammeln
     partner_masks: List[Tuple[int, np.ndarray]] = []
     for idx, mask in enumerate(mask_list):
@@ -1694,9 +1701,8 @@ def _save_blend_mask(
         partner_color = channel_color_map.get(ch_idx, other_color)
         blend = _apply_colored_fill(blend, partner_only, partner_color, alpha=0.45)
     
-    # Mehrfach-Positive in overlap_color highlighten
-    overlap_color_value = channel_color_map.get("overlap", overlap_color)
-    blend = _apply_colored_fill(blend, overlap_bool, overlap_color_value, alpha=0.65)
+    # Mehrfach-Positive in overlap_color highlighten (direkt die übergebene Farbe verwenden)
+    blend = _apply_colored_fill(blend, overlap_bool, overlap_color, alpha=0.65)
     
     # Speichere in gewählten Formaten
     _ensure_dir(out_png.parent)
@@ -1758,390 +1764,6 @@ def _save_centroid_heatmap(
 # ------------------------------------------------------------
 # Core
 # ------------------------------------------------------------
-def _run_coexpression_legacy(cfg: Config) -> None:
-    base = Path(cfg.paths.base_results_dir)
-    out_root = Path(cfg.paths.output_dir)
-    if cfg.test_mode:
-        out_root = out_root / "__test__"
-    _ensure_dir(out_root)
-
-    # Initialize variables needed throughout the function
-    params = CoexpressionParams(
-        mode=(cfg.coexpression.mode or "overlap").lower().strip(),
-        centroid_max_distance=cfg.coexpression.centroid_max_distance,
-        blend_base_color=cfg.coexpression.blend_base_color,
-        blend_other_color=cfg.coexpression.blend_other_color,
-        blend_overlap_color=cfg.coexpression.blend_overlap_color,
-        blend_overlap_fraction=cfg.coexpression.blend_overlap_fraction,
-        blend_channel_colors=dict(cfg.coexpression.blend_channel_colors or {}),
-        centroid_overlap_fraction=cfg.coexpression.centroid_overlap_fraction,
-        blend_output_formats=list(cfg.coexpression.blend_output_formats or ["png"]),
-        overlay_output_formats=list(cfg.coexpression.overlay_output_formats or ["png"]),
-    )
-    overlap_fraction = max(0.0, min(1.0, cfg.coexpression.blend_overlap_fraction or 0.0))
-    centroid_overlap_fraction = max(0.0, min(1.0, cfg.coexpression.centroid_overlap_fraction or 0.0))
-    region_tokens = _resolve_region_tokens(cfg.regions_enabled)
-    channel_name_map = {ch.index: (ch.name or f"ch{ch.index}") for ch in cfg.channels}
-    sweep_label: Optional[str] = None
-
-    # Save config snapshot for reproducibility
-    runtime_params = {
-        "test_mode": cfg.test_mode,
-        "test_samples_per_channel": cfg.test_samples_per_channel,
-        "test_seed": cfg.test_seed,
-        "base_results_dir": str(base),
-        "output_dir": str(out_root),
-        "regions_enabled": list(cfg.regions_enabled) if cfg.regions_enabled else [],
-        "use_detection_masks": cfg.use_detection_masks,
-        "fallback_from_overlays": cfg.fallback_from_overlays,
-        "n_channels": len(cfg.channels),
-        "enabled_channels": [ch.index for ch in cfg.channels if ch.enabled],
-        "coexpr_mode": cfg.coexpression.mode,
-        "coexpr_centroid_max_distance": cfg.coexpression.centroid_max_distance,
-        "coexpr_sweep_enabled": cfg.coexpr_sweep.enabled,
-        "coexpr_sweep_modes": list(cfg.coexpr_sweep.modes),
-        "coexpr_sweep_sample_key": cfg.coexpr_sweep.sample_key,
-        "channel_colors": {ch.index: ch.color for ch in cfg.channels if ch.color},  # NEW: Track channel colors
-    }
-    config_dict = {
-        "dataset_name": cfg.dataset_name,
-        "channels": [{"index": ch.index, "name": ch.name, "enabled": ch.enabled} for ch in cfg.channels],
-        "combos_enabled": list(cfg.combos_enabled),
-        "selected_combos": [list(c) for c in cfg.selected_combos] if cfg.selected_combos else [],
-        "overlay_params": {
-            "dpi": cfg.overlay_params.dpi,
-            "line_width": cfg.overlay_params.line_width,
-            "figsize": list(cfg.overlay_params.figsize),
-            "colors_by_k": dict(cfg.overlay_params.colors_by_k),
-            "single_positive_color": cfg.overlay_params.single_positive_color,
-            "base_channel_index": cfg.overlay_params.base_channel_index,
-            "figure_type": cfg.overlay_params.figure_type,
-            "even_layout": cfg.overlay_params.even_layout,
-        },
-        "coexpression": {
-            "mode": cfg.coexpression.mode,
-            "centroid_max_distance": cfg.coexpression.centroid_max_distance,
-            "sweep": {
-                "enabled": cfg.coexpr_sweep.enabled,
-                "modes": list(cfg.coexpr_sweep.modes),
-                "sample_key": cfg.coexpr_sweep.sample_key,
-            },
-        },
-    }
-    save_config_snapshot(
-        output_dir=out_root,
-        config_file=None,
-        config_dict=config_dict,
-        runtime_params=runtime_params,
-        snapshot_name="coexpression_config",
-    )
-
-    if cfg.debug:
-        print(f'[DEBUG] base_results_dir={base}')
-        print(f'[DEBUG] output_dir={out_root}')
-        print(f'[DEBUG] regions_enabled={cfg.regions_enabled}')
-        print(f'[DEBUG] use_detection_masks={cfg.use_detection_masks}')  # NEW
-        print(f'[DEBUG] fallback_from_overlays={cfg.fallback_from_overlays}')
-
-    if cfg.test_mode:
-        seed_note = f' (seed={cfg.test_seed})' if cfg.test_seed is not None else ''
-        print(f'[TEST] Co-expression test mode: samples_per_channel={cfg.test_samples_per_channel}{seed_note}')
-
-    enabled_regions = set([s.upper() for s in (cfg.regions_enabled or [])])
-    def region_allowed(p: Path) -> bool:
-        if not enabled_regions:
-            return True
-        return _normalize_region_token(p.as_posix()) in enabled_regions
-
-    # Determine combinations
-    enabled_channels = [ch for ch in cfg.channels if ch.enabled]
-    if cfg.selected_combos:
-        combos = [tuple(map(int, c)) for c in cfg.selected_combos]
-    else:
-        # build all combinations for sizes in combos_enabled
-        from itertools import combinations
-        combos = []
-        for k in cfg.combos_enabled:
-            for comb in combinations([ch.index for ch in enabled_channels], int(k)):
-                combos.append(tuple(comb))
-
-    if cfg.debug:
-        print(f"[DEBUG] channels={[(c.index,c.name,c.enabled) for c in cfg.channels]}")
-        print(f"[DEBUG] combos_enabled={cfg.combos_enabled}, selected={cfg.selected_combos or 'auto'}")
-
-    # Pre-scan: build a per-channel index {index: {key->path}}
-    per_channel_index: Dict[int, Dict[str, Path]] = {}
-    for ch in cfg.channels:
-        mapping = _glob_channel_files(base, ch, cfg.use_detection_masks, cfg.fallback_from_overlays)  # UPDATED
-        per_channel_index[ch.index] = mapping
-        if cfg.debug:
-            # NEW: show what type of files were found
-            if mapping:
-                sample_file = next(iter(mapping.values()))
-                file_type = "masks" if "_mask" in sample_file.name else "overlays"
-                print(f"[DEBUG] Channel {ch.index}: {len(mapping)} {file_type} found")
-            else:
-                print(f"[DEBUG] Channel {ch.index}: no files found")
-
-    # Build a universe of keys (sample ids) present in at least one channel
-    all_keys = set()
-    for d in per_channel_index.values():
-        all_keys.update(d.keys())
-    if cfg.debug:
-        print(f"[DEBUG] Total unique sample keys found: {len(all_keys)}")
-
-    if cfg.test_mode:
-        limit = cfg.test_samples_per_channel or 2
-        if limit <= 0:
-            limit = 2
-        rng = random.Random(cfg.test_seed)
-        if len(all_keys) > limit:
-            sampled_keys = rng.sample(sorted(all_keys), limit)
-            all_keys = set(sampled_keys)
-            print(f"[TEST] Limiting co-expression to {len(all_keys)} sample keys (limit {limit}).")
-        # Trim per-channel indices to sampled keys
-        for ch_idx, mapping in per_channel_index.items():
-            per_channel_index[ch_idx] = {k: v for k, v in mapping.items() if not all_keys or k in all_keys}
-
-    # For each combination, compute overlaps for keys that have ALL required channels present
-    for comb in combos:
-        k = len(comb)
-        color_k = cfg.overlay_params.colors_by_k.get(str(k), "red")
-        comb_sorted = tuple(sorted(comb))
-        comb_dir_name = "ch" + "_".join(map(str, comb_sorted))
-        out_dir = out_root / f"k{k}" / comb_dir_name
-        _ensure_dir(out_dir)
-        rows = []
-
-        if (
-            cfg.overlay_params.base_channel_index is not None
-            and cfg.overlay_params.base_channel_index in comb_sorted
-        ):
-            base_mask_idx = comb_sorted.index(cfg.overlay_params.base_channel_index)
-        else:
-            base_mask_idx = 0
-
-        for key in sorted(all_keys):
-            fpaths: List[Tuple[int, Path]] = []
-            preview_map: Dict[int, Optional[np.ndarray]] = {}
-            for ch_idx in comb_sorted:
-                fp = per_channel_index.get(ch_idx, {}).get(key)
-                if not fp:
-                    fpaths = []
-                    preview_map = {}
-                    break
-                fpaths.append((ch_idx, fp))
-                preview_map[ch_idx] = _load_channel_preview(base, ch_idx, key, fp)
-            if not fpaths:
-                continue
-
-            if not region_allowed(fpaths[0][1]):
-                continue
-
-            masks: List[np.ndarray] = []
-            for _, fp in fpaths:
-                is_mask = "_mask" in fp.name and fp.suffix.lower() in (".tif", ".tiff")
-                if is_mask:
-                    m = _read_mask(fp)
-                else:
-                    m = _read_overlay_and_threshold(fp)
-                masks.append(m)
-
-            normalized_masks, _ = _normalize_masks(masks, base_mask_idx)
-            base_mask = normalized_masks[base_mask_idx]
-            base_label_cached = None
-            base_props_cached = None
-            mode_lower = params.mode
-            if mode_lower in {"intersection", "all"}:
-                effective_overlap_fraction = centroid_overlap_fraction
-            else:
-                effective_overlap_fraction = overlap_fraction
-            current_overlap_fraction = effective_overlap_fraction if mode_lower in OVERLAP_MODES else 0.0
-            if params.mode == "blend":
-                base_label_cached, base_props_cached = _label_mask(base_mask)
-            co_mask = _compute_coexpression_mask(
-                normalized_masks,
-                base_mask_idx,
-                params,
-                min_overlap_fraction=current_overlap_fraction,
-            )
-            blend_overlap_mask = None
-            if params.mode == "blend":
-                if base_label_cached is None or base_props_cached is None:
-                    base_label_cached, base_props_cached = _label_mask(base_mask)
-                blend_overlap_mask = _compute_overlap_mask(
-                    normalized_masks,
-                    base_mask_idx,
-                    base_label_cached,
-                    base_props_cached or [],
-                    min_fraction=current_overlap_fraction,
-                )
-            condition = _infer_condition_from_path(fpaths[0][1]) if fpaths else ""
-
-            labels = measure.label(co_mask.astype(np.uint8), connectivity=1)
-            props = measure.regionprops(labels)
-            n_co = len(props)
-
-            area_px = int(co_mask.sum())
-            meta = _extract_sample_metadata(key, region_tokens)
-            channel_labels = " + ".join(
-                [channel_name_map.get(idx, f"ch{idx}") or f"ch{idx}" for idx in comb_sorted]
-            )
-            rows.append({
-                "sample_key": key,
-                "animal_id": meta["animal"],
-                "region": meta["region"],
-                "slice_id": meta["slice"],
-                "family_id": meta["family"],
-                "condition": condition,
-                "k": k,
-                "channels": ",".join(map(str, comb_sorted)),
-                "channel_labels": channel_labels,
-                "n_coexpressing": n_co,
-                "area_px": area_px,
-                "coexpr_mode": params.mode,
-                "sweep_label": sweep_label or "",
-            })
-            total_rows += 1
-
-            previews_for_plot = [(preview_map.get(idx), f"ch{idx}", idx) for idx in comb_sorted]
-            base_preview = None
-            if cfg.overlay_params.base_channel_index is not None:
-                base_preview = preview_map.get(cfg.overlay_params.base_channel_index)
-            if base_preview is None and previews_for_plot:
-                base_preview = previews_for_plot[0][0]
-            if base_preview is None:
-                base_preview = base_mask.astype(np.float32)
-
-            ov = out_dir / f"{key}_coexpr_overlay.png"
-            overlay_style = (cfg.overlay_params.overlay_style or "mixed").lower()
-            if overlay_style == "blend":
-                blend_tif_path = ov.with_suffix(".tif")
-                _save_blend_mask(
-                    normalized_masks,
-                    base_mask_idx,
-                    comb_sorted,
-                    co_mask,
-                    ov,
-                    blend_tif_path,
-                    params.blend_base_color,
-                    params.blend_channel_colors,
-                    params.blend_other_color,
-                    params.blend_overlap_color,
-                    background_img=base_preview,
-                    min_overlap_fraction=overlap_fraction,  # NEU: Threshold übergeben
-                )
-            else:
-                # Verwende multichannel overlay wenn Channel-Farben verfügbar
-                if params.blend_channel_colors and len(comb_sorted) > 1:
-                    _save_multichannel_overlay(
-                        base_preview,
-                        normalized_masks,
-                        comb_sorted,
-                        co_mask,
-                        ov,
-                        channel_colors=params.blend_channel_colors,
-                        overlap_color=params.blend_overlap_color,
-                        lw=cfg.overlay_params.line_width,
-                        dpi=cfg.overlay_params.dpi,
-                        figsize=tuple(cfg.overlay_params.figsize),
-                        style=cfg.overlay_params.overlay_style,
-                        fill_alpha=cfg.overlay_params.fill_alpha,
-                    )
-                else:
-                    _save_overlay(
-                        base_preview,
-                        base_mask,
-                        co_mask,
-                        ov,
-                        multi_color=color_k,
-                        lw=cfg.overlay_params.line_width,
-                        dpi=cfg.overlay_params.dpi,
-                        figsize=tuple(cfg.overlay_params.figsize),
-                        style=cfg.overlay_params.overlay_style,
-                        fill_alpha=cfg.overlay_params.fill_alpha,
-                    )
-            if params.mode == "blend":
-                blend_png = out_dir / f"{key}_coexpr_blend.png"
-                blend_tif = out_dir / f"{key}_coexpr_blend.tif"
-                overlap_for_blend = blend_overlap_mask if blend_overlap_mask is not None else co_mask
-                _save_blend_mask(
-                    normalized_masks,
-                    base_mask_idx,
-                    comb_sorted,
-                    overlap_for_blend,
-                    blend_png,
-                    blend_tif,
-                    params.blend_base_color,
-                    params.blend_channel_colors,
-                    params.blend_other_color,
-                    params.blend_overlap_color,
-                    min_overlap_fraction=overlap_fraction,  # NEU: Threshold übergeben
-                )
-            if cfg.overlay_params.save_centroid_heatmap and params.mode in CENTROID_MODES:
-                centroid_png = out_dir / f"{key}_coexpr_centroid.png"
-                _save_centroid_heatmap(
-                    base_preview,
-                    base_mask,
-                    props,
-                    centroid_png,
-                    color_k,
-                    cfg.overlay_params.centroid_marker_size,
-                    cfg.overlay_params.dpi,
-                )
-            if cfg.save_composite_figure:
-                figure_path = out_dir / f"{key}_coexpr_figure.png"
-                _save_composite_figure(
-                    previews_for_plot,
-                    normalized_masks,
-                    co_mask,
-                    figure_path,
-                    cfg.overlay_params.dpi,
-                    multi_color=color_k,
-                    line_width=cfg.overlay_params.line_width,
-                    base_channel_index=cfg.overlay_params.base_channel_index,
-                    base_mask_index=base_mask_idx,
-                    figure_type=cfg.overlay_params.figure_type,
-                    even_layout=cfg.overlay_params.even_layout,
-                )
-
-        if rows:
-            df = pd.DataFrame(rows)
-            preferred_cols = [
-                "sample_key",
-                "animal_id",
-                "region",
-                "slice_id",
-                "family_id",
-                "condition",
-                "k",
-                "channels",
-                "channel_labels",
-                "n_coexpressing",
-                "area_px",
-                "coexpr_mode",
-                "sweep_label",
-            ]
-            ordered_cols = [c for c in preferred_cols if c in df.columns]
-            remaining_cols = [c for c in df.columns if c not in ordered_cols]
-            df = df[ordered_cols + remaining_cols]
-            df.to_csv(out_dir / "coexpr_summary.csv", index=False)
-
-        mode_note = "detection masks" if cfg.use_detection_masks else "overlay images"
-        (out_dir / "README.txt").write_text(
-            f"Combination: k={k}, channels={comb_sorted}\n"
-            f"Files derived from base: {base}\n"
-            f"Analysis mode: {mode_note} (fallback_enabled={cfg.fallback_from_overlays})\n"
-            f"Co-expression mode: {params.mode}\n"
-            + (f"Sweep label: {sweep_label}\n" if sweep_label else "")
-            + f"Composite figures saved: {cfg.save_composite_figure}\n"
-            f"Rows: {len(rows)}\n",
-            encoding="utf-8"
-        )
-        print(f"[INFO] mode={params.mode} k={k}, channels={comb_sorted} -> {len(rows)} samples -> {out_dir}")
-
-    print(f"[DONE] Co-expression analysis finished for mode '{params.mode}' (rows={total_rows}).")
-
 
 def main(argv=None) -> int:
     import argparse
