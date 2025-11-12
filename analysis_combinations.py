@@ -1689,20 +1689,20 @@ def _save_blend_mask(
         display = base_mask.astype(np.float32)
     blend = _prepare_display(display)
     
-    # Farben anwenden - Basis-Kanal in seiner Farbe
+    # Farben anwenden - Basis-Kanal in seiner Farbe (exakt wie eingestellt, ohne Transparenz)
     base_color_value = channel_color_map.get(base_channel_id, base_color)
-    blend = _apply_colored_fill(blend, base_only, base_color_value, alpha=0.35)
+    blend = _apply_colored_fill(blend, base_only, base_color_value, alpha=1.0)
     
-    # Jeder Partner-Kanal bekommt seine eigene Farbe
+    # Jeder Partner-Kanal bekommt seine eigene Farbe (exakt wie eingestellt, ohne Transparenz)
     for ch_idx, ch_mask in partner_masks:
         partner_only = ch_mask & ~overlap_bool & ~base_mask
         if not partner_only.any():
             continue
         partner_color = channel_color_map.get(ch_idx, other_color)
-        blend = _apply_colored_fill(blend, partner_only, partner_color, alpha=0.45)
+        blend = _apply_colored_fill(blend, partner_only, partner_color, alpha=1.0)
     
-    # Mehrfach-Positive in overlap_color highlighten (direkt die übergebene Farbe verwenden)
-    blend = _apply_colored_fill(blend, overlap_bool, overlap_color, alpha=0.65)
+    # Mehrfach-Positive in overlap_color highlighten (exakt wie eingestellt, ohne Transparenz)
+    blend = _apply_colored_fill(blend, overlap_bool, overlap_color, alpha=1.0)
     
     # Speichere in gewählten Formaten
     _ensure_dir(out_png.parent)
