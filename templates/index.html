@@ -422,6 +422,29 @@
           </div>
 
           <details class="section-card">
+            <summary class="section-header">Microscope</summary>
+            <div class="section-body">
+              <div class="row">
+                <div>
+                  <label>Reference Magnification</label>
+                  <input id="det_ref_mag" type="number" step="0.1" min="0.1" value="10"/>
+                  <div class="hint">Baseline the parameters are tuned for. Defaults to 10x.</div>
+                </div>
+                <div>
+                  <label>Current Magnification</label>
+                  <select id="det_cur_mag">
+                    <option value="5">5x</option>
+                    <option value="10" selected>10x</option>
+                    <option value="20">20x</option>
+                    <option value="40">40x</option>
+                  </select>
+                  <div class="hint">Parameters are automatically scaled from the reference to the current objective.</div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="section-card">
             <summary class="section-header">Test Mode</summary>
             <div class="section-body">
               <div class="row">
@@ -986,6 +1009,14 @@
                       <option value="false">Disabled</option>
                       <option value="true">Enabled (centroid modes)</option>
                     </select>
+                  </div>
+                  <div>
+                    <label>Show Only Co-expressing</label>
+                    <select id="ov_show_only_coexpressing">
+                      <option value="false">Show all cells</option>
+                      <option value="true">Only multi-positive cells</option>
+                    </select>
+                    <div class="hint">When enabled, single-channel cells are hidden in overlays</div>
                   </div>
                   <div>
                     <label>Centroid Marker Size</label>
@@ -1590,7 +1621,11 @@ function buildDetConfigPayload(){
     overlay_suffix: document.getElementById('det_overlay_suffix')?.value || '_overlay.png',
     det_script_path: document.getElementById('det_script_path')?.value || '',
     testing: testingBlock,
-    cpsam
+    cpsam,
+    microscope: {
+      reference_magnification: toFloat(document.getElementById('det_ref_mag')?.value),
+      current_magnification: toFloat(document.getElementById('det_cur_mag')?.value)
+    }
   };
   if(channelLevels.length){
     payload.channel_levels = channelLevels;
@@ -1678,6 +1713,8 @@ const HELP_DET = {
   det_save_overlay: "Write overlay images for QC.\nRange: true|false",
   det_overlay_suffix: "Suffix of overlay image files. Must match co-expression pipeline.\nExample: _overlay.png",
   det_script_path: "Path to batch_segment.py.\nLeave empty to auto-discover.\nRange: valid path or empty",
+  det_ref_mag: "Reference magnification (baseline configuration).\nDefault 10x.\nRange: >0",
+  det_cur_mag: "Current objective magnification.\nParameters are auto-scaled from the reference.\nChoices: 5x,10x,20x,40x or custom",
   det_cpsam_channel: "Channel index to segment.\nRange: 0-7",
   det_cpsam_resize_max: "Max image dimension for processing.\nIncrease: more detail (slower).\nRange: 1024-4096",
   det_cpsam_niter: "Number of model iterations.\nIncrease: potentially better masks (slower).",
@@ -2092,6 +2129,19 @@ async function loadDetConfig(){
     m('det_save_overlay', String(cfg.save_overlay!==false));
     m('det_overlay_suffix', cfg.overlay_suffix||'_overlay.png');
     m('det_script_path', cfg.det_script_path||'');
+  // Microscope magnification
+    const scope=(cfg.microscope||{});
+    const refMag = (scope.reference_magnification ?? 10);
+    const curMag = (scope.current_magnification ?? refMag);
+    m('det_ref_mag', refMag);
+    // ensure current magnification select has the value; add if missing
+    const curSel=document.getElementById('det_cur_mag');
+    if(curSel){
+      const v=String(curMag);
+      let found=false; for(const opt of curSel.options){ if(String(opt.value)===v){ found=true; break; } }
+      if(!found){ const o=document.createElement('option'); o.value=v; o.textContent=v+'x'; curSel.appendChild(o); }
+      curSel.value=v;
+    }
     const testing=cfg.testing||{};
     const testMode = typeof testing.mode === 'string' ? testing.mode.toLowerCase() : (testing.enabled ? 'simple' : 'disabled');
     m('det_test_mode', testMode);
@@ -2464,6 +2514,7 @@ async function loadOverlayUi(){
     get('ov_dpi', op.dpi??150);
     get('ov_centroid_heatmap', op.save_centroid_heatmap?'true':'false');
     get('ov_centroid_size', op.centroid_marker_size??80);
+    get('ov_show_only_coexpressing', op.show_only_coexpressing?'true':'false');
   }catch(e){ alert('[ERROR] Load overlay settings failed: '+e.message); }
 }
 async function saveOverlayUi(){
@@ -2502,6 +2553,7 @@ async function saveOverlayUi(){
     let centroidSize=parseInt(document.getElementById('ov_centroid_size')?.value||'80',10);
     if(!Number.isFinite(centroidSize)||centroidSize<=0) centroidSize=80;
     op.centroid_marker_size=centroidSize;
+    op.show_only_coexpressing=(document.getElementById('ov_show_only_coexpressing')?.value||'false')==='true';
     cur.overlay_params=op;
     const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cur)});
     if(!r.ok) throw new Error('HTTP '+r.status);
