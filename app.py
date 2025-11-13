@@ -14,7 +14,6 @@ import copy
 import csv  # added
 import re
 from src.config_archiver import save_config_snapshot
-from src.batch_segment import _apply_magnification_scaling
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -1092,8 +1091,8 @@ def run_det_thread(cfg: dict):
         except Exception:
             existing_cpsam = {}
         cpsam_cfg = _build_cpsam_config(cfg, existing_cpsam)
-        # Apply magnification scaling immediately after building config
-        cpsam_cfg = _apply_magnification_scaling(cpsam_cfg)
+        # DO NOT scale here - batch_segment.py will scale when loading the config
+        # (scaling was applied twice: here + in batch_segment.py -> OOM with large images)
         cpsam_cfg_path = str(Path(DET_CPSAM_CONFIG_PATH).resolve())
 
         normalized_levels, channel_levels_map = _normalize_channel_levels(
