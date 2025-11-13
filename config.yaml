@@ -26,13 +26,13 @@ channels:
 cpsam:
   advanced_filtering:
     abs_floor_percentile: 74
-    foreground_block_size: 501
-    foreground_offset: 15
+    foreground_block_size: 127
+    foreground_offset: 4
     snr_min: 2
   cellpose:
     channel: 0
     niter: 1000
-    resize_max: 4096
+    resize_max: 4048
     save_masks: false
     split_regions: false
   conditions:
@@ -44,7 +44,7 @@ cpsam:
     max_area: 32000
     max_circularity: 1
     max_hole_ratio: 0.8
-    min_area: 20
+    min_area: 16
     min_circularity: 0.01
   microscope: {}
   outputs:
@@ -55,7 +55,7 @@ cpsam:
     figsize:
     - 12
     - 12
-    line_width: 2
+    line_width: 1
     overlay_mode: contours
   processing:
     contrast_stretch: false
@@ -64,14 +64,14 @@ cpsam:
     remove_edge_cells: false
     split_area_multiplier: 2.5
     split_min_area: 0
-    split_min_distance: 15
+    split_min_distance: 4
     split_rel_peak_threshold: 0.4
     split_touching_cells: false
     stretch_percentiles:
     - 5
     - 100
     tophat: false
-    tophat_radius: 15
+    tophat_radius: 4
 det_channel_selection:
 - 0
 - 1
