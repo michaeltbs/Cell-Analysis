@@ -114,16 +114,13 @@ def _apply_magnification_scaling(cfg: dict) -> dict:
     scale = max(current / reference, 1e-3)
     area_scale = scale * scale
 
-    # Check if already scaled (idempotency)
-    existing_scale = scope_cfg.get("scale_factor")
-    if existing_scale is not None:
-        try:
-            existing_scale_float = float(existing_scale)
-            # If scale_factor already matches, skip scaling
-            if abs(existing_scale_float - scale) < 1e-6:
-                return new_cfg
-        except Exception:
-            pass
+    # If current equals reference, no scaling needed
+    if abs(scale - 1.0) < 1e-6:
+        scope_cfg["reference_magnification"] = reference
+        scope_cfg["current_magnification"] = current
+        scope_cfg["scale_factor"] = 1.0
+        new_cfg["microscope"] = scope_cfg
+        return new_cfg
 
     scope_cfg["reference_magnification"] = reference
     scope_cfg["current_magnification"] = current

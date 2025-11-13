@@ -2400,8 +2400,7 @@ def det_set_config():
         for block in ('paths', 'conditions', 'cellpose', 'filters',
                       'advanced_filtering', 'processing', 'overlays', 'outputs', 'microscope'):
             merged.setdefault(block, {})
-        # Apply magnification scaling after merge
-        merged = _apply_magnification_scaling(merged)
+        # DO NOT scale before saving - keep baseline values, only scale at runtime
         _save_yaml(DET_CPSAM_CONFIG_PATH, merged)
     except Exception as e:
         det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] WARN: CPSAM-Config Merge fehlgeschlagen: {e}")
@@ -2500,8 +2499,7 @@ def assistant_apply_update():
         except Exception:
             existing_cpsam = {}
         merged_cpsam = _build_cpsam_config(updated_cfg, existing_cpsam)
-        # Apply magnification scaling before saving
-        merged_cpsam = _apply_magnification_scaling(merged_cpsam)
+        # DO NOT scale before saving - keep baseline values
         try:
             _save_yaml(DET_CPSAM_CONFIG_PATH, merged_cpsam)
         except Exception:
