@@ -14,6 +14,7 @@ import copy
 import csv  # added
 import re
 from src.config_archiver import save_config_snapshot
+from src.batch_segment import _apply_magnification_scaling
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -1091,6 +1092,8 @@ def run_det_thread(cfg: dict):
         except Exception:
             existing_cpsam = {}
         cpsam_cfg = _build_cpsam_config(cfg, existing_cpsam)
+        # Apply magnification scaling immediately after building config
+        cpsam_cfg = _apply_magnification_scaling(cpsam_cfg)
         cpsam_cfg_path = str(Path(DET_CPSAM_CONFIG_PATH).resolve())
 
         normalized_levels, channel_levels_map = _normalize_channel_levels(
@@ -2397,6 +2400,8 @@ def det_set_config():
         for block in ('paths', 'conditions', 'cellpose', 'filters',
                       'advanced_filtering', 'processing', 'overlays', 'outputs', 'microscope'):
             merged.setdefault(block, {})
+        # Apply magnification scaling after merge
+        merged = _apply_magnification_scaling(merged)
         _save_yaml(DET_CPSAM_CONFIG_PATH, merged)
     except Exception as e:
         det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] WARN: CPSAM-Config Merge fehlgeschlagen: {e}")
@@ -2495,6 +2500,8 @@ def assistant_apply_update():
         except Exception:
             existing_cpsam = {}
         merged_cpsam = _build_cpsam_config(updated_cfg, existing_cpsam)
+        # Apply magnification scaling before saving
+        merged_cpsam = _apply_magnification_scaling(merged_cpsam)
         try:
             _save_yaml(DET_CPSAM_CONFIG_PATH, merged_cpsam)
         except Exception:
