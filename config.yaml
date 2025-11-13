@@ -2,18 +2,18 @@ batch_size: 16
 cellprob_threshold: 0.2
 channel_labels:
 - index: 0
-  name: PomC
+  name: Casp3
 - index: 1
-  name: DREADD
-- index: 2
   name: Fos
+- index: 2
+  name: Gal
 - index: 3
   name: Gal
 channel_levels:
 - index: 0
   level: 5
 - index: 1
-  level: 5
+  level: 4
 - index: 2
   level: 5
 - index: 3
@@ -45,17 +45,17 @@ cpsam:
     max_circularity: 1
     max_hole_ratio: 0.8
     min_area: 20
-    min_circularity: 0
+    min_circularity: 0.01
   microscope: {}
   outputs:
     base_name: cell_analysis
   overlays:
     contour_color: red
-    dpi: 1000
+    dpi: 600
     figsize:
     - 12
     - 12
-    line_width: 1
+    line_width: 2
     overlay_mode: contours
   processing:
     contrast_stretch: false
@@ -76,21 +76,35 @@ det_channel_selection:
 - 0
 - 1
 - 2
-- 3
 det_script_path: ''
 diameter: 12
 flow_threshold: 0.32
-input_tiffs_dir: /app/data/Input/TV2
+input_tiffs_dir: /app/data/Input/TV3_1_Tiff/all/5X
 microscope:
-  current_magnification: 10
+  current_magnification: 5
   reference_magnification: 10
 model_type: cpsam
-output_results_dir: /app/results/final/TV2
+output_results_dir: /app/results/TV312
 overlay_suffix: _overlay.png
 save_overlay: true
 testing:
-  enabled: false
-  mode: disabled
-  samples_per_channel: 0
+  enabled: true
+  levels:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  mode: advanced
+  samples_per_channel: 1
+  selected_image: P148_slice5_5x_stack.tif
+  selected_images:
+    neg: P146_slice7_5x_stack.tif
+    pos: P148_slice5_5x_stack.tif
 use_gpu: true
 verbose: false
