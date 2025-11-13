@@ -134,7 +134,8 @@ def _apply_magnification_scaling(cfg: dict) -> dict:
             cp_cfg["diameter"] = max(1.0, float(diameter) * scale)
         resize_max = cp_cfg.get("resize_max")
         if isinstance(resize_max, (int, float)) and resize_max:
-            cp_cfg["resize_max"] = int(max(32, round(float(resize_max) * scale)))
+            # Inverse scaling: lower magnification = larger images = larger resize_max
+            cp_cfg["resize_max"] = int(max(32, round(float(resize_max) / scale)))
 
     processing_cfg = new_cfg.get("processing")
     if isinstance(processing_cfg, dict):
@@ -161,9 +162,11 @@ def _apply_magnification_scaling(cfg: dict) -> dict:
     if isinstance(adv_cfg, dict):
         block = adv_cfg.get("foreground_block_size")
         if isinstance(block, (int, float)) and block:
-            block_scaled = int(max(3, round(float(block) * scale)))
+            # Inverse scaling: lower magnification = larger images = larger block size
+            block_scaled = int(max(3, round(float(block) / scale)))
+            # Ensure odd number: if even, subtract 1
             if block_scaled % 2 == 0:
-                block_scaled += 1
+                block_scaled -= 1
             adv_cfg["foreground_block_size"] = block_scaled
         offset = adv_cfg.get("foreground_offset")
         if isinstance(offset, (int, float)) and offset:
