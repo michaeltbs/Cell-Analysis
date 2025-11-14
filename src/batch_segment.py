@@ -931,22 +931,23 @@ def _segment_dir(
             img_megapixels = (img_h * img_w) / 1_000_000
             max_dimension = max(img_h, img_w)
             
-            # If image is larger than 2024 pixels, pre-downsample to save memory
-            max_safe_dimension = 2024
+            # For GPU with CPSAM, keep images under 1024px to avoid OOM
+            max_safe_dimension = 1024
             
             if max_dimension > max_safe_dimension:
                 downsample_factor = max_dimension / max_safe_dimension
                 new_h = int(img_h / downsample_factor)
                 new_w = int(img_w / downsample_factor)
-                print(f"[INFO] {img_path.name}: pre-downsampling {img_w}x{img_h} -> {new_w}x{new_h} to prevent OOM")
+                new_mp = (new_h * new_w) / 1_000_000
+                print(f"[INFO] {img_path.name}: pre-downsampling {img_w}x{img_h} ({img_megapixels:.1f}MP) -> {new_w}x{new_h} ({new_mp:.1f}MP) to prevent OOM")
                 from skimage import transform
                 gray_raw = transform.resize(gray_raw, (new_h, new_w), preserve_range=True, anti_aliasing=True).astype(np.float32)
                 # Adjust diameter proportionally
                 if diameter:
                     diameter = max(1.0, diameter / downsample_factor)
                     print(f"[INFO] {img_path.name}: adjusted diameter to {diameter:.1f} after downsampling")
-            elif img_megapixels > 100:
-                print(f"[WARN] {img_path.name}: large image {img_w}x{img_h} ({img_megapixels:.1f}MP) - may be slow")
+            elif img_megapixels > 50:
+                print(f"[INFO] {img_path.name}: large image {img_w}x{img_h} ({img_megapixels:.1f}MP)")
             
             gray_proc = _preprocess_image(gray_raw, proc_img)
             gray_norm = _normalize_image(gray_proc)
