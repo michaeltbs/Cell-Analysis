@@ -788,12 +788,16 @@ def _build_cpsam_config(ui_cfg: dict, base: dict | None = None) -> dict:
     if isinstance(ui_scope, dict):
         cur = _coerce_positive_float(ui_scope.get('current_magnification'))
         ref = _coerce_positive_float(ui_scope.get('reference_magnification'))
+        auto = ui_scope.get('auto_from_path')
         if ref is not None:
             scope_cfg['reference_magnification'] = ref
         if cur is not None:
             scope_cfg['current_magnification'] = cur
+        if isinstance(auto, bool):
+            scope_cfg['auto_from_path'] = auto
     scope_cfg.setdefault('reference_magnification', 10)
     scope_cfg.setdefault('current_magnification', scope_cfg.get('reference_magnification', 10))
+    scope_cfg.setdefault('auto_from_path', True)
 
     return cfg
 

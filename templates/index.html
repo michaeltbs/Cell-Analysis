@@ -426,6 +426,14 @@
             <div class="section-body">
               <div class="row">
                 <div>
+                  <label>Auto from Path (5X/10X/20X/40X)</label>
+                  <select id="det_auto_mag_from_path">
+                    <option value="true" selected>Enabled</option>
+                    <option value="false">Disabled</option>
+                  </select>
+                  <div class="hint">When enabled, magnification is detected from file/folder names per image. Otherwise, the Current Magnification is used for all.</div>
+                </div>
+                <div>
                   <label>Reference Magnification</label>
                   <input id="det_ref_mag" type="number" step="0.1" min="0.1" value="10"/>
                   <div class="hint">Baseline the parameters are tuned for. Defaults to 10x.</div>
@@ -1623,6 +1631,7 @@ function buildDetConfigPayload(){
     testing: testingBlock,
     cpsam,
     microscope: {
+      auto_from_path: (document.getElementById('det_auto_mag_from_path')?.value||'true')==='true',
       reference_magnification: toFloat(document.getElementById('det_ref_mag')?.value),
       current_magnification: toFloat(document.getElementById('det_cur_mag')?.value)
     }
@@ -2133,6 +2142,8 @@ async function loadDetConfig(){
     const scope=(cfg.microscope||{});
     const refMag = (scope.reference_magnification ?? 10);
     const curMag = (scope.current_magnification ?? refMag);
+    const autoMag = (typeof scope.auto_from_path === 'boolean') ? scope.auto_from_path : true;
+    m('det_auto_mag_from_path', String(autoMag));
     m('det_ref_mag', refMag);
     // ensure current magnification select has the value; add if missing
     const curSel=document.getElementById('det_cur_mag');

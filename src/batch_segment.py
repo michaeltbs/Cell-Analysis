@@ -880,7 +880,11 @@ def _segment_dir(
             # Detect per-image magnification and build a scaled config for this image
             scope_cfg = cfg.get("microscope", {}) or {}
             reference_mag = float(scope_cfg.get("reference_magnification", 10.0) or 10.0)
-            current_mag = _detect_magnification_from_path(img_path, default_reference=reference_mag)
+            auto_from_path = bool(scope_cfg.get("auto_from_path", True))
+            if auto_from_path:
+                current_mag = _detect_magnification_from_path(img_path, default_reference=reference_mag)
+            else:
+                current_mag = float(scope_cfg.get("current_magnification", reference_mag) or reference_mag)
             cfg_img = copy.deepcopy(cfg)
             img_scope = dict(cfg_img.get("microscope", {}) or {})
             img_scope["reference_magnification"] = reference_mag
@@ -897,7 +901,8 @@ def _segment_dir(
             s_cfg = cfg_scaled.get("microscope", {}) or {}
             s = float(s_cfg.get("scale_factor", 1.0) or 1.0)
             if abs(s - 1.0) > 1e-3:
-                print(f"[INFO] {img_path.name}: magnification {current_mag}x (ref {reference_mag}x) -> scale {s:.3f}")
+                src = "path" if auto_from_path else "manual"
+                print(f"[INFO] {img_path.name}: magnification {current_mag}x (ref {reference_mag}x, {src}) -> scale {s:.3f}")
 
             # Prepare per-image parameters
             diameter = cp_img.get("diameter") or None
