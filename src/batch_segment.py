@@ -903,6 +903,10 @@ def _segment_dir(
             if abs(s - 1.0) > 1e-3:
                 src = "path" if auto_from_path else "manual"
                 print(f"[INFO] {img_path.name}: magnification {current_mag}x (ref {reference_mag}x, {src}) -> scale {s:.3f}")
+                # Debug: log scaled parameters
+                print(f"[DEBUG] Scaled params: diameter={cp_img.get('diameter')} min_area={filters_img.get('min_area')} "
+                      f"max_area={filters_img.get('max_area')} fg_block={cfg_scaled.get('advanced_filtering',{}).get('foreground_block_size')} "
+                      f"tophat_radius={proc_img.get('tophat_radius')}")
 
             # Prepare per-image parameters
             diameter = cp_img.get("diameter") or None
