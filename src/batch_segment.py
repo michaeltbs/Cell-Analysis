@@ -129,9 +129,8 @@ def _apply_magnification_scaling(cfg: dict) -> dict:
 
     cp_cfg = new_cfg.get("cellpose")
     if isinstance(cp_cfg, dict):
-        diameter = cp_cfg.get("diameter")
-        if isinstance(diameter, (int, float)) and diameter:
-            cp_cfg["diameter"] = max(1.0, float(diameter) * scale)
+        # diameter stays constant - resize_max handles image size normalization
+        # (after resize, cells appear same size regardless of magnification)
         resize_max = cp_cfg.get("resize_max")
         if isinstance(resize_max, (int, float)) and resize_max:
             # Inverse scaling: lower magnification = larger images = larger resize_max
