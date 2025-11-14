@@ -925,6 +925,29 @@ def _segment_dir(
 
             img = _read_image(img_path)
             gray_raw = _extract_channel(img, ch_index).astype(np.float32)
+            
+            # Check image size and downsample if very large to prevent OOM
+            img_h, img_w = gray_raw.shape
+            img_megapixels = (img_h * img_w) / 1_000_000
+            max_dimension = max(img_h, img_w)
+            
+            # If image is larger than 2024 pixels, pre-downsample to save memory
+            max_safe_dimension = 2024
+            
+            if max_dimension > max_safe_dimension:
+                downsample_factor = max_dimension / max_safe_dimension
+                new_h = int(img_h / downsample_factor)
+                new_w = int(img_w / downsample_factor)
+                print(f"[INFO] {img_path.name}: pre-downsampling {img_w}x{img_h} -> {new_w}x{new_h} to prevent OOM")
+                from skimage import transform
+                gray_raw = transform.resize(gray_raw, (new_h, new_w), preserve_range=True, anti_aliasing=True).astype(np.float32)
+                # Adjust diameter proportionally
+                if diameter:
+                    diameter = max(1.0, diameter / downsample_factor)
+                    print(f"[INFO] {img_path.name}: adjusted diameter to {diameter:.1f} after downsampling")
+            elif img_megapixels > 100:
+                print(f"[WARN] {img_path.name}: large image {img_w}x{img_h} ({img_megapixels:.1f}MP) - may be slow")
+            
             gray_proc = _preprocess_image(gray_raw, proc_img)
             gray_norm = _normalize_image(gray_proc)
 
