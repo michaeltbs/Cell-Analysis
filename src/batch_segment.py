@@ -138,44 +138,20 @@ def _apply_magnification_scaling(cfg: dict) -> dict:
 
     processing_cfg = new_cfg.get("processing")
     if isinstance(processing_cfg, dict):
+        # tophat operates on original image BEFORE resize -> inverse scaling
         radius = processing_cfg.get("tophat_radius")
         if isinstance(radius, (int, float)) and radius:
-            processing_cfg["tophat_radius"] = int(max(1, round(float(radius) * scale)))
-        split_dist = processing_cfg.get("split_min_distance")
-        if isinstance(split_dist, (int, float)) and split_dist:
-            processing_cfg["split_min_distance"] = int(max(1, round(float(split_dist) * scale)))
-        split_area = processing_cfg.get("split_min_area")
-        if isinstance(split_area, (int, float)) and split_area:
-            processing_cfg["split_min_area"] = int(max(1, round(float(split_area) * area_scale)))
+            processing_cfg["tophat_radius"] = int(max(1, round(float(radius) / scale)))
+        # All other processing params operate AFTER resize -> no scaling needed
 
     filters_cfg = new_cfg.get("filters")
-    if isinstance(filters_cfg, dict):
-        min_area = filters_cfg.get("min_area")
-        if isinstance(min_area, (int, float)) and min_area:
-            filters_cfg["min_area"] = int(max(1, round(float(min_area) * area_scale)))
-        max_area = filters_cfg.get("max_area")
-        if isinstance(max_area, (int, float)) and max_area:
-            filters_cfg["max_area"] = int(max(1, round(float(max_area) * area_scale)))
+    # Filters operate on resized image AFTER cellpose -> no scaling needed
 
     adv_cfg = new_cfg.get("advanced_filtering")
-    if isinstance(adv_cfg, dict):
-        block = adv_cfg.get("foreground_block_size")
-        if isinstance(block, (int, float)) and block:
-            # Inverse scaling: lower magnification = larger images = larger block size
-            block_scaled = int(max(3, round(float(block) / scale)))
-            # Ensure odd number: if even, subtract 1
-            if block_scaled % 2 == 0:
-                block_scaled -= 1
-            adv_cfg["foreground_block_size"] = block_scaled
-        offset = adv_cfg.get("foreground_offset")
-        if isinstance(offset, (int, float)) and offset:
-            adv_cfg["foreground_offset"] = int(round(float(offset) * scale))
+    # Advanced filtering operates on resized image AFTER cellpose -> no scaling needed
 
     overlays_cfg = new_cfg.get("overlays")
-    if isinstance(overlays_cfg, dict):
-        line_width = overlays_cfg.get("line_width")
-        if isinstance(line_width, (int, float)) and line_width:
-            overlays_cfg["line_width"] = int(max(1, round(float(line_width) * scale)))
+    # Overlays operate on resized image AFTER cellpose -> no scaling needed
 
     return new_cfg
 
