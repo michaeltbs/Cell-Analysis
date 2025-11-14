@@ -129,12 +129,11 @@ def _apply_magnification_scaling(cfg: dict) -> dict:
 
     cp_cfg = new_cfg.get("cellpose")
     if isinstance(cp_cfg, dict):
-        # diameter stays constant - resize_max handles image size normalization
-        # (after resize, cells appear same size regardless of magnification)
-        resize_max = cp_cfg.get("resize_max")
-        if isinstance(resize_max, (int, float)) and resize_max:
-            # Inverse scaling: lower magnification = larger images = larger resize_max
-            cp_cfg["resize_max"] = int(max(32, round(float(resize_max) / scale)))
+        # resize_max stays constant - all images normalized to same size
+        # diameter scales with magnification (cells appear smaller at lower mag)
+        diameter = cp_cfg.get("diameter")
+        if isinstance(diameter, (int, float)) and diameter:
+            cp_cfg["diameter"] = max(1.0, float(diameter) * scale)
 
     processing_cfg = new_cfg.get("processing")
     if isinstance(processing_cfg, dict):
@@ -142,16 +141,44 @@ def _apply_magnification_scaling(cfg: dict) -> dict:
         radius = processing_cfg.get("tophat_radius")
         if isinstance(radius, (int, float)) and radius:
             processing_cfg["tophat_radius"] = int(max(1, round(float(radius) / scale)))
-        # All other processing params operate AFTER resize -> no scaling needed
+        # All other processing params operate AFTER resize and scale with magnification
+        split_dist = processing_cfg.get("split_min_distance")
+        if isinstance(split_dist, (int, float)) and split_dist:
+            processing_cfg["split_min_distance"] = int(max(1, round(float(split_dist) * scale)))
+        split_area = processing_cfg.get("split_min_area")
+        if isinstance(split_area, (int, float)) and split_area:
+            processing_cfg["split_min_area"] = int(max(1, round(float(split_area) * area_scale)))
 
     filters_cfg = new_cfg.get("filters")
-    # Filters operate on resized image AFTER cellpose -> no scaling needed
+    if isinstance(filters_cfg, dict):
+        # Filters operate on resized image - scale with magnification
+        min_area = filters_cfg.get("min_area")
+        if isinstance(min_area, (int, float)) and min_area:
+            filters_cfg["min_area"] = int(max(1, round(float(min_area) * area_scale)))
+        max_area = filters_cfg.get("max_area")
+        if isinstance(max_area, (int, float)) and max_area:
+            filters_cfg["max_area"] = int(max(1, round(float(max_area) * area_scale)))
 
     adv_cfg = new_cfg.get("advanced_filtering")
-    # Advanced filtering operates on resized image AFTER cellpose -> no scaling needed
+    if isinstance(adv_cfg, dict):
+        # Advanced filtering operates on resized image - scale with magnification
+        block = adv_cfg.get("foreground_block_size")
+        if isinstance(block, (int, float)) and block:
+            block_scaled = int(max(3, round(float(block) * scale)))
+            # Ensure odd number
+            if block_scaled % 2 == 0:
+                block_scaled += 1
+            adv_cfg["foreground_block_size"] = block_scaled
+        offset = adv_cfg.get("foreground_offset")
+        if isinstance(offset, (int, float)) and offset:
+            adv_cfg["foreground_offset"] = int(round(float(offset) * scale))
 
     overlays_cfg = new_cfg.get("overlays")
-    # Overlays operate on resized image AFTER cellpose -> no scaling needed
+    if isinstance(overlays_cfg, dict):
+        # Overlays operate on resized image - scale with magnification
+        line_width = overlays_cfg.get("line_width")
+        if isinstance(line_width, (int, float)) and line_width:
+            overlays_cfg["line_width"] = int(max(1, round(float(line_width) * scale)))
 
     return new_cfg
 
