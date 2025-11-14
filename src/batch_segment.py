@@ -634,6 +634,30 @@ def _region_from_path(p: Path, region_tokens: List[str]) -> str:
     return "ALL"
 
 # -----------------------------
+# Magnification detection from path
+# -----------------------------
+_MAG_PATTERN = re.compile(r"(\d+)\s*[xX]")
+
+def _detect_magnification_from_path(p: Path, default_reference: float = 10.0) -> float:
+    """Detect objective magnification from file path tokens like '5X', '10x', '20X'.
+    Falls back to default_reference when nothing is detected.
+    Only common values {5, 10, 20, 40} are recognized.
+    """
+    try:
+        text = p.as_posix()
+    except Exception:
+        text = str(p)
+    mags = _MAG_PATTERN.findall(text)
+    for m in mags:
+        try:
+            val = int(m)
+        except Exception:
+            continue
+        if val in (5, 10, 20, 40):
+            return float(val)
+    return float(default_reference or 10.0)
+
+# -----------------------------
 # Overlays
 # -----------------------------
 def _save_overlay(base_img: np.ndarray, mask: np.ndarray, out_png: Path, color: str = "lime",
@@ -680,27 +704,15 @@ def _segment_dir(
     regions_enabled: List[str],
     testing_cfg: Optional[Dict[str, Any]],
 ) -> None:
-    cp = cfg.get("cellpose", {}) or {}
-    ov = cfg.get("overlays", {}) or {}
+    cp_base = cfg.get("cellpose", {}) or {}
+    ov_base = cfg.get("overlays", {}) or {}
     outp = cfg.get("outputs", {}) or {}
-    filters_cfg = cfg.get("filters", {}) or {}
-    proc_cfg = cfg.get("processing", {}) or {}
 
-    model_name = cp.get("model_name", "cyto2")
-    use_gpu = bool(cp.get("use_gpu", False))
-    ch_index = int(cp.get("channel", 0))
-    diameter = cp.get("diameter") or None
-    if isinstance(diameter, (int, float)) and diameter == 0:
-        diameter = None
-    flow_thr = float(cp.get("flow_threshold", 0.4))
-    cell_thr = float(cp.get("cellprob_threshold", 0.0))
+    model_name = cp_base.get("model_name", "cyto2")
+    use_gpu = bool(cp_base.get("use_gpu", False))
+    ch_index = int(cp_base.get("channel", 0))
 
-    overlay_suffix = ov.get("overlay_suffix") or cfg.get("outputs", {}).get("overlay_suffix", "_overlay.png")
-    mode = ov.get("overlay_mode", "contours")
-    color = ov.get("contour_color", "lime")
-    line_w = int(ov.get("line_width", 1))
-    dpi = int(ov.get("dpi", 300))
-    figsize = tuple(ov.get("figsize", [12, 12]))
+    overlay_suffix = ov_base.get("overlay_suffix") or cfg.get("outputs", {}).get("overlay_suffix", "_overlay.png")
 
     resume = bool(outp.get("resume", True))
     overwrite = bool(outp.get("overwrite", False))
@@ -709,7 +721,6 @@ def _segment_dir(
     cp_channels = [0, 0]
 
     summary_rows: List[Dict[str, Any]] = []
-    min_area_for_split = int(filters_cfg.get("min_area") or 0)
 
     paths = list(_iter_images(root))
     if not paths:
@@ -866,9 +877,46 @@ def _segment_dir(
                     masks_arr = None
                     cached_mask = False
 
+            # Detect per-image magnification and build a scaled config for this image
+            scope_cfg = cfg.get("microscope", {}) or {}
+            reference_mag = float(scope_cfg.get("reference_magnification", 10.0) or 10.0)
+            current_mag = _detect_magnification_from_path(img_path, default_reference=reference_mag)
+            cfg_img = copy.deepcopy(cfg)
+            img_scope = dict(cfg_img.get("microscope", {}) or {})
+            img_scope["reference_magnification"] = reference_mag
+            img_scope["current_magnification"] = float(current_mag)
+            cfg_img["microscope"] = img_scope
+            cfg_scaled = _apply_magnification_scaling(cfg_img)
+
+            cp_img = cfg_scaled.get("cellpose", {}) or {}
+            proc_img = cfg_scaled.get("processing", {}) or {}
+            ov_img = cfg_scaled.get("overlays", {}) or {}
+            filters_img = cfg_scaled.get("filters", {}) or {}
+
+            # Logging scale factor per image when applicable
+            s_cfg = cfg_scaled.get("microscope", {}) or {}
+            s = float(s_cfg.get("scale_factor", 1.0) or 1.0)
+            if abs(s - 1.0) > 1e-3:
+                print(f"[INFO] {img_path.name}: magnification {current_mag}x (ref {reference_mag}x) -> scale {s:.3f}")
+
+            # Prepare per-image parameters
+            diameter = cp_img.get("diameter") or None
+            if isinstance(diameter, (int, float)) and diameter == 0:
+                diameter = None
+            flow_thr = float(cp_img.get("flow_threshold", 0.4))
+            cell_thr = float(cp_img.get("cellprob_threshold", 0.0))
+
+            mode = ov_img.get("overlay_mode", "contours")
+            color = ov_img.get("contour_color", "lime")
+            line_w = int(ov_img.get("line_width", 1))
+            dpi = int(ov_img.get("dpi", 300))
+            figsize = tuple(ov_img.get("figsize", [12, 12]))
+
+            min_area_for_split = int(filters_img.get("min_area") or 0)
+
             img = _read_image(img_path)
             gray_raw = _extract_channel(img, ch_index).astype(np.float32)
-            gray_proc = _preprocess_image(gray_raw, proc_cfg)
+            gray_proc = _preprocess_image(gray_raw, proc_img)
             gray_norm = _normalize_image(gray_proc)
 
             if masks_arr is None:
@@ -886,14 +934,14 @@ def _segment_dir(
 
             if masks_arr.size and needs_processing:
                 orig_count = int(np.max(masks_arr))
-                split_mask = _split_touching_cells(masks_arr, proc_cfg, min_area_for_split)
+                split_mask = _split_touching_cells(masks_arr, proc_img, min_area_for_split)
                 if split_mask is not None and split_mask.shape == masks_arr.shape:
                     new_count = int(np.max(split_mask))
                     if new_count > orig_count:
                         print(f"[INFO] {img_path.name}: split touching cells {orig_count}->{new_count}")
                     masks_arr = split_mask
 
-                filtered_mask, filter_stats = _apply_filters(masks_arr, gray_norm, cfg, gray_norm.shape)
+                filtered_mask, filter_stats = _apply_filters(masks_arr, gray_norm, cfg_scaled, gray_norm.shape)
                 if filter_stats.get("removed"):
                     print(f"[INFO] {img_path.name}: filtered {filter_stats['removed']} cells (kept {filter_stats.get('kept', 0)})")
                 masks_arr = filtered_mask
@@ -966,17 +1014,8 @@ def _segment_dir(
 # CLI
 # -----------------------------
 def segment_dirs(config_path: Path) -> None:
-    cfg_raw = _load_yaml(config_path)
-    cfg = _apply_magnification_scaling(cfg_raw)
-    scope_cfg = cfg.get("microscope", {}) or {}
-    scale = float(scope_cfg.get("scale_factor", 1.0) or 1.0)
-    current_mag = scope_cfg.get("current_magnification")
-    reference_mag = scope_cfg.get("reference_magnification")
-    if abs(scale - 1.0) > 1e-3:
-        print(f"[INFO] Applying magnification scaling factor {scale:.3f} (current {current_mag}x vs reference {reference_mag}x)")
-    else:
-        if current_mag and reference_mag:
-            print(f"[INFO] Magnification set to {current_mag}x (reference {reference_mag}x) -> scale 1.0")
+    # Load base (unscaled) config; scaling will be applied per-image based on path tokens (e.g., 5X/10X/20X/40X)
+    cfg = _load_yaml(config_path)
     paths = cfg.get("paths", {}) or {}
     testing_cfg = cfg.get("testing", {}) or {}
 
@@ -994,12 +1033,12 @@ def segment_dirs(config_path: Path) -> None:
     out_root.mkdir(parents=True, exist_ok=True)
 
     # Save config snapshot for reproducibility
+    scope_cfg = cfg.get("microscope", {}) or {}
     runtime_params = {
         "testing_config": testing_cfg,
         "regions_enabled": regions_enabled,
-        "magnification_scale": scale,
-        "current_magnification": current_mag,
-        "reference_magnification": reference_mag,
+        "magnification_mode": "per-image-from-path",
+        "reference_magnification": scope_cfg.get("reference_magnification", 10.0),
     }
     save_config_snapshot(
         output_dir=out_root,
