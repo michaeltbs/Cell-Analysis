@@ -926,28 +926,51 @@ def _segment_dir(
             img = _read_image(img_path)
             gray_raw = _extract_channel(img, ch_index).astype(np.float32)
             
-            # Check image size and downsample if very large to prevent OOM
+            # Intelligent downsampling to prevent OOM while keeping diameter in usable range
             img_h, img_w = gray_raw.shape
             img_megapixels = (img_h * img_w) / 1_000_000
             max_dimension = max(img_h, img_w)
             
-            # For GPU with CPSAM, keep images under 1024px to avoid OOM
-            max_safe_dimension = 1024
+            # Target: keep diameter between 3-30 pixels (Cellpose works best with diameter ~10-20)
+            # If diameter after scaling is too small, we need less aggressive downsampling
+            target_diameter_min = 3.0
             
-            if max_dimension > max_safe_dimension:
+            if diameter and diameter < target_diameter_min:
+                # Diameter is too small - we need to scale UP the image or reduce downsampling
+                required_scale = target_diameter_min / diameter
+                target_dimension = int(max_dimension * required_scale)
+                print(f"[INFO] {img_path.name}: diameter {diameter} too small, scaling to maintain quality")
+                
+                # Limit maximum upscaling to prevent excessive memory use
+                max_safe_dimension = 2048
+                if target_dimension > max_safe_dimension:
+                    actual_scale = max_safe_dimension / max_dimension
+                    new_h = int(img_h * actual_scale)
+                    new_w = int(img_w * actual_scale)
+                    new_diameter = diameter * actual_scale
+                    print(f"[INFO] {img_path.name}: rescaling {img_w}x{img_h} -> {new_w}x{new_h}, diameter {diameter:.1f} -> {new_diameter:.1f}")
+                    from skimage import transform
+                    gray_raw = transform.resize(gray_raw, (new_h, new_w), preserve_range=True, anti_aliasing=True).astype(np.float32)
+                    diameter = max(3.0, new_diameter)
+                else:
+                    # Can scale up without hitting memory limit
+                    new_h = int(img_h * required_scale)
+                    new_w = int(img_w * required_scale)
+                    print(f"[INFO] {img_path.name}: upscaling {img_w}x{img_h} -> {new_w}x{new_h} to maintain diameter {target_diameter_min:.1f}")
+                    from skimage import transform
+                    gray_raw = transform.resize(gray_raw, (new_h, new_w), preserve_range=True, anti_aliasing=True).astype(np.float32)
+                    diameter = target_diameter_min
+            elif max_dimension > 3000:
+                # Image is very large - gentle downsampling to ~2048 max
+                max_safe_dimension = 2048
                 downsample_factor = max_dimension / max_safe_dimension
                 new_h = int(img_h / downsample_factor)
                 new_w = int(img_w / downsample_factor)
-                new_mp = (new_h * new_w) / 1_000_000
-                print(f"[INFO] {img_path.name}: pre-downsampling {img_w}x{img_h} ({img_megapixels:.1f}MP) -> {new_w}x{new_h} ({new_mp:.1f}MP) to prevent OOM")
+                new_diameter = diameter / downsample_factor if diameter else None
+                print(f"[INFO] {img_path.name}: downsampling {img_w}x{img_h} -> {new_w}x{new_h} for memory, diameter {diameter:.1f} -> {new_diameter:.1f}")
                 from skimage import transform
                 gray_raw = transform.resize(gray_raw, (new_h, new_w), preserve_range=True, anti_aliasing=True).astype(np.float32)
-                # Adjust diameter proportionally
-                if diameter:
-                    diameter = max(1.0, diameter / downsample_factor)
-                    print(f"[INFO] {img_path.name}: adjusted diameter to {diameter:.1f} after downsampling")
-            elif img_megapixels > 50:
-                print(f"[INFO] {img_path.name}: large image {img_w}x{img_h} ({img_megapixels:.1f}MP)")
+                diameter = max(3.0, new_diameter) if new_diameter else diameter
             
             gray_proc = _preprocess_image(gray_raw, proc_img)
             gray_norm = _normalize_image(gray_proc)
