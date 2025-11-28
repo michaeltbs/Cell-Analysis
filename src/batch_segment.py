@@ -92,6 +92,8 @@ try:
 except Exception:
     # fallback: define locally if import fails
     _apply_magnification_scaling = None
+    apply_image_aware_scaling = None
+    compute_effective_scale = None
 
 # -----------------------------
 # Config I/O
@@ -109,6 +111,19 @@ if _apply_magnification_scaling is None:
     def _apply_magnification_scaling(cfg: dict) -> dict:
         """Fallback: Return config unchanged if central function not available."""
         return _copy.deepcopy(cfg or {})
+
+if apply_image_aware_scaling is None:
+    import copy as _copy
+    def apply_image_aware_scaling(cfg: dict, image_shape: tuple = None, resize_max: int = 2048) -> tuple:
+        """Fallback: Return config unchanged with default scale info if central function not available."""
+        cfg_copy = _copy.deepcopy(cfg or {})
+        scale_info = {
+            "effective_diameter": cfg_copy.get("cellpose", {}).get("diameter", 30),
+            "resize_factor": 1.0,
+            "combined_scale": 1.0,
+            "quality_warning": None
+        }
+        return cfg_copy, scale_info
 
 # -----------------------------
 # Cellpose v4 model loader
