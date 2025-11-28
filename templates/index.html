@@ -1029,6 +1029,12 @@ document.querySelectorAll('[data-tab]').forEach(link => {
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   refreshConfigList();
+  // Initialize UI sync for conditional fields
+  syncDetPreprocessingUI();
+  syncDetOverlayUI();
+  syncDetProcessingUI();
+  syncCoexprModeUI();
+  toggleDetTestOptions();
 });
 
 // CZI Conversion Functions
