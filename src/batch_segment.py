@@ -84,7 +84,11 @@ except Exception:
         pass
 
 try:
-    from src.config_utils import apply_magnification_scaling as _apply_magnification_scaling
+    from src.config_utils import (
+    apply_magnification_scaling as _apply_magnification_scaling,
+    apply_image_aware_scaling,
+    compute_effective_scale,
+)
 except Exception:
     # fallback: define locally if import fails
     _apply_magnification_scaling = None
@@ -215,11 +219,33 @@ def _normalize_image(arr: np.ndarray) -> np.ndarray:
     return arr / max_val
 
 def _preprocess_image(img: np.ndarray, proc_cfg: Dict[str, Any]) -> np.ndarray:
-    """Apply optional preprocessing (tophat, contrast stretch)."""
+    """Apply optional preprocessing (CLAHE, tophat, contrast stretch)."""
     if not isinstance(proc_cfg, dict) or not proc_cfg:
         return img
 
     processed = img.astype(np.float32, copy=True)
+    
+    # Apply CLAHE (Contrast Limited Adaptive Histogram Equalization) first
+    # This helps with uneven illumination and improves local contrast
+    if proc_cfg.get("clahe", False):
+        try:
+            # Normalize to 0-1 range for CLAHE
+            pmin, pmax = processed.min(), processed.max()
+            if pmax > pmin:
+                normalized = (processed - pmin) / (pmax - pmin)
+                # Apply CLAHE with configurable parameters
+                clip_limit = float(proc_cfg.get("clahe_clip_limit", 0.03) or 0.03)
+                kernel_size = proc_cfg.get("clahe_kernel_size", None)
+                processed = exposure.equalize_adapthist(
+                    normalized, 
+                    clip_limit=clip_limit,
+                    kernel_size=kernel_size
+                ).astype(np.float32)
+                # Scale back to original range
+                processed = processed * (pmax - pmin) + pmin
+        except Exception as e:
+            print(f"[WARN] CLAHE failed: {e}")
+    
     if proc_cfg.get("tophat"):
         radius = int(proc_cfg.get("tophat_radius", 15) or 15)
         radius = max(radius, 1)
@@ -814,28 +840,51 @@ def _segment_dir(
             img_scope["reference_magnification"] = reference_mag
             img_scope["current_magnification"] = float(current_mag)
             cfg_img["microscope"] = img_scope
-            cfg_scaled = _apply_magnification_scaling(cfg_img)
+            
+            # Read image first to get dimensions for image-aware scaling
+            img = _read_image(img_path)
+            gray_raw = _extract_channel(img, ch_index).astype(np.float32)
+            img_h, img_w = gray_raw.shape
+            
+            # Get resize_max from config
+            cp_base_cfg = cfg_img.get("cellpose", {}) or {}
+            resize_max = int(cp_base_cfg.get("resize_max", 2048) or 2048)
+            
+            # Apply image-aware scaling (considers both image size and magnification)
+            cfg_scaled, scale_info = apply_image_aware_scaling(
+                cfg_img, 
+                image_shape=(img_h, img_w),
+                resize_max=resize_max
+            )
 
             cp_img = cfg_scaled.get("cellpose", {}) or {}
             proc_img = cfg_scaled.get("processing", {}) or {}
             ov_img = cfg_scaled.get("overlays", {}) or {}
             filters_img = cfg_scaled.get("filters", {}) or {}
 
-            # Logging scale factor per image when applicable
-            s_cfg = cfg_scaled.get("microscope", {}) or {}
-            s = float(s_cfg.get("scale_factor", 1.0) or 1.0)
-            if abs(s - 1.0) > 1e-3:
+            # Log scaling information
+            effective_diameter = scale_info["effective_diameter"]
+            resize_factor = scale_info["resize_factor"]
+            combined_scale = scale_info["combined_scale"]
+            quality_warning = scale_info.get("quality_warning")
+            
+            if abs(resize_factor - 1.0) > 0.01 or abs(current_mag - reference_mag) > 0.1:
                 src = "path" if auto_from_path else "manual"
-                print(f"[INFO] {img_path.name}: magnification {current_mag}x (ref {reference_mag}x, {src}) -> scale {s:.3f}")
-                # Debug: log scaled parameters
-                print(f"[DEBUG] Scaled params: diameter={cp_img.get('diameter')} min_area={filters_img.get('min_area')} "
+                print(f"[INFO] {img_path.name}: {img_w}x{img_h}px, {current_mag}x (ref {reference_mag}x, {src})")
+                print(f"       -> resize_factor={resize_factor:.3f}, effective_diameter={effective_diameter:.1f}px")
+                if quality_warning:
+                    print(f"[WARN] {img_path.name}: {quality_warning}")
+            
+            # Debug: log scaled parameters
+            if abs(combined_scale - 1.0) > 0.01:
+                print(f"[DEBUG] Scaled params: diameter={cp_img.get('diameter'):.1f} min_area={filters_img.get('min_area')} "
                       f"max_area={filters_img.get('max_area')} fg_block={cfg_scaled.get('advanced_filtering',{}).get('foreground_block_size')} "
                       f"tophat_radius={proc_img.get('tophat_radius')}")
 
             # Prepare per-image parameters
-            diameter = cp_img.get("diameter") or None
-            if isinstance(diameter, (int, float)) and diameter == 0:
-                diameter = None
+            diameter = effective_diameter
+            if diameter == 0:
+                diameter = None  # Let Cellpose estimate
             flow_thr = float(cp_img.get("flow_threshold", 0.4))
             cell_thr = float(cp_img.get("cellprob_threshold", 0.0))
 
@@ -847,54 +896,25 @@ def _segment_dir(
 
             min_area_for_split = int(filters_img.get("min_area") or 0)
 
-            img = _read_image(img_path)
-            gray_raw = _extract_channel(img, ch_index).astype(np.float32)
-            
-            # Intelligent downsampling to prevent OOM while keeping diameter in usable range
-            img_h, img_w = gray_raw.shape
-            img_megapixels = (img_h * img_w) / 1_000_000
+            # Intelligent rescaling for optimal cell detection
+            # Now handled by apply_image_aware_scaling - only manual resize if diameter < 3
             max_dimension = max(img_h, img_w)
-            
-            # Target: keep diameter between 3-30 pixels (Cellpose works best with diameter ~10-20)
-            # Conservative max to prevent OOM: 1536px (vs previous 2048px)
-            max_safe_dimension = 1536
             target_diameter_min = 3.0
             
-            if max_dimension > max_safe_dimension:
-                # Always downsample if image is larger than safe limit
-                downsample_factor = max_dimension / max_safe_dimension
-                new_h = int(img_h / downsample_factor)
-                new_w = int(img_w / downsample_factor)
-                new_diameter = diameter / downsample_factor if diameter else None
-                
-                if new_diameter and new_diameter < target_diameter_min:
-                    # After downsampling, diameter too small - find balance
-                    # Scale to achieve minimum diameter while staying under memory limit
-                    required_scale = target_diameter_min / diameter
-                    balanced_dimension = min(int(max_dimension * required_scale), max_safe_dimension)
-                    balanced_factor = max_dimension / balanced_dimension
-                    new_h = int(img_h / balanced_factor)
-                    new_w = int(img_w / balanced_factor)
-                    new_diameter = diameter / balanced_factor
-                    print(f"[INFO] {img_path.name}: balanced rescaling {img_w}x{img_h} -> {new_w}x{new_h}, diameter {diameter:.1f} -> {new_diameter:.1f} (target≥{target_diameter_min})")
-                else:
-                    print(f"[INFO] {img_path.name}: downsampling {img_w}x{img_h} -> {new_w}x{new_h} for memory, diameter {diameter:.1f} -> {new_diameter:.1f}")
-                
-                from skimage import transform
-                gray_raw = transform.resize(gray_raw, (new_h, new_w), preserve_range=True, anti_aliasing=True).astype(np.float32)
-                diameter = max(target_diameter_min, new_diameter) if new_diameter else diameter
-            elif diameter and diameter < target_diameter_min:
-                # Image is small enough but diameter is tiny - scale up (but cap at safe limit)
+            if diameter and diameter < target_diameter_min:
+                # Effective diameter is too small after scaling - upscale image
+                max_safe_dimension = resize_max  # Use resize_max as the limit
                 required_scale = target_diameter_min / diameter
                 target_dimension = int(max_dimension * required_scale)
                 if target_dimension <= max_safe_dimension:
                     new_h = int(img_h * required_scale)
                     new_w = int(img_w * required_scale)
-                    print(f"[INFO] {img_path.name}: upscaling {img_w}x{img_h} -> {new_w}x{new_h} to maintain diameter {target_diameter_min:.1f}")
+                    print(f"[INFO] {img_path.name}: upscaling {img_w}x{img_h} -> {new_w}x{new_h} for minimum diameter {target_diameter_min:.1f}")
                     from skimage import transform
                     gray_raw = transform.resize(gray_raw, (new_h, new_w), preserve_range=True, anti_aliasing=True).astype(np.float32)
                     diameter = target_diameter_min
-                # else: keep original, diameter will be small but at least we won't OOM
+                else:
+                    print(f"[WARN] {img_path.name}: diameter {diameter:.1f}px is below optimal but cannot upscale further")
             
             gray_proc = _preprocess_image(gray_raw, proc_img)
             gray_norm = _normalize_image(gray_proc)
@@ -938,13 +958,46 @@ def _segment_dir(
             labeled = measure.label(masks_arr > 0)
             regions = measure.regionprops(labeled, intensity_image=gray_raw)
             cell_count = len(regions)
+            
+            # Quality metrics
+            area_std = 0.0
+            min_cell_area = 0.0
+            max_cell_area = 0.0
+            diameter_cv = 0.0  # Coefficient of variation for cell sizes
+            quality_flag = "OK"
+            
             if cell_count > 0:
                 areas = np.array([r.area for r in regions], dtype=np.float64)
                 mean_ints = np.array([r.mean_intensity for r in regions], dtype=np.float64)
                 integ = areas * mean_ints
                 mean_area = float(areas.mean())
+                area_std = float(areas.std())
+                min_cell_area = float(areas.min())
+                max_cell_area = float(areas.max())
                 mean_intensity = float(mean_ints.mean())
                 mean_integrated = float(integ.mean())
+                
+                # Calculate coefficient of variation (CV) as quality indicator
+                # CV > 1.0 suggests highly variable cell sizes (potential detection issues)
+                if mean_area > 0:
+                    diameter_cv = area_std / mean_area
+                
+                # Quality warnings based on expected cell areas
+                expected_min = int(filters_img.get("min_area", 50) or 50)
+                expected_max = int(filters_img.get("max_area", 5000) or 5000)
+                
+                # Check for potential issues
+                if mean_area < expected_min * 0.5:
+                    quality_flag = "WARN:too_small"
+                    print(f"[QC] {img_path.name}: mean cell area {mean_area:.0f}px² is below expected min ({expected_min}px²)")
+                elif mean_area > expected_max * 0.8:
+                    quality_flag = "WARN:too_large"
+                    print(f"[QC] {img_path.name}: mean cell area {mean_area:.0f}px² approaches max ({expected_max}px²)")
+                elif diameter_cv > 1.5:
+                    quality_flag = "WARN:high_variance"
+                    print(f"[QC] {img_path.name}: high size variance (CV={diameter_cv:.2f})")
+                elif cell_count < 3:
+                    quality_flag = "WARN:few_cells"
             else:
                 mean_area = mean_intensity = mean_integrated = 0.0
 
@@ -955,8 +1008,17 @@ def _segment_dir(
                 "channel": f"ch{ch_index}",
                 "cell_count": int(cell_count),
                 "mean_area_per_cell": mean_area,
+                "area_std": area_std,
+                "min_cell_area": min_cell_area,
+                "max_cell_area": max_cell_area,
                 "mean_intensity_per_cell": mean_intensity,
                 "mean_integrated_density_per_cell": mean_integrated,
+                "image_width": img_w,
+                "image_height": img_h,
+                "effective_diameter": effective_diameter,
+                "resize_factor": resize_factor,
+                "magnification": current_mag,
+                "quality_flag": quality_flag,
             })
 
         except Exception as e:
@@ -974,8 +1036,17 @@ def _segment_dir(
             "channel",
             "cell_count",
             "mean_area_per_cell",
+            "area_std",
+            "min_cell_area",
+            "max_cell_area",
             "mean_intensity_per_cell",
             "mean_integrated_density_per_cell",
+            "image_width",
+            "image_height",
+            "effective_diameter",
+            "resize_factor",
+            "magnification",
+            "quality_flag",
         ])
         for row in summary_rows:
             w.writerow([
@@ -985,8 +1056,17 @@ def _segment_dir(
                 row["channel"],
                 row["cell_count"],
                 row["mean_area_per_cell"],
+                row.get("area_std", 0),
+                row.get("min_cell_area", 0),
+                row.get("max_cell_area", 0),
                 row["mean_intensity_per_cell"],
                 row["mean_integrated_density_per_cell"],
+                row.get("image_width", 0),
+                row.get("image_height", 0),
+                row.get("effective_diameter", 0),
+                row.get("resize_factor", 1.0),
+                row.get("magnification", 10.0),
+                row.get("quality_flag", "OK"),
             ])
 
     print(f"   Condition={condition}: processed {total_to_process} images -> wrote {master_csv.name}")
