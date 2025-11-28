@@ -340,6 +340,55 @@
             </div>
           </details>
 
+          <!-- Preprocessing -->
+          <details class="flex flex-col rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-background-dark/50 group">
+            <summary class="flex cursor-pointer items-center justify-between gap-6 p-4">
+              <div class="flex flex-col">
+                <p class="text-black dark:text-white text-base font-medium leading-normal">Preprocessing</p>
+                <p class="text-neutral-500 dark:text-neutral-400 text-xs">CLAHE, Tophat, Contrast enhancement</p>
+              </div>
+              <span class="material-symbols-outlined text-neutral-600 dark:text-neutral-400 group-open:rotate-180 transition-transform">expand_more</span>
+            </summary>
+            <div class="p-4 border-t border-neutral-200 dark:border-neutral-800">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <label class="flex flex-col">
+                  <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">CLAHE</p>
+                  <select id="det_clahe" class="form-select w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm" onchange="syncDetPreprocessingUI()">
+                    <option value="false">Disabled</option>
+                    <option value="true">Enabled</option>
+                  </select>
+                  <p class="text-neutral-500 text-xs mt-1">Adaptive contrast enhancement</p>
+                </label>
+                <label id="det_clahe_clip_field" class="flex flex-col hidden">
+                  <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">CLAHE Clip Limit</p>
+                  <input id="det_clahe_clip_limit" type="number" step="0.01" min="0.01" max="1.0" value="0.03" class="form-input w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm"/>
+                  <p class="text-neutral-500 text-xs mt-1">Contrast limit (0.01-1.0)</p>
+                </label>
+                <label class="flex flex-col">
+                  <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Tophat Filter</p>
+                  <select id="det_tophat" class="form-select w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm" onchange="syncDetPreprocessingUI()">
+                    <option value="false">Disabled</option>
+                    <option value="true">Enabled</option>
+                  </select>
+                  <p class="text-neutral-500 text-xs mt-1">Removes uneven background</p>
+                </label>
+                <label id="det_tophat_radius_field" class="flex flex-col hidden">
+                  <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Tophat Radius</p>
+                  <input id="det_tophat_radius" type="number" min="1" max="100" value="15" class="form-input w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm"/>
+                  <p class="text-neutral-500 text-xs mt-1">Disk radius in pixels</p>
+                </label>
+                <label class="flex flex-col">
+                  <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Contrast Stretch</p>
+                  <select id="det_contrast_stretch" class="form-select w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm">
+                    <option value="false">Disabled</option>
+                    <option value="true">Enabled</option>
+                  </select>
+                  <p class="text-neutral-500 text-xs mt-1">Percentile-based stretching</p>
+                </label>
+              </div>
+            </div>
+          </details>
+
           <!-- Cellpose Parameters -->
           <details class="flex flex-col rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-background-dark/50 group">
             <summary class="flex cursor-pointer items-center justify-between gap-6 p-4">
@@ -371,6 +420,11 @@
                 <label class="flex flex-col">
                   <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Cellprob Threshold</p>
                   <input id="det_cell_thr" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 p-3 text-sm font-normal leading-normal" type="number" step="0.1" value="0.0"/>
+                </label>
+                <label class="flex flex-col">
+                  <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Resize Max (px)</p>
+                  <input id="det_resize_max" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 p-3 text-sm font-normal leading-normal" type="number" value="2048" min="512" max="4096"/>
+                  <p class="text-neutral-500 text-xs mt-1">Max image dimension for scaling</p>
                 </label>
                 <label class="flex flex-col">
                   <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Batch Size</p>
@@ -1291,6 +1345,9 @@ async function loadDetConfig(specificPath){
     m('det_cpsam_resize_max', cpc.resize_max || '');
     m('det_cpsam_niter', cpc.niter || '');
     
+    // Resize max (also in top-level)
+    m('det_resize_max', cfg.resize_max || cpc.resize_max || 2048);
+    
     const ccond = cp.conditions || {};
     m('det_cpsam_pos_pattern', ccond.pos_pattern || '');
     m('det_cpsam_neg_pattern', ccond.neg_pattern || '');
@@ -1307,11 +1364,29 @@ async function loadDetConfig(specificPath){
     m('det_cpsam_intensity_thr', cfilt.intensity_threshold || '');
     m('det_cpsam_itf', cfilt.intensity_threshold_factor || '');
     
+    // Preprocessing (new fields + legacy support)
     const cpre = cp.preprocessing || {};
+    const proc = cfg.processing || {};
+    
+    // CLAHE
+    m('det_clahe', String(cfg.clahe === true || proc.clahe === true || cpre.clahe === true));
+    m('det_clahe_clip_limit', cfg.clahe_clip_limit || proc.clahe_clip_limit || cpre.clahe_clip_limit || 0.03);
+    
+    // Tophat
+    m('det_tophat', String(cfg.tophat === true || proc.tophat === true || cpre.tophat === true));
+    m('det_tophat_radius', cfg.tophat_radius || proc.tophat_radius || cpre.tophat_radius || 15);
+    
+    // Contrast stretch
+    m('det_contrast_stretch', String(cfg.contrast_stretch === true || proc.contrast_stretch === true || cpre.contrast_stretch === true));
+    
+    // Legacy fields
     m('det_cpsam_tophat', String(cpre.tophat !== false));
     m('det_cpsam_tophat_radius', cpre.tophat_radius || '');
     m('det_cpsam_contrast_stretch', String(cpre.contrast_stretch !== false));
     m('det_cpsam_stretch_pct', (cpre.stretch_percentiles || []).join(','));
+    
+    // Sync preprocessing UI
+    syncDetPreprocessingUI();
     
     const cws = cp.watershed_split || {};
     m('det_cpsam_split_touching', String(cws.split_touching !== false));
@@ -1597,10 +1672,18 @@ function buildDetConfigPayload(){
     overlay_suffix: document.getElementById('det_overlay_suffix')?.value,
     script_path: document.getElementById('det_script_path')?.value,
     
+    // Preprocessing settings
+    clahe: document.getElementById('det_clahe')?.value === 'true',
+    clahe_clip_limit: toFloat(document.getElementById('det_clahe_clip_limit')?.value),
+    tophat: document.getElementById('det_tophat')?.value === 'true',
+    tophat_radius: toInt(document.getElementById('det_tophat_radius')?.value),
+    contrast_stretch: document.getElementById('det_contrast_stretch')?.value === 'true',
+    resize_max: toInt(document.getElementById('det_resize_max')?.value),
+    
     cpsam: {
       cellpose: {
         channel: toInt(document.getElementById('det_cpsam_channel')?.value),
-        resize_max: toInt(document.getElementById('det_cpsam_resize_max')?.value),
+        resize_max: toInt(document.getElementById('det_resize_max')?.value) || toInt(document.getElementById('det_cpsam_resize_max')?.value),
         niter: toInt(document.getElementById('det_cpsam_niter')?.value)
       },
       conditions: {
@@ -1619,9 +1702,11 @@ function buildDetConfigPayload(){
         intensity_threshold_factor: toFloat(document.getElementById('det_cpsam_itf')?.value)
       },
       preprocessing: {
-        tophat: document.getElementById('det_cpsam_tophat')?.value === 'true',
-        tophat_radius: toInt(document.getElementById('det_cpsam_tophat_radius')?.value),
-        contrast_stretch: document.getElementById('det_cpsam_contrast_stretch')?.value === 'true',
+        clahe: document.getElementById('det_clahe')?.value === 'true',
+        clahe_clip_limit: toFloat(document.getElementById('det_clahe_clip_limit')?.value) || 0.03,
+        tophat: document.getElementById('det_tophat')?.value === 'true' || document.getElementById('det_cpsam_tophat')?.value === 'true',
+        tophat_radius: toInt(document.getElementById('det_tophat_radius')?.value) || toInt(document.getElementById('det_cpsam_tophat_radius')?.value),
+        contrast_stretch: document.getElementById('det_contrast_stretch')?.value === 'true' || document.getElementById('det_cpsam_contrast_stretch')?.value === 'true',
         stretch_percentiles: toIntPair(document.getElementById('det_cpsam_stretch_pct')?.value)
       },
       watershed_split: {
@@ -2239,8 +2324,21 @@ function syncDetOverlayUI(){
   if(lineField) lineField.classList.toggle('hidden', !showContour);
 }
 
+function syncDetPreprocessingUI(){
+  // CLAHE fields
+  const claheEnabled=(document.getElementById('det_clahe')?.value||'false')==='true';
+  const claheField=document.getElementById('det_clahe_clip_field');
+  if(claheField) claheField.classList.toggle('hidden', !claheEnabled);
+  
+  // Tophat fields
+  const tophatEnabled=(document.getElementById('det_tophat')?.value||'false')==='true';
+  const tophatField=document.getElementById('det_tophat_radius_field');
+  if(tophatField) tophatField.classList.toggle('hidden', !tophatEnabled);
+}
+
 function syncDetProcessingUI(){
-  const tophatEnabled=(document.getElementById('det_cpsam_tophat')?.value||'false')==='true';
+  // Legacy support for det_cpsam_tophat
+  const tophatEnabled=(document.getElementById('det_cpsam_tophat')?.value||document.getElementById('det_tophat')?.value||'false')==='true';
   const tophatField=document.getElementById('det_tophat_radius_field');
   if(tophatField) tophatField.classList.toggle('hidden', !tophatEnabled);
   

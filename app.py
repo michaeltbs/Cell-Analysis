@@ -2757,8 +2757,31 @@ def det_start():
                     pass
             if 'tophat' in payload:
                 processing_block['tophat'] = _as_bool(payload['tophat'])
+            if 'tophat_radius' in payload:
+                try:
+                    processing_block['tophat_radius'] = int(payload['tophat_radius'])
+                except Exception:
+                    pass
             if 'contrast_stretch' in payload:
                 processing_block['contrast_stretch'] = _as_bool(payload['contrast_stretch'])
+            # CLAHE preprocessing
+            if 'clahe' in payload:
+                processing_block['clahe'] = _as_bool(payload['clahe'])
+            if 'clahe_clip_limit' in payload:
+                try:
+                    processing_block['clahe_clip_limit'] = float(payload['clahe_clip_limit'])
+                except Exception:
+                    pass
+            # Resize max for Cellpose
+            if 'resize_max' in payload:
+                try:
+                    cellpose_block = cfg.get('cellpose', {})
+                    if not isinstance(cellpose_block, dict):
+                        cellpose_block = {}
+                    cellpose_block['resize_max'] = int(payload['resize_max'])
+                    cfg['cellpose'] = cellpose_block
+                except Exception:
+                    pass
             if 'current_magnification' in payload:
                 try:
                     scope_block['current_magnification'] = float(payload['current_magnification'])
