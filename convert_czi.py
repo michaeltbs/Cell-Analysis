@@ -14,6 +14,10 @@ from __future__ import annotations
 
 import os
 import sys
+from pathlib import Path
+# Ensure project root is in sys.path so we can import from src
+sys.path.append(str(Path(__file__).parent))
+
 import json
 import re
 from dataclasses import dataclass, field
@@ -78,15 +82,15 @@ class CziConfig:
     dtype: str = "uint8"                             # "uint8"|"uint16"
 
     # Stack/metadata
-    stack_layout: str = "YXC"                        # "YXC" | "CYX" (we write YXC by default)
+    stack_layout: str = "CYX"                        # "YXC" | "CYX" (we write CYX by default for compatibility)
     imagej_hyperstack: bool = True
     channel_names: List[str] = field(default_factory=list)
 
     # Color composites
     save_color_composite: bool = True
     channel_colors: List[str] = field(default_factory=lambda: ['#ff0000','#00ff00','#0000ff','#ffff00'])
-    save_multichannel_colored_pages: bool = True
-    save_ome_tiff_colors: bool = True
+    save_colored_pages: bool = True
+    save_ome_colors: bool = True
     verbose: bool = False
 
     def validate(self) -> None:
@@ -97,9 +101,9 @@ class CziConfig:
         if self.target_size is not None:
             self.target_size = int(self.target_size)
         # normalize layout string
-        self.stack_layout = (self.stack_layout or "YXC").upper()
+        self.stack_layout = (self.stack_layout or "CYX").upper()
         if self.stack_layout not in {"YXC","CYX"}:
-            self.stack_layout = "YXC"
+            self.stack_layout = "CYX"
 
     @classmethod
     def from_yaml(cls, path: Path) -> "CziConfig":
@@ -107,7 +111,19 @@ class CziConfig:
         if path.exists():
             with open(path, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f) or {}
-        cfg = cls(**{**cls().__dict__, **data})  # start with defaults, overlay file
+        
+        # Map legacy keys
+        if 'save_multichannel_colored_pages' in data:
+            data['save_colored_pages'] = data.pop('save_multichannel_colored_pages')
+        if 'save_ome_tiff_colors' in data:
+            data['save_ome_colors'] = data.pop('save_ome_tiff_colors')
+            
+        # Filter keys to only those accepted by __init__
+        from dataclasses import fields
+        valid_keys = {f.name for f in fields(cls)}
+        filtered_data = {k: v for k, v in data.items() if k in valid_keys}
+        
+        cfg = cls(**filtered_data)
         cfg.validate()
         return cfg
 
@@ -367,8 +383,8 @@ def process_czi_file(inp_path: str, group: str, target_size: Optional[int], chan
     rgb_map = list((cfg or {}).get('rgb_channels', [0,1,2]))
     save_color_composite = bool((cfg or {}).get('save_color_composite', True))
     channel_colors = list((cfg or {}).get('channel_colors', []))
-    save_colored_pages = bool((cfg or {}).get('save_multichannel_colored_pages', True))
-    save_ome_colors = bool((cfg or {}).get('save_ome_tiff_colors', True))
+    save_colored_pages = bool((cfg or {}).get('save_colored_pages', True))
+    save_ome_colors = bool((cfg or {}).get('save_ome_colors', True))
     ch_names = list((cfg or {}).get('channel_names', []))
 
     saved_any = False
@@ -393,25 +409,34 @@ def process_czi_file(inp_path: str, group: str, target_size: Optional[int], chan
         stack_path = out_dir / f"{inp.stem}_stack.tif"
         if overwrite or (not stack_path.exists()):
             try:
-                layout = str((cfg or {}).get('stack_layout', 'YXC')).upper()
+                layout = str((cfg or {}).get('stack_layout', 'CYX')).upper()
                 if layout not in {'CYX', 'YXC'}:
-                    layout = 'YXC'
+                    layout = 'CYX'
+                
                 if layout == 'CYX':
                     arr = cyx  # (C,Y,X)
                     axes = 'CYX'
                 else:
                     arr = np.moveaxis(cyx, 0, -1)  # (Y,X,C)
                     axes = 'YXC'
+                
                 if tiff is not None:
                     meta = {'axes': axes}
-                    desc = json.dumps({'shape': [int(arr.shape[0]), int(arr.shape[1]), int(arr.shape[2])] })
+                    desc = json.dumps({'shape': [int(x) for x in arr.shape]})
+                    
+                    # For CYX, we can use imagej=True to ensure it opens correctly as a stack
+                    is_imagej = (layout == 'CYX')
+                    
                     if axes == 'YXC' and arr.shape[-1] == 3:
                         photometric = 'rgb'
                     else:
                         photometric = 'minisblack'
-                    tiff.imwrite(str(stack_path), arr, photometric=photometric, metadata=meta, description=desc)
+                        
+                    tiff.imwrite(str(stack_path), arr, photometric=photometric, metadata=meta, description=desc, imagej=is_imagej)
                 else:
+                    # Fallback to skimage (mostly handles YXC or CYX reasonably well, but less control)
                     skio.imsave(str(stack_path), arr, check_contrast=False)
+                    
                 if verbose: print(f"[SAVE] {stack_path.name}")
                 saved_any = True
                 if saved_main_path is None:
@@ -547,7 +572,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     print(f"Input:   {cfg.input_root}")
     print(f"Output:  {cfg.output_base}")
     print(f"Channels: {cfg.channels} | DType: {cfg.dtype} | Normalize: {cfg.per_channel_normalize} | Overwrite: {cfg.overwrite}")
-    print(f"Save: per_channel={cfg.save_per_channel}, stack={cfg.save_stack_tiff}, rgb_preview={cfg.save_rgb_preview}, color_comp={cfg.save_color_composite}, pages={cfg.save_multichannel_colored_pages}, ome={cfg.save_ome_tiff_colors}")
+    print(f"Save: per_channel={cfg.save_per_channel}, stack={cfg.save_stack_tiff}, rgb_preview={cfg.save_rgb_preview}, color_comp={cfg.save_color_composite}, pages={cfg.save_colored_pages}, ome={cfg.save_ome_colors}")
     if verbose:
         print("[VERBOSE] Enabled")
     print("===================\n")

@@ -1,5 +1,4 @@
-﻿
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 run_pipeline.py – CLI wrapper for detection + co-expression summary.
 """
@@ -21,6 +20,7 @@ from src.analysis import (
 )
 from src.batch_segment import segment_dirs
 from src.config_archiver import save_config_snapshot
+from src.anova_analysis import run_anova_analysis
 
 
 def _print_env() -> None:
@@ -171,6 +171,13 @@ def main(argv: list[str] | None = None) -> int:
         summary_path = out_dir / f"{base_name}_summary.md"
         create_summary_report(animal_df, condition_df, str(summary_path))
         print(f"[out] summary written to {summary_path}")
+
+    # Run ANOVA analysis
+    if cfg.get("analysis", {}).get("enable_anova", True):
+        try:
+            run_anova_analysis(str(master_csv), str(out_dir))
+        except Exception as e:
+            print(f"[warn] ANOVA analysis failed: {e}")
 
     print("[done] pipeline finished")
     return 0

@@ -83,6 +83,12 @@ except Exception:
     def save_config_snapshot(*args, **kwargs):
         pass
 
+try:
+    from src.config_utils import apply_magnification_scaling as _apply_magnification_scaling
+except Exception:
+    # fallback: define locally if import fails
+    _apply_magnification_scaling = None
+
 # -----------------------------
 # Config I/O
 # -----------------------------
@@ -91,96 +97,14 @@ def _load_yaml(path: Path) -> dict:
         return yaml.safe_load(f) or {}
 
 
-def _apply_magnification_scaling(cfg: dict) -> dict:
-    """Return a config copy with size-dependent parameters scaled for the current objective."""
-    new_cfg = copy.deepcopy(cfg or {})
-    scope_cfg = new_cfg.get("microscope", {}) or {}
-
-    def _as_float(value, default):
-        try:
-            return float(value)
-        except Exception:
-            return float(default)
-
-    reference = scope_cfg.get("reference_magnification", 10.0)
-    current = scope_cfg.get("current_magnification", scope_cfg.get("magnification", reference))
-    reference = _as_float(reference, 10.0)
-    current = _as_float(current, reference)
-    if reference <= 0:
-        reference = 10.0
-    if current <= 0:
-        current = reference
-
-    scale = max(current / reference, 1e-3)
-    area_scale = scale * scale
-
-    # If current equals reference, no scaling needed
-    if abs(scale - 1.0) < 1e-6:
-        scope_cfg["reference_magnification"] = reference
-        scope_cfg["current_magnification"] = current
-        scope_cfg["scale_factor"] = 1.0
-        new_cfg["microscope"] = scope_cfg
-        return new_cfg
-
-    scope_cfg["reference_magnification"] = reference
-    scope_cfg["current_magnification"] = current
-    scope_cfg["scale_factor"] = scale
-    new_cfg["microscope"] = scope_cfg
-
-    cp_cfg = new_cfg.get("cellpose")
-    if isinstance(cp_cfg, dict):
-        # resize_max stays constant - all images normalized to same size
-        # diameter scales with magnification (cells appear smaller at lower mag)
-        diameter = cp_cfg.get("diameter")
-        if isinstance(diameter, (int, float)) and diameter:
-            cp_cfg["diameter"] = max(1.0, float(diameter) * scale)
-
-    processing_cfg = new_cfg.get("processing")
-    if isinstance(processing_cfg, dict):
-        # tophat operates on original image BEFORE resize -> inverse scaling
-        radius = processing_cfg.get("tophat_radius")
-        if isinstance(radius, (int, float)) and radius:
-            processing_cfg["tophat_radius"] = int(max(1, round(float(radius) / scale)))
-        # All other processing params operate AFTER resize and scale with magnification
-        split_dist = processing_cfg.get("split_min_distance")
-        if isinstance(split_dist, (int, float)) and split_dist:
-            processing_cfg["split_min_distance"] = int(max(1, round(float(split_dist) * scale)))
-        split_area = processing_cfg.get("split_min_area")
-        if isinstance(split_area, (int, float)) and split_area:
-            processing_cfg["split_min_area"] = int(max(1, round(float(split_area) * area_scale)))
-
-    filters_cfg = new_cfg.get("filters")
-    if isinstance(filters_cfg, dict):
-        # Filters operate on resized image - scale with magnification
-        min_area = filters_cfg.get("min_area")
-        if isinstance(min_area, (int, float)) and min_area:
-            filters_cfg["min_area"] = int(max(1, round(float(min_area) * area_scale)))
-        max_area = filters_cfg.get("max_area")
-        if isinstance(max_area, (int, float)) and max_area:
-            filters_cfg["max_area"] = int(max(1, round(float(max_area) * area_scale)))
-
-    adv_cfg = new_cfg.get("advanced_filtering")
-    if isinstance(adv_cfg, dict):
-        # Advanced filtering operates on resized image - scale with magnification
-        block = adv_cfg.get("foreground_block_size")
-        if isinstance(block, (int, float)) and block:
-            block_scaled = int(max(3, round(float(block) * scale)))
-            # Ensure odd number
-            if block_scaled % 2 == 0:
-                block_scaled += 1
-            adv_cfg["foreground_block_size"] = block_scaled
-        offset = adv_cfg.get("foreground_offset")
-        if isinstance(offset, (int, float)) and offset:
-            adv_cfg["foreground_offset"] = int(round(float(offset) * scale))
-
-    overlays_cfg = new_cfg.get("overlays")
-    if isinstance(overlays_cfg, dict):
-        # Overlays operate on resized image - scale with magnification
-        line_width = overlays_cfg.get("line_width")
-        if isinstance(line_width, (int, float)) and line_width:
-            overlays_cfg["line_width"] = int(max(1, round(float(line_width) * scale)))
-
-    return new_cfg
+# -----------------------------
+# Fallback for magnification scaling if import failed
+# -----------------------------
+if _apply_magnification_scaling is None:
+    import copy as _copy
+    def _apply_magnification_scaling(cfg: dict) -> dict:
+        """Fallback: Return config unchanged if central function not available."""
+        return _copy.deepcopy(cfg or {})
 
 # -----------------------------
 # Cellpose v4 model loader
@@ -932,45 +856,45 @@ def _segment_dir(
             max_dimension = max(img_h, img_w)
             
             # Target: keep diameter between 3-30 pixels (Cellpose works best with diameter ~10-20)
-            # If diameter after scaling is too small, we need less aggressive downsampling
+            # Conservative max to prevent OOM: 1536px (vs previous 2048px)
+            max_safe_dimension = 1536
             target_diameter_min = 3.0
             
-            if diameter and diameter < target_diameter_min:
-                # Diameter is too small - we need to scale UP the image or reduce downsampling
+            if max_dimension > max_safe_dimension:
+                # Always downsample if image is larger than safe limit
+                downsample_factor = max_dimension / max_safe_dimension
+                new_h = int(img_h / downsample_factor)
+                new_w = int(img_w / downsample_factor)
+                new_diameter = diameter / downsample_factor if diameter else None
+                
+                if new_diameter and new_diameter < target_diameter_min:
+                    # After downsampling, diameter too small - find balance
+                    # Scale to achieve minimum diameter while staying under memory limit
+                    required_scale = target_diameter_min / diameter
+                    balanced_dimension = min(int(max_dimension * required_scale), max_safe_dimension)
+                    balanced_factor = max_dimension / balanced_dimension
+                    new_h = int(img_h / balanced_factor)
+                    new_w = int(img_w / balanced_factor)
+                    new_diameter = diameter / balanced_factor
+                    print(f"[INFO] {img_path.name}: balanced rescaling {img_w}x{img_h} -> {new_w}x{new_h}, diameter {diameter:.1f} -> {new_diameter:.1f} (target≥{target_diameter_min})")
+                else:
+                    print(f"[INFO] {img_path.name}: downsampling {img_w}x{img_h} -> {new_w}x{new_h} for memory, diameter {diameter:.1f} -> {new_diameter:.1f}")
+                
+                from skimage import transform
+                gray_raw = transform.resize(gray_raw, (new_h, new_w), preserve_range=True, anti_aliasing=True).astype(np.float32)
+                diameter = max(target_diameter_min, new_diameter) if new_diameter else diameter
+            elif diameter and diameter < target_diameter_min:
+                # Image is small enough but diameter is tiny - scale up (but cap at safe limit)
                 required_scale = target_diameter_min / diameter
                 target_dimension = int(max_dimension * required_scale)
-                print(f"[INFO] {img_path.name}: diameter {diameter} too small, scaling to maintain quality")
-                
-                # Limit maximum upscaling to prevent excessive memory use
-                max_safe_dimension = 2048
-                if target_dimension > max_safe_dimension:
-                    actual_scale = max_safe_dimension / max_dimension
-                    new_h = int(img_h * actual_scale)
-                    new_w = int(img_w * actual_scale)
-                    new_diameter = diameter * actual_scale
-                    print(f"[INFO] {img_path.name}: rescaling {img_w}x{img_h} -> {new_w}x{new_h}, diameter {diameter:.1f} -> {new_diameter:.1f}")
-                    from skimage import transform
-                    gray_raw = transform.resize(gray_raw, (new_h, new_w), preserve_range=True, anti_aliasing=True).astype(np.float32)
-                    diameter = max(3.0, new_diameter)
-                else:
-                    # Can scale up without hitting memory limit
+                if target_dimension <= max_safe_dimension:
                     new_h = int(img_h * required_scale)
                     new_w = int(img_w * required_scale)
                     print(f"[INFO] {img_path.name}: upscaling {img_w}x{img_h} -> {new_w}x{new_h} to maintain diameter {target_diameter_min:.1f}")
                     from skimage import transform
                     gray_raw = transform.resize(gray_raw, (new_h, new_w), preserve_range=True, anti_aliasing=True).astype(np.float32)
                     diameter = target_diameter_min
-            elif max_dimension > 3000:
-                # Image is very large - gentle downsampling to ~2048 max
-                max_safe_dimension = 2048
-                downsample_factor = max_dimension / max_safe_dimension
-                new_h = int(img_h / downsample_factor)
-                new_w = int(img_w / downsample_factor)
-                new_diameter = diameter / downsample_factor if diameter else None
-                print(f"[INFO] {img_path.name}: downsampling {img_w}x{img_h} -> {new_w}x{new_h} for memory, diameter {diameter:.1f} -> {new_diameter:.1f}")
-                from skimage import transform
-                gray_raw = transform.resize(gray_raw, (new_h, new_w), preserve_range=True, anti_aliasing=True).astype(np.float32)
-                diameter = max(3.0, new_diameter) if new_diameter else diameter
+                # else: keep original, diameter will be small but at least we won't OOM
             
             gray_proc = _preprocess_image(gray_raw, proc_img)
             gray_norm = _normalize_image(gray_proc)

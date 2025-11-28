@@ -15,6 +15,7 @@ import csv  # added
 import re
 from src.config_archiver import save_config_snapshot
 from werkzeug.utils import secure_filename
+from src.anova_analysis import run_anova_analysis
 
 app = Flask(__name__)
 
@@ -324,17 +325,25 @@ def _call_detection_assistant(user_notes: str | None = None) -> str:
     base_message += "\n\nGib Hinweise zu Risiken, Validierungen und moeglichen Parametern zum Anpassen."
     reply_text, _ = _call_assistant_chat([{'role': 'user', 'content': base_message}], include_detection=True)
     return reply_text
-def load_config():
-    """Laedt die Konfiguration aus config_analysis.yaml"""
-    config_path = 'config_analysis.yaml'
+def load_config(filename=None):
+    """Laedt die Konfiguration aus einer YAML-Datei"""
+    config_path = filename if filename else 'config_analysis.yaml'
+    # Security check: prevent directory traversal
+    if os.path.basename(config_path) != config_path:
+        config_path = 'config_analysis.yaml'
+        
     if os.path.exists(config_path):
         with open(config_path, 'r', encoding='utf-8') as f:
             return yaml.safe_load(f) or {}
     return {}
 
-def save_config(config):
-    """Speichert die Konfiguration in config_analysis.yaml"""
-    config_path = 'config_analysis.yaml'
+def save_config(config, filename=None):
+    """Speichert die Konfiguration in einer YAML-Datei"""
+    config_path = filename if filename else 'config_analysis.yaml'
+    # Security check
+    if os.path.basename(config_path) != config_path:
+        config_path = 'config_analysis.yaml'
+        
     with open(config_path, 'w', encoding='utf-8') as f:
         yaml.dump(config, f, default_flow_style=False, allow_unicode=True)
 
@@ -355,15 +364,15 @@ def load_czi_config():
         'rgb_channels': [0, 1, 2],
         'dtype': 'uint8',
         # NEW: stack layout + ImageJ hyperstack + channel names
-        'stack_layout': 'YXC',
+        'stack_layout': 'CYX',
         'imagej_hyperstack': True,
         'channel_names': [],
         # NEW
         'save_color_composite': True,
         'channel_colors': ['#ff0000', '#00ff00', '#0000ff', '#ffff00'],
         # NEW:
-        'save_multichannel_colored_pages': True,
-        'save_ome_tiff_colors': True,
+        'save_colored_pages': True,
+        'save_ome_colors': True,
         'verbose': False,  # NEW
     }
     if os.path.exists(CZI_CONFIG_PATH):
@@ -477,6 +486,7 @@ def run_analysis_thread(config):
     
     try:
         analysis_status['running'] = True
+        analysis_status['user_stopped'] = False
         analysis_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Analyse gestartet...")
         
         # Speichere temporaere Konfiguration
@@ -489,7 +499,7 @@ def run_analysis_thread(config):
             cmd.append('-v')
 
         # Starte Analyse-Skript mit gleichem Interpreter und explizitem Config-Pfad
-        analysis_process = subprocess.Popen(
+        proc = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -497,20 +507,27 @@ def run_analysis_thread(config):
             bufsize=1,
             cwd=os.getcwd()
         )
+        analysis_process = proc
         
         # Lese Output Zeile fuer Zeile
-        for line in analysis_process.stdout:
+        for line in proc.stdout:
             analysis_status['log'].append(line.strip())
             # Begrenze Log auf letzte 100 Zeilen
             if len(analysis_status['log']) > 100:
                 analysis_status['log'] = analysis_status['log'][-100:]
         
-        analysis_process.wait()
+        proc.wait()
         
-        if analysis_process.returncode == 0:
+        if proc.returncode == 0:
             analysis_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Analyse erfolgreich abgeschlossen!")
+        elif proc.returncode == -15:
+            if analysis_status.get('user_stopped'):
+                # Logged in stop_analysis already
+                pass
+            else:
+                analysis_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Analyse durch System beendet (SIGTERM)")
         else:
-            analysis_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Analyse fehlgeschlagen (Code: {analysis_process.returncode})")
+            analysis_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Analyse fehlgeschlagen (Code: {proc.returncode})")
             
     except Exception as e:
         analysis_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Fehler: {str(e)}")
@@ -533,6 +550,14 @@ def load_det_config():
             scope.setdefault('reference_magnification', 10)
             scope.setdefault('current_magnification', scope.get('reference_magnification', 10))
             cfg['microscope'] = scope
+            
+            # Ensure analysis config exists
+            analysis = cfg.setdefault('analysis', {})
+            if not isinstance(analysis, dict):
+                analysis = {}
+            analysis.setdefault('enable_anova', True)
+            cfg['analysis'] = analysis
+            
             return cfg
     return {
         'input_tiffs_dir': '',
@@ -738,16 +763,26 @@ def _build_cpsam_config(ui_cfg: dict, base: dict | None = None) -> dict:
 
     if inp_root:
         cfg.setdefault('paths', {})
+        # Preserve existing paths from config before attempting auto-detection
+        existing_pos = cfg.get('paths', {}).get('input_pos')
+        existing_neg = cfg.get('paths', {}).get('input_neg')
+        
         pos_dir = _guess_condition_dir(inp_root, pos_tokens)
         neg_dir = _guess_condition_dir(inp_root, neg_tokens, fallback_other=pos_dir or None)
+        
         if pos_dir:
             cfg['paths']['input_pos'] = pos_dir
-        else:
+        elif not existing_pos:
+            # Only remove if it wasn't already set in base config
             cfg['paths'].pop('input_pos', None)
+        # else: keep existing_pos
+        
         if neg_dir and (not pos_dir or not os.path.samefile(pos_dir, neg_dir)):
             cfg['paths']['input_neg'] = neg_dir
-        else:
+        elif not existing_neg:
+            # Only remove if it wasn't already set in base config
             cfg['paths'].pop('input_neg', None)
+        # else: keep existing_neg
     if out_root:
         cfg.setdefault('paths', {})
         cfg['paths']['output_root'] = out_root
@@ -1371,7 +1406,7 @@ def run_det_thread(cfg: dict):
             filters_base = copy.deepcopy(cpsam_cfg.get('filters', {}) or {})
             adv_base = copy.deepcopy(cpsam_cfg.get('advanced_filtering', {}) or {})
             proc_base = copy.deepcopy(cpsam_cfg.get('processing', {}) or {})
-            testing_base = copy.deepcopy(testing_cfg)
+            testing_base = copy.deepcopy(cpsam_cfg.get('testing') or {})
 
             variants = []
             if advanced_mode:
@@ -1528,6 +1563,16 @@ def run_det_thread(cfg: dict):
                             merged_path = _merge_master_csvs(out_root)
                             if merged_path:
                                 det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Master CSV saved: {merged_path}")
+                                
+                                # ANOVA Integration
+                                if cfg.get('analysis', {}).get('enable_anova', True):
+                                    try:
+                                        det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] Starte ANOVA Analyse...")
+                                        run_anova_analysis(str(merged_path), str(out_root))
+                                        det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] ANOVA Analyse abgeschlossen.")
+                                    except Exception as anova_err:
+                                        det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] WARN: ANOVA Analyse fehlgeschlagen: {anova_err}")
+
                             _prune_empty_dirs(out_root, keep={os.path.join(out_root, 'overlays'), os.path.join(out_root, 'masks')})
                     except Exception as post_err:
                         det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] WARN: Postprocess fehlgeschlagen (ch{ch_idx}): {post_err}")
@@ -1592,18 +1637,37 @@ def _safe_join(base: Path, *parts: str) -> Path:
 def _map_incoming_path(p: str) -> str:
     """
     Map incoming paths for the current runtime:
-    - Windows-style paths (e.g. C:\\...)          /mnt/<drive>/... (WSL)
-    - Leave /mnt/... and other POSIX paths unchanged
-    Note: Do NOT rewrite to /host_mnt; that is Docker-specific and breaks on native WSL.
+    - Windows-style paths (e.g. C:\\...) -> /mnt/<drive>/... (WSL)
+    - Docker volume mappings (heuristic)
     """
     if not p:
         return os.getcwd()
-    # Windows path -> WSL path
-    if '\\' in p and ':' in p:
+    
+    # Normalize slashes
+    p_norm = p.replace('\\', '/')
+    
+    # Heuristic: Map project root D:/Cell/Cell-Analysis to /app
+    # This handles the specific Docker volume mount case
+    if 'Cell/Cell-Analysis' in p_norm:
+        # Try to map to /app
+        # e.g. D:/Cell/Cell-Analysis/data -> /app/data
+        # or /mnt/d/Cell/Cell-Analysis/data -> /app/data
+        
+        # Split by the project folder name
+        parts = p_norm.split('Cell/Cell-Analysis')
+        if len(parts) > 1:
+            suffix = parts[1]
+            # If suffix starts with /data, we might want to map to /data directly if mounted
+            # But /app/data is also valid if . is mounted to /app
+            candidate = f"/app{suffix}"
+            return candidate
+
+    # Windows path -> WSL path (generic)
+    if ':' in p and (len(p) > 1 and p[1] == ':'):
         drive = p[0].lower()
         rest = p[2:].replace('\\', '/')
         return f"/mnt/{drive}/{rest}"
-    # Already POSIX (/mnt/..., /home/..., etc.)          leave as is
+        
     return p
 
 
@@ -1624,6 +1688,8 @@ def _refine_selected_image_reference(selected: str, input_root: str | None, path
     Removes duplicated leading folders (e.g. 'old/...' when condition path already points to /.../old).
     """
     if not selected:
+
+
         return selected
     cleaned = selected.strip().replace('\\', '/')
     if cleaned.startswith('./'):
@@ -1738,18 +1804,40 @@ def _candidate_dirs_from_config():
 def _virtual_roots_payload():
     """Build a virtual root listing of useful anchors."""
     anchors = _candidate_dirs_from_config()
+    # Always add container roots
+    anchors.extend(['/app', '/data', '/app/data', '/app/results'])
+    
     items = []
+    seen = set()
+    
     for a in anchors:
+        if not a: continue
+        # Normalize
+        try:
+            if os.path.exists(a):
+                a = os.path.abspath(a)
+        except Exception:
+            pass
+            
+        if a in seen: continue
+        seen.add(a)
+        
         name = a
         if a == '/app':
             name = 'APP (/app)'
+        elif a == '/data':
+            name = 'DATA (/data)'
         elif a == os.getcwd():
             name = f'WORKDIR ({a})'
         elif a.startswith('/host_mnt/'):
             name = a.replace('/host_mnt/', 'HOST ')
         elif a.startswith('/mnt/'):
             name = a.replace('/mnt/', 'WSL ')
-        items.append({'name': name, 'path': a, 'type': 'directory', 'isDir': True})
+            
+        # Only add if it actually exists or is a known root
+        if os.path.exists(a) or a in ['/app', '/data']:
+             items.append({'name': name, 'path': a, 'type': 'directory', 'isDir': True})
+             
     return jsonify({'current_path': '/', 'items': items})
 
 def _infer_region_token(path_str: str) -> str:
@@ -1910,14 +1998,14 @@ def download_czi_file():
     base = os.path.abspath(config.get('output_base', ''))
     req_path = request.args.get('path', '')
     if not base or not req_path:
-        return jsonify({'status': 'error', 'message': 'Pfad fehlt'}), 400
+        return jsonify({'error': 'Pfad fehlt'}), 400
 
     file_path = os.path.abspath(req_path)
     # Path traversal protection
     if not file_path.startswith(base):
-        return jsonify({'status': 'error', 'message': 'Pfad not erlaubt'}), 403
+        return jsonify({'error': 'Pfad not erlaubt'}), 403
     if not os.path.exists(file_path):
-        return jsonify({'status': 'error', 'message': 'Datei not gefunden'}), 404
+        return jsonify({'error': 'Datei not gefunden'}), 404
 
     return send_file(file_path, as_attachment=True, download_name=os.path.basename(file_path))
 
@@ -1936,7 +2024,7 @@ def download_czi_all_zip():
 
     # Packe rekursiv alle TIFFs mit relativen Pfaden
     with zipfile.ZipFile(zip_path, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
-        for root, _, files in os.walk(base):
+        for root, dirs, files in os.walk(base):
             for fn in files:
                 if not fn.lower().endswith(('.tif', '.tiff')):
                     continue
@@ -1965,8 +2053,9 @@ def download_czi_all_zip():
 @app.route('/api/config', methods=['GET'])
 def get_config():
     """Liefert die aktuelle Konfiguration"""
+    filename = request.args.get('file')
     try:
-        config = load_config() or {}
+        config = load_config(filename) or {}
         try:
             chan_cfg = config.get('channel_config')
             if not chan_cfg:
@@ -1998,8 +2087,9 @@ def get_config():
 @app.route('/api/config', methods=['POST'])
 def update_config():
     """Aktualisiert die Konfiguration"""
+    filename = request.args.get('file')
     config = request.json
-    save_config(config)
+    save_config(config, filename)
     return jsonify({'status': 'success', 'message': 'Konfiguration gespeichert'})
 
 @app.route('/api/start', methods=['POST'])
@@ -2028,6 +2118,9 @@ def stop_analysis():
         return jsonify({'status': 'error', 'message': 'Keine Analyse laeuft'}), 400
     
     if analysis_process:
+        # Set flag BEFORE terminating to ensure thread sees it if it wakes up fast
+        analysis_status['user_stopped'] = True
+        
         try:
             analysis_process.terminate()
             analysis_process.wait(timeout=5)
@@ -2118,6 +2211,17 @@ def download_all_coexpr_zip():
         return response
 
     return send_file(zip_path, as_attachment=True, download_name=os.path.basename(zip_path))
+
+@app.route('/api/config/list', methods=['GET'])
+def list_configs():
+    """Listet verfuegbare Konfigurationsdateien auf"""
+    try:
+        files = [f for f in os.listdir('.') if f.startswith('config_analysis') and f.endswith('.yaml')]
+        # Sort: config_analysis.yaml first, then others alphabetically
+        files.sort(key=lambda x: (x != 'config_analysis.yaml', x))
+        return jsonify({'files': files})
+    except Exception as e:
+        return jsonify({'error': str(e), 'files': []}), 500
 
 @app.route('/api/files/upload', methods=['POST'])
 def upload_files():
@@ -2345,7 +2449,14 @@ def _load_yaml(path: str) -> dict:
 @app.route('/api/det/config', methods=['GET'])
 def det_get_config():
     try:
-        cfg = load_det_config() or {}
+        path_arg = request.args.get('path')
+        if path_arg:
+            cfg = _load_yaml(path_arg)
+            if not isinstance(cfg, dict):
+                cfg = {}
+        else:
+            cfg = load_det_config() or {}
+            
         # merge shared regions from co-expression config
         try:
             co = load_config() or {}
@@ -2403,7 +2514,7 @@ def det_set_config():
         for block in ('paths', 'conditions', 'cellpose', 'filters',
                       'advanced_filtering', 'processing', 'overlays', 'outputs', 'microscope'):
             merged.setdefault(block, {})
-        # DO NOT scale before saving - keep baseline values, only scale at runtime
+        # DO NOT scale before saving - keep baseline values
         _save_yaml(DET_CPSAM_CONFIG_PATH, merged)
     except Exception as e:
         det_status['log'].append(f"[{datetime.now().strftime('%H:%M:%S')}] WARN: CPSAM-Config Merge fehlgeschlagen: {e}")
@@ -2988,48 +3099,6 @@ def det_download_all_overlays():
         return response
     return send_file(zip_path, as_attachment=True, download_name=os.path.basename(zip_path))
 
-
-if __name__ == '__main__':
-    # Erstelle templates Ordner falls nicht vorhanden
-    os.makedirs('templates', exist_ok=True)
-
-    print("Starting Cell Analysis Web Interface...")
-    print("Pipeline: CZI Conversion -> Cell Detection -> Co-Expression")
-    print("Open browser at: http://localhost:5000")
-    app.run(debug=True, host='0.0.0.0', port=5000)
-@app.route('/api/det/overlays/download-all')
-def det_download_all_overlays():
-    cfg = load_det_config()
-    base = os.path.abspath(cfg.get('output_results_dir',''))
-    if not base or not os.path.isdir(base):
-        return jsonify({'status':'error','message':'Output-Verzeichnis ungueltig'}), 400
-    tmp_dir = tempfile.mkdtemp(prefix='det_ov_')
-    ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-    zip_path = os.path.join(tmp_dir, f'detection_overlays_{ts}.zip')
-    with zipfile.ZipFile(zip_path, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
-        for root, _, files in os.walk(base):
-            if "__test__" in root:
-                continue
-            if os.path.basename(root) != 'overlays':
-                continue
-            for fn in files:
-                if not fn.lower().endswith('.png'):
-                    continue
-                full = os.path.join(root, fn)
-                abs_full = os.path.abspath(full)
-                if not abs_full.startswith(base):
-                    continue
-                rel = os.path.relpath(abs_full, base)
-                zf.write(abs_full, arcname=rel)
-    @after_this_request
-    def cleanup(response):
-        try:
-            if os.path.exists(zip_path): os.remove(zip_path)
-            if os.path.isdir(tmp_dir): os.rmdir(tmp_dir)
-        except Exception:
-            pass
-        return response
-    return send_file(zip_path, as_attachment=True, download_name=os.path.basename(zip_path))
 
 if __name__ == '__main__':
     # Erstelle templates Ordner falls nicht vorhanden

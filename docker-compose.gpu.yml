@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   cellanalysis:
     build:
@@ -22,5 +20,6 @@ services:
     gpus:
       - count: -1
     volumes:
-      - ${HOST_DATA:-./data}:/data:rw
+      - ./data:/data:rw
+      - ./results:/app/results:rw
       - .:/app:rw

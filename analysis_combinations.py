@@ -191,7 +191,21 @@ class Config:
                 return obj
             return dc_cls()
         paths = map_dc(Paths, data.get("paths"))
+        # Support flat config structure (from UI)
+        if data.get("input_dir"):
+            paths.base_results_dir = data.get("input_dir")
+        if data.get("output_dir"):
+            paths.output_dir = data.get("output_dir")
+
         ovp = map_dc(OverlayParams, data.get("overlay_params"))
+        # Support flat overlay params from UI (overlay_visualization)
+        if data.get("overlay_visualization"):
+             ovp_flat = map_dc(OverlayParams, data.get("overlay_visualization"))
+             for k in vars(ovp_flat):
+                 v = getattr(ovp_flat, k)
+                 if v is not None and v != "":
+                     setattr(ovp, k, v)
+
         overlay_colors = data.get("overlay_colors") or {}
         if isinstance(overlay_colors, dict):
             for key, val in overlay_colors.items():
@@ -247,6 +261,12 @@ class Config:
         if ovp.centroid_marker_size <= 0:
             ovp.centroid_marker_size = 40
         coexpr_raw = data.get("coexpression") or data.get("coexpr") or {}
+        # Merge root keys into coexpr_raw if not present (flat config support)
+        for k in ["coexpr_mode", "centroid_max_distance", "blend_base_color", "blend_other_color", "blend_overlap_color", "blend_overlap_fraction", "centroid_overlap_fraction"]:
+             if k in data and k not in coexpr_raw:
+                 target_k = "mode" if k == "coexpr_mode" else k
+                 coexpr_raw[target_k] = data[k]
+
         coexpr = map_dc(CoexpressionParams, coexpr_raw)
         mode = (getattr(coexpr, "mode", "") or "overlap").strip().lower()
         allowed_modes = ALLOWED_COEXPR_MODES
@@ -346,13 +366,30 @@ class Config:
         # Channel-Parsing wurde bereits oben durchgeführt (vor blend_channel_colors)
         
         testing_data = data.get("testing") or {}
-        test_mode = bool(testing_data.get("enabled", data.get("test_mode", False)))
-        raw_samples = testing_data.get("samples_per_channel", data.get("test_samples_per_channel", 0))
+        
+        # Handle test_mode from UI (dict or bool)
+        tm_val = data.get("test_mode")
+        if isinstance(tm_val, dict):
+            # UI sends test_mode as dict
+            test_mode = tm_val.get("type", "off") != "off"
+            raw_samples = tm_val.get("samples") or tm_val.get("samples_per_channel") or 0
+            raw_seed = tm_val.get("seed")
+            
+            # Also handle sweep params from test_mode dict if present
+            if "sweep_modes" in tm_val and tm_val["sweep_modes"]:
+                sweep.modes = tm_val["sweep_modes"]
+            if "sweep_sample" in tm_val:
+                sweep.sample_key = tm_val["sweep_sample"]
+        else:
+            test_mode = bool(testing_data.get("enabled", tm_val if tm_val is not None else False))
+            raw_samples = testing_data.get("samples_per_channel", data.get("test_samples_per_channel", 0))
+            raw_seed = testing_data.get("seed", data.get("test_seed"))
+        
         try:
             test_samples = int(raw_samples or 0)
         except Exception:
             test_samples = 0
-        raw_seed = testing_data.get("seed", data.get("test_seed"))
+
         if raw_seed in (None, ""):
             test_seed = None
         else:
@@ -592,8 +629,8 @@ def _color_to_rgb(color: str, default: Tuple[float, float, float]) -> np.ndarray
     return np.clip(rgb, 0.0, 1.0)
 
 REGION_FALLBACK_TOKENS = ("arc", "dmh", "gal", "pvh", "pos", "neg")
-CONDITION_POSITIVE_TOKENS = ("pos", "positive", "gal", "treated", "stim", "input_pos")
-CONDITION_NEGATIVE_TOKENS = ("neg", "negative", "dmh", "control", "vehicle", "input_neg")
+CONDITION_POSITIVE_TOKENS = ("pos", "positive", "treated", "stim", "input_pos")
+CONDITION_NEGATIVE_TOKENS = ("neg", "negative", "control", "vehicle", "input_neg")
 
 def _resolve_region_tokens(regions: Optional[Iterable[str]]) -> Set[str]:
     tokens = {str(tok).lower().strip() for tok in (regions or []) if str(tok).strip()}
@@ -637,14 +674,113 @@ def _extract_sample_metadata(key: str, region_tokens: Iterable[str]) -> Dict[str
     }
 
 
-def _infer_condition_from_path(path: Path) -> str:
+def _load_condition_map(base_dir: Path) -> Dict[str, str]:
+    """
+    Scans for All_Counts_Master.csv files in base_dir and builds a map:
+    - filename_stem -> condition
+    """
+    mapping = {}
+    print(f"[INFO] Loading condition map from {base_dir}...")
+    # Find all All_Counts_Master.csv files
+    try:
+        # 1. Try explicit conditions.csv in base_dir
+        explicit_map = base_dir / "conditions.csv"
+        if explicit_map.exists():
+            try:
+                df = pd.read_csv(explicit_map)
+                # flexible columns
+                key_col = next((c for c in df.columns if c.lower() in ("filename", "file", "key", "sample", "animal", "id")), None)
+                cond_col = next((c for c in df.columns if c.lower() in ("condition", "group", "cond")), None)
+                
+                if key_col and cond_col:
+                    for _, row in df.iterrows():
+                        k = str(row[key_col]).strip()
+                        c = str(row[cond_col]).strip()
+                        if k and c:
+                            mapping[k.lower()] = c.upper()
+                            # Also map stem if it's a path
+                            stem = Path(k).stem
+                            mapping[stem.lower()] = c.upper()
+                print(f"[INFO] Loaded {len(mapping)} entries from conditions.csv")
+            except Exception as e:
+                print(f"[WARN] Failed to read conditions.csv: {e}")
+
+        # 2. Scan for All_Counts_Master.csv files
+        csv_files = sorted(base_dir.rglob("All_Counts_Master.csv"))
+        print(f"[INFO] Found {len(csv_files)} All_Counts_Master.csv files.")
+        for csv_file in csv_files:
+            try:
+                df = pd.read_csv(csv_file)
+                if "filename" in df.columns and "condition" in df.columns:
+                    count = 0
+                    for _, row in df.iterrows():
+                        fname = str(row["filename"])
+                        cond = str(row["condition"]).strip()
+                        if not cond:
+                            continue
+                        
+                        # Extract stem from filename (e.g. "Arc/G520...tif" -> "G520...")
+                        fname_clean = fname.replace("\\", "/")
+                        stem = Path(fname_clean).stem
+                        mapping[stem.lower()] = cond.upper()
+                        
+                        # Also map animal ID (first token) if possible
+                        parts = stem.split("_")
+                        if parts:
+                            animal = parts[0]
+                            mapping[animal.lower()] = cond.upper()
+                        count += 1
+                    # print(f"[DEBUG] Loaded {count} entries from {csv_file.name}")
+            except Exception as e:
+                print(f"[WARN] Failed to read {csv_file}: {e}")
+                continue
+    except Exception as e:
+        print(f"[ERROR] Error loading condition map: {e}")
+        pass
+    
+    print(f"[INFO] Total condition map size: {len(mapping)}")
+    return mapping
+
+
+def _infer_condition_from_path(path: Path, condition_map: Optional[Dict[str, str]] = None, sample_key: str = "") -> str:
     parts = [p.lower() for p in path.parts]
+    
+    # Check for explicit conditions first
+    for cond in ["adult", "old"]:
+        if any(cond in part for part in parts):
+            return cond.upper()
+
     for token in CONDITION_POSITIVE_TOKENS:
         if any(token in part for part in parts):
             return "POS"
     for token in CONDITION_NEGATIVE_TOKENS:
         if any(token in part for part in parts):
             return "NEG"
+            
+    # Fallback: check map
+    if condition_map:
+        # Try sample key (stem)
+        if sample_key:
+            sk_lower = sample_key.lower()
+            if sk_lower in condition_map:
+                return condition_map[sk_lower]
+            
+            # Try removing region suffix (e.g. _arc, _dmh)
+            # We assume the key ends with _region
+            for region in REGION_FALLBACK_TOKENS:
+                suffix = f"_{region}"
+                if sk_lower.endswith(suffix):
+                    trimmed = sk_lower[:-len(suffix)]
+                    if trimmed in condition_map:
+                        return condition_map[trimmed]
+            
+            # Try animal ID (first token of key)
+            tokens = sample_key.split("_")
+            if tokens:
+                animal = tokens[0].lower()
+                if animal in condition_map:
+                    return condition_map[animal]
+
     return ""
 
 
@@ -656,6 +792,7 @@ def _run_coexpression_mode(
     sweep_label: Optional[str] = None,
 ) -> None:
     base = Path(cfg.paths.base_results_dir)
+    condition_map = _load_condition_map(base)
     _ensure_dir(out_root)
 
     params = CoexpressionParams(
@@ -929,7 +1066,7 @@ def _run_coexpression_mode(
                     base_props_cached or [],
                     min_fraction=current_overlap_fraction,
                 )
-            condition = _infer_condition_from_path(fpaths[0][1]) if fpaths else ""
+            condition = _infer_condition_from_path(fpaths[0][1], condition_map, key) if fpaths else ""
 
             labels = measure.label(co_mask.astype(np.uint8), connectivity=1)
             props = measure.regionprops(labels)
@@ -1015,7 +1152,7 @@ def _run_coexpression_mode(
                         style=cfg.overlay_params.overlay_style,
                         fill_alpha=cfg.overlay_params.fill_alpha,
                     )
-            if params.mode == "blend":
+            if params.mode == "blend" or overlay_style == "blend":
                 blend_png = out_dir / f"{key}_coexpr_blend.png"
                 blend_tif = out_dir / f"{key}_coexpr_blend.tif"
                 overlap_for_blend = blend_overlap_mask if blend_overlap_mask is not None else co_mask
@@ -1030,6 +1167,7 @@ def _run_coexpression_mode(
                     params.blend_channel_colors,
                     params.blend_other_color,
                     params.blend_overlap_color,
+                    background_img=base_preview,
                     min_overlap_fraction=overlap_fraction,
                     output_formats=params.blend_output_formats,
                 )
@@ -1263,21 +1401,32 @@ def _compute_coexpression_mask(
 
 
 def _write_coexpr_master_summary(base_out_root: Path) -> Optional[Path]:
+    print(f"[INFO] Generating master summary from {base_out_root}...")
     summary_paths = sorted(base_out_root.rglob("coexpr_summary.csv"))
     if not summary_paths:
+        print("[WARN] No coexpr_summary.csv files found.")
         return None
+    print(f"[INFO] Found {len(summary_paths)} summary files.")
     frames: List[pd.DataFrame] = []
     for csv_path in summary_paths:
         try:
             df = pd.read_csv(csv_path)
-        except Exception:
+        except Exception as e:
+            print(f"[WARN] Failed to read {csv_path}: {e}")
             continue
         if df is None or df.empty and not list(df.columns):
             continue
         frames.append(df)
     if not frames:
+        print("[WARN] No valid data frames collected.")
         return None
-    master = pd.concat(frames, ignore_index=True)
+    
+    try:
+        master = pd.concat(frames, ignore_index=True)
+    except Exception as e:
+        print(f"[ERROR] Failed to concat frames: {e}")
+        return None
+
     drop_cols = [c for c in ("source_relpath", "source_k", "source_combination", "source_mode_dir") if c in master.columns]
     if drop_cols:
         master = master.drop(columns=drop_cols)
@@ -1305,8 +1454,10 @@ def _write_coexpr_master_summary(base_out_root: Path) -> Optional[Path]:
     out_path = base_out_root / "coexpr_sweep_summary.csv"
     try:
         master.to_csv(out_path, index=False)
+        print(f"[INFO] Master summary written to {out_path}")
         return out_path
-    except Exception:
+    except Exception as e:
+        print(f"[ERROR] Failed to write master summary: {e}")
         return None
 
 def _load_channel_preview(base: Path, ch_idx: int, key: str, src_path: Path) -> Optional[np.ndarray]:
@@ -1629,11 +1780,6 @@ def _save_blend_mask(
     # Channel-Farben direkt verwenden (channel_color_map ist bereits korrekt aufbereitet)
     base_channel_id = combo_channels[base_idx] if base_idx < len(combo_channels) else combo_channels[0]
     
-    # DEBUG: Print color mapping
-    print(f"[DEBUG BLEND] base_channel_id={base_channel_id}, combo_channels={combo_channels}")
-    print(f"[DEBUG BLEND] channel_color_map={channel_color_map}")
-    print(f"[DEBUG BLEND] base_color={base_color}, other_color={other_color}, overlap_color={overlap_color}")
-    
     # Partner-Masken sammeln
     partner_masks: List[Tuple[int, np.ndarray]] = []
     for idx, mask in enumerate(mask_list):
@@ -1643,28 +1789,35 @@ def _save_blend_mask(
         partner_masks.append((combo_channels[idx], cur))
     
     # Basis-Zellen labeln für zellweise Overlap-Prüfung
-    base_label = measure.label(base_mask.astype(bool), connectivity=1)
-    base_props = measure.regionprops(base_label)
-    
-    # Mehrfach-Positive identifizieren (mit Threshold)
-    overlap_bool = np.zeros_like(base_mask, dtype=bool)
-    
-    for prop in base_props:
-        cell_mask = base_label == prop.label
-        cell_area = max(int(prop.area), 1)
+    # Use passed overlap_mask if available to avoid recalculation and ensure consistency
+    if overlap_mask is not None and np.any(overlap_mask):
+        overlap_bool = np.asarray(overlap_mask, dtype=bool)
+        # Ensure overlap_bool matches base_mask shape
+        if overlap_bool.shape != base_mask.shape:
+             overlap_bool = _resize_bool(overlap_bool, base_mask.shape)
+    else:
+        base_label = measure.label(base_mask.astype(bool), connectivity=1)
+        base_props = measure.regionprops(base_label)
         
-        # Prüfe Overlap mit ALLEN Partner-Kanälen
-        is_multi_positive = True
-        for ch_idx, partner_mask in partner_masks:
-            overlap_pixels = cell_mask & partner_mask
-            overlap_ratio = float(overlap_pixels.sum()) / cell_area
+        # Mehrfach-Positive identifizieren (mit Threshold)
+        overlap_bool = np.zeros_like(base_mask, dtype=bool)
+        
+        for prop in base_props:
+            cell_mask = base_label == prop.label
+            cell_area = max(int(prop.area), 1)
             
-            if overlap_ratio < min_overlap_fraction:
-                is_multi_positive = False
-                break
-        
-        if is_multi_positive:
-            overlap_bool[cell_mask] = True
+            # Prüfe Overlap mit ALLEN Partner-Kanälen
+            is_multi_positive = True
+            for ch_idx, partner_mask in partner_masks:
+                overlap_pixels = cell_mask & partner_mask
+                overlap_ratio = float(overlap_pixels.sum()) / cell_area
+                
+                if overlap_ratio < min_overlap_fraction:
+                    is_multi_positive = False
+                    break
+            
+            if is_multi_positive:
+                overlap_bool[cell_mask] = True
     
     # Kategorien erstellen
     base_only = base_mask & ~overlap_bool
@@ -1682,27 +1835,40 @@ def _save_blend_mask(
     label[overlap_bool] = 3
     
     # Basis-Bild für Hintergrund
-    display = None
-    if background_img is not None:
-        display = _extract_background(background_img)
-    if display is None or display.size == 0:
-        display = base_mask.astype(np.float32)
-    blend = _prepare_display(display)
+    # display = None
+    # if background_img is not None:
+    #     display = _extract_background(background_img)
+    # if display is None or display.size == 0:
+    #     display = base_mask.astype(np.float32)
     
+    # User requested to remove background channel, so we use a black image
+    display = np.zeros_like(base_mask, dtype=np.float32)
+    blend = _prepare_display(display)
+    target_shape = blend.shape[:2]
+    
+    # Ensure channel_color_map has int keys to avoid lookup failures
+    if channel_color_map:
+        channel_color_map = {int(k): v for k, v in channel_color_map.items()}
+
     # Farben anwenden - Basis-Kanal in seiner Farbe (exakt wie eingestellt, ohne Transparenz)
-    base_color_value = channel_color_map.get(base_channel_id, base_color)
-    blend = _apply_colored_fill(blend, base_only, base_color_value, alpha=1.0)
+    # Prioritize channel_color_map, fallback to base_color only if missing
+    base_color_value = channel_color_map.get(base_channel_id) or base_color
+    base_only_rs = _resize_bool(base_only, target_shape)
+    blend = _apply_colored_fill(blend, base_only_rs, base_color_value, alpha=1.0)
     
     # Jeder Partner-Kanal bekommt seine eigene Farbe (exakt wie eingestellt, ohne Transparenz)
     for ch_idx, ch_mask in partner_masks:
         partner_only = ch_mask & ~overlap_bool & ~base_mask
         if not partner_only.any():
             continue
-        partner_color = channel_color_map.get(ch_idx, other_color)
-        blend = _apply_colored_fill(blend, partner_only, partner_color, alpha=1.0)
+        partner_only_rs = _resize_bool(partner_only, target_shape)
+        # Prioritize channel_color_map, fallback to other_color only if missing
+        partner_color = channel_color_map.get(ch_idx) or other_color
+        blend = _apply_colored_fill(blend, partner_only_rs, partner_color, alpha=1.0)
     
     # Mehrfach-Positive in overlap_color highlighten (exakt wie eingestellt, ohne Transparenz)
-    blend = _apply_colored_fill(blend, overlap_bool, overlap_color, alpha=1.0)
+    overlap_bool_rs = _resize_bool(overlap_bool, target_shape)
+    blend = _apply_colored_fill(blend, overlap_bool_rs, overlap_color, alpha=1.0)
     
     # Speichere in gewählten Formaten
     _ensure_dir(out_png.parent)
@@ -1711,27 +1877,21 @@ def _save_blend_mask(
     for fmt in formats:
         if fmt == "png":
             out_file = out_png.with_suffix('.png')
-            try:
-                blend_uint16 = (np.clip(blend, 0.0, 1.0) * 65535).astype(np.uint16)
-                skio.imsave(str(out_file), blend_uint16, check_contrast=False)
-            except Exception:
-                pass
+            # Use uint8 for PNG to ensure compatibility with PIL/imageio
+            blend_uint8 = (np.clip(blend, 0.0, 1.0) * 255).astype(np.uint8)
+            skio.imsave(str(out_file), blend_uint8, check_contrast=False)
         elif fmt in ("tiff", "tif"):
             out_file = out_png.with_suffix('.tif')
-            try:
-                blend_uint8 = (np.clip(blend, 0.0, 1.0) * 255).astype(np.uint8)
-                if blend_uint8.ndim == 2:
-                    blend_uint8 = np.stack([blend_uint8] * 3, axis=-1)
-                tiff.imwrite(str(out_file), blend_uint8, photometric="rgb")
-            except Exception:
-                pass
+            # Removed try-except to expose errors
+            blend_uint8 = (np.clip(blend, 0.0, 1.0) * 255).astype(np.uint8)
+            if blend_uint8.ndim == 2:
+                blend_uint8 = np.stack([blend_uint8] * 3, axis=-1)
+            tiff.imwrite(str(out_file), blend_uint8, photometric="rgb")
         elif fmt in ("jpg", "jpeg"):
             out_file = out_png.with_suffix('.jpg')
-            try:
-                blend_uint8 = (np.clip(blend, 0.0, 1.0) * 255).astype(np.uint8)
-                skio.imsave(str(out_file), blend_uint8, check_contrast=False, quality=95)
-            except Exception:
-                pass
+            # Removed try-except to expose errors
+            blend_uint8 = (np.clip(blend, 0.0, 1.0) * 255).astype(np.uint8)
+            skio.imsave(str(out_file), blend_uint8, check_contrast=False, quality=95)
 
 
 def _save_centroid_heatmap(
