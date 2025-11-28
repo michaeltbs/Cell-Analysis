@@ -850,12 +850,27 @@ def _segment_dir(
             cp_base_cfg = cfg_img.get("cellpose", {}) or {}
             resize_max = int(cp_base_cfg.get("resize_max", 2048) or 2048)
             
-            # Apply image-aware scaling (considers both image size and magnification)
-            cfg_scaled, scale_info = apply_image_aware_scaling(
-                cfg_img, 
-                image_shape=(img_h, img_w),
-                resize_max=resize_max
-            )
+            # Check if image-aware scaling is enabled (default: True)
+            use_image_aware_scaling = img_scope.get("image_aware_scaling", True)
+            if isinstance(use_image_aware_scaling, str):
+                use_image_aware_scaling = use_image_aware_scaling.lower() in ("true", "1", "yes")
+            
+            # Apply image-aware scaling if enabled (considers both image size and magnification)
+            if use_image_aware_scaling:
+                cfg_scaled, scale_info = apply_image_aware_scaling(
+                    cfg_img, 
+                    image_shape=(img_h, img_w),
+                    resize_max=resize_max
+                )
+            else:
+                # Fallback: just use magnification scaling without image-size awareness
+                cfg_scaled = copy.deepcopy(cfg_img)
+                scale_info = {
+                    "effective_diameter": cfg_scaled.get("cellpose", {}).get("diameter", 30),
+                    "resize_factor": 1.0,
+                    "combined_scale": 1.0,
+                    "quality_warning": None
+                }
 
             cp_img = cfg_scaled.get("cellpose", {}) or {}
             proc_img = cfg_scaled.get("processing", {}) or {}

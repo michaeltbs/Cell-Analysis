@@ -459,6 +459,14 @@
                   </select>
                 </label>
                 <label class="flex flex-col">
+                  <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Image-Aware Scaling</p>
+                  <select id="det_image_aware_scaling" class="form-select w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm">
+                    <option value="true" selected>Enabled</option>
+                    <option value="false">Disabled</option>
+                  </select>
+                  <p class="text-neutral-500 text-xs mt-1">Adjusts diameter based on image size + magnification</p>
+                </label>
+                <label class="flex flex-col">
                   <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Reference Mag</p>
                   <input id="det_ref_mag" type="number" step="0.1" value="10" class="form-input w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm"/>
                 </label>
@@ -1307,8 +1315,9 @@ async function loadDetConfig(specificPath){
     m('det_use_gpu', String(!!cfg.use_gpu));
     m('det_batch_size', cfg.batch_size==null?'8':cfg.batch_size);
 
-    // Microscope
+    // Microscope & Scaling
     m('det_auto_mag_from_path', String(cfg.auto_mag_from_path !== false));
+    m('det_image_aware_scaling', String(cfg.image_aware_scaling !== false));
     m('det_ref_mag', cfg.ref_mag || 10);
     m('det_cur_mag', cfg.cur_mag || 10);
 
@@ -1667,8 +1676,9 @@ function buildDetConfigPayload(){
     det_channel_selection: channelSelection,
     channel_levels: channelLevels,
     
-    // New fields
+    // Microscope & Scaling settings
     auto_mag_from_path: document.getElementById('det_auto_mag_from_path')?.value === 'true',
+    image_aware_scaling: document.getElementById('det_image_aware_scaling')?.value === 'true',
     ref_mag: toFloat(document.getElementById('det_ref_mag')?.value),
     cur_mag: toFloat(document.getElementById('det_cur_mag')?.value),
     

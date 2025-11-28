@@ -2792,6 +2792,8 @@ def det_start():
                     scope_block['reference_magnification'] = float(payload['reference_magnification'])
                 except Exception:
                     pass
+            if 'image_aware_scaling' in payload:
+                scope_block['image_aware_scaling'] = _as_bool(payload['image_aware_scaling'])
     else:
         ensure_nested(cfg)
 

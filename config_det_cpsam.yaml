@@ -31,6 +31,7 @@ filters:
 microscope:
   auto_from_path: true
   current_magnification: 10.0
+  image_aware_scaling: true
   reference_magnification: 10.0
 outputs:
   base_name: cell_analysis
