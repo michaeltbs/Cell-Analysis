@@ -616,6 +616,8 @@ def _default_cpsam_config() -> dict:
         },
         'enable_advanced_filtering': True,
         'advanced_filtering': {
+            'intensity_mode': 'max',
+            'max_intensity_threshold': 0.1,
             'snr_min': 1.1,
             'abs_floor_percentile': 75,
             'foreground_block_size': 501,

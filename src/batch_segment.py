@@ -426,9 +426,10 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
 
     remove_edge = bool(proc_cfg.get("remove_edge_cells", False))
     
-    # New: Use max_intensity for bright cell detection (prevents filtering bright cells)
-    use_max_intensity = bool(adv_cfg.get("use_max_intensity_fallback", True))
-    bright_cell_threshold = float(adv_cfg.get("bright_cell_threshold", 0.8) or 0.8)
+    # Intensity mode: "max" = use max_intensity, "mean" = use mean_intensity, "both" = use both
+    intensity_mode = str(adv_cfg.get("intensity_mode", "max") or "max").lower()
+    # Threshold for max_intensity filter (percentage of global max, e.g. 0.1 = 10%)
+    max_intensity_threshold = float(adv_cfg.get("max_intensity_threshold", 0.1) or 0.1)
 
     flat = gray_norm[np.isfinite(gray_norm)]
     if flat.size == 0:
@@ -445,8 +446,10 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
     if not np.isfinite(bg_std) or bg_std < 1e-6:
         bg_std = 1e-6
     
-    # Compute global intensity max for bright cell detection
+    # Compute global intensity stats for threshold calculation
     global_max = float(np.percentile(flat, 99.5))
+    global_min = float(np.percentile(flat, 1))
+    intensity_range = global_max - global_min if global_max > global_min else 1.0
 
     snr_min = float(adv_cfg.get("snr_min", 0.0) or 0.0)
 
@@ -456,14 +459,15 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
         "initial": len(props),
         "removed": 0,
         "removed_area": 0,
-        "removed_bright": 0,  # Track how many bright cells were saved
         "kept": 0,
+        "intensity_mode": intensity_mode,
     }
     
     # Track filter reasons for debugging
     filter_reasons: Dict[str, int] = {
         "min_area": 0, "max_area": 0, "circularity": 0, "hole_ratio": 0,
-        "edge": 0, "intensity": 0, "bg_floor": 0, "snr": 0
+        "edge": 0, "intensity": 0, "intensity_max": 0, "intensity_mean": 0, 
+        "bg_floor": 0, "snr": 0
     }
 
     for region in props:
@@ -503,32 +507,40 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
         mean_intensity = float(region.mean_intensity or 0.0)
         max_intensity = float(region.max_intensity or 0.0) if hasattr(region, 'max_intensity') else mean_intensity
         
-        # Check if this is a bright cell (should be kept even if other filters would remove it)
-        is_bright_cell = use_max_intensity and (max_intensity >= global_max * bright_cell_threshold)
+        # Calculate relative max intensity (0-1 range based on global intensity range)
+        rel_max_intensity = (max_intensity - global_min) / intensity_range if intensity_range > 0 else 0.0
         
-        if keep and mean_intensity_threshold > 0.0 and mean_intensity < mean_intensity_threshold:
-            if not is_bright_cell:
+        # Apply intensity filter based on mode
+        if keep and intensity_mode == "max":
+            # Use only max_intensity for filtering - best for fluorescent signals
+            if rel_max_intensity < max_intensity_threshold:
+                keep = False
+                filter_reason = "intensity_max"
+        elif keep and intensity_mode == "mean":
+            # Use only mean_intensity (legacy behavior)
+            if mean_intensity_threshold > 0.0 and mean_intensity < mean_intensity_threshold:
+                keep = False
+                filter_reason = "intensity_mean"
+        elif keep and intensity_mode == "both":
+            # Cell must pass both thresholds
+            if rel_max_intensity < max_intensity_threshold or (mean_intensity_threshold > 0.0 and mean_intensity < mean_intensity_threshold):
                 keep = False
                 filter_reason = "intensity"
 
+        # Advanced filtering (SNR and background floor) - now uses max_intensity when mode is "max"
         if keep and enable_adv:
-            if mean_intensity <= bg_floor:
-                # Allow bright cells even if mean is below floor (can happen with bright spots)
-                if not is_bright_cell:
-                    keep = False
-                    filter_reason = "bg_floor"
+            check_intensity = max_intensity if intensity_mode == "max" else mean_intensity
+            if check_intensity <= bg_floor:
+                keep = False
+                filter_reason = "bg_floor"
             else:
-                snr = (mean_intensity - bg_mean) / (bg_std + 1e-6)
+                snr = (check_intensity - bg_mean) / (bg_std + 1e-6)
                 if snr < snr_min:
-                    # Allow very bright cells even with low SNR
-                    if not is_bright_cell:
-                        keep = False
-                        filter_reason = "snr"
+                    keep = False
+                    filter_reason = "snr"
 
         if keep:
             keep_labels.append(region.label)
-            if is_bright_cell and filter_reason is not None:
-                stats["removed_bright"] += 1  # Was saved due to brightness
         else:
             stats["removed"] += 1
             stats["removed_area"] += area
@@ -1016,12 +1028,10 @@ def _segment_dir(
                 if filter_stats.get("removed"):
                     reasons = filter_stats.get("filter_reasons", {})
                     reasons_str = ", ".join(f"{k}={v}" for k, v in reasons.items() if v > 0)
-                    saved_bright = filter_stats.get("removed_bright", 0)
-                    msg = f"[INFO] {img_path.name}: filtered {filter_stats['removed']} cells (kept {filter_stats.get('kept', 0)})"
+                    mode_info = filter_stats.get("intensity_mode", "max")
+                    msg = f"[INFO] {img_path.name}: filtered {filter_stats['removed']} cells (kept {filter_stats.get('kept', 0)}, mode={mode_info})"
                     if reasons_str:
                         msg += f" [{reasons_str}]"
-                    if saved_bright > 0:
-                        msg += f" (saved {saved_bright} bright cells)"
                     print(msg)
                 masks_arr = filtered_mask
 

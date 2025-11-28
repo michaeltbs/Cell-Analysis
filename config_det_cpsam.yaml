@@ -1,11 +1,11 @@
 advanced_filtering:
   abs_floor_percentile: 74
-  bright_cell_threshold: 0.8
   enable_advanced: false
   foreground_block_size: 501
   foreground_offset: 15
+  intensity_mode: max
+  max_intensity_threshold: 0.1
   snr_min: 2
-  use_max_intensity_fallback: true
 cell_filtering: {}
 cellpose:
   batch_size: 4

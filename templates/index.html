@@ -483,6 +483,53 @@
             </div>
           </details>
 
+          <!-- Intensity Filtering -->
+          <details class="flex flex-col rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-background-dark/50 group">
+            <summary class="flex cursor-pointer items-center justify-between gap-6 p-4">
+              <div class="flex flex-col">
+                <p class="text-black dark:text-white text-base font-medium leading-normal">Intensity Filtering</p>
+                <p class="text-neutral-500 dark:text-neutral-400 text-sm">How cells are evaluated by brightness</p>
+              </div>
+              <span class="material-symbols-outlined text-neutral-600 dark:text-neutral-400 group-open:rotate-180 transition-transform">expand_more</span>
+            </summary>
+            <div class="p-4 border-t border-neutral-200 dark:border-neutral-800">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <label class="flex flex-col">
+                  <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Intensity Mode</p>
+                  <select id="det_cpsam_intensity_mode" class="form-select w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm">
+                    <option value="max" selected>Max Intensity (recommended)</option>
+                    <option value="mean">Mean Intensity</option>
+                    <option value="both">Both (stricter)</option>
+                  </select>
+                  <p class="text-neutral-500 text-xs mt-1">Max: best for fluorescent signals, keeps bright cells</p>
+                </label>
+                <label class="flex flex-col">
+                  <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Max Intensity Threshold</p>
+                  <input id="det_cpsam_max_intensity_threshold" type="number" step="0.01" min="0" max="1" value="0.1" class="form-input w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm"/>
+                  <p class="text-neutral-500 text-xs mt-1">0-1, cells below this % of global max are filtered (0.1 = 10%)</p>
+                </label>
+                <label class="flex flex-col">
+                  <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Enable Advanced Filters</p>
+                  <select id="det_cpsam_enable_adv" class="form-select w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm">
+                    <option value="false" selected>Disabled</option>
+                    <option value="true">Enabled</option>
+                  </select>
+                  <p class="text-neutral-500 text-xs mt-1">Additional SNR and background floor filtering</p>
+                </label>
+                <label class="flex flex-col">
+                  <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">SNR Minimum</p>
+                  <input id="det_cpsam_snr_min" type="number" step="0.1" min="0" value="2" class="form-input w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm"/>
+                  <p class="text-neutral-500 text-xs mt-1">Signal-to-noise ratio threshold (only if advanced enabled)</p>
+                </label>
+                <label class="flex flex-col">
+                  <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Background Floor %</p>
+                  <input id="det_cpsam_abs_floor" type="number" step="1" min="0" max="100" value="74" class="form-input w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm"/>
+                  <p class="text-neutral-500 text-xs mt-1">Percentile for background estimation (only if advanced enabled)</p>
+                </label>
+              </div>
+            </div>
+          </details>
+
           <!-- Post-Processing -->
           <details class="flex flex-col rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-background-dark/50 group">
             <summary class="flex cursor-pointer items-center justify-between gap-6 p-4">
@@ -1423,6 +1470,8 @@ async function loadDetConfig(specificPath){
     
     const cadv = cp.advanced_filtering || {};
     m('det_cpsam_enable_adv', String(cadv.enable_advanced !== false));
+    m('det_cpsam_intensity_mode', cadv.intensity_mode || 'max');
+    m('det_cpsam_max_intensity_threshold', cadv.max_intensity_threshold || '0.1');
     m('det_cpsam_snr_min', cadv.snr_min || '');
     m('det_cpsam_abs_floor', cadv.abs_floor_percentile || '');
     m('det_cpsam_fg_block', cadv.foreground_block_size || '');
@@ -1745,6 +1794,8 @@ function buildDetConfigPayload(){
       },
       advanced_filtering: {
         enable_advanced: document.getElementById('det_cpsam_enable_adv')?.value === 'true',
+        intensity_mode: document.getElementById('det_cpsam_intensity_mode')?.value || 'max',
+        max_intensity_threshold: toFloat(document.getElementById('det_cpsam_max_intensity_threshold')?.value) || 0.1,
         snr_min: toFloat(document.getElementById('det_cpsam_snr_min')?.value),
         abs_floor_percentile: toInt(document.getElementById('det_cpsam_abs_floor')?.value),
         foreground_block_size: toInt(document.getElementById('det_cpsam_fg_block')?.value),
