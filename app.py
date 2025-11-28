@@ -88,16 +88,16 @@ DET_CPSAM_CONFIG_PATH = 'config_det_cpsam.yaml'
 AI_CONFIG_PATH = 'config_ai.yaml'
 
 SENSITIVITY_LEVELS = [
-    {"label": "Level 1 - Strict", "cellprob": 0.64, "flow": 0.80, "snr": 3.30, "floor_pct": 92, "abs_int": 35, "itf": 0.36},
-    {"label": "Level 2 - Semi-strict", "cellprob": 0.5511, "flow": 0.6978, "snr": 3.03, "floor_pct": 85.8, "abs_int": 31.89, "itf": 0.4889},
-    {"label": "Level 3 - Balanced", "cellprob": 0.4622, "flow": 0.5956, "snr": 2.77, "floor_pct": 79.6, "abs_int": 28.78, "itf": 0.6178},
-    {"label": "Level 4 - Balanced+", "cellprob": 0.3733, "flow": 0.4933, "snr": 2.50, "floor_pct": 73.3, "abs_int": 25.67, "itf": 0.7467},
-    {"label": "Level 5 - Moderate", "cellprob": 0.2844, "flow": 0.3911, "snr": 2.23, "floor_pct": 67.1, "abs_int": 22.56, "itf": 0.8756},
-    {"label": "Level 6 - Medium-high", "cellprob": 0.1956, "flow": 0.2889, "snr": 1.97, "floor_pct": 60.9, "abs_int": 19.44, "itf": 1.0044},
-    {"label": "Level 7 - Sensitive", "cellprob": 0.1067, "flow": 0.1867, "snr": 1.70, "floor_pct": 54.7, "abs_int": 16.33, "itf": 1.1333},
-    {"label": "Level 8 - High sensitivity", "cellprob": 0.0178, "flow": 0.0844, "snr": 1.43, "floor_pct": 48.4, "abs_int": 13.22, "itf": 1.2622},
-    {"label": "Level 9 - Very high sensitivity", "cellprob": -0.0711, "flow": -0.0178, "snr": 1.17, "floor_pct": 42.2, "abs_int": 10.11, "itf": 1.3911},
-    {"label": "Level 10 - Ultra sensitive", "cellprob": -0.16, "flow": -0.12, "snr": 0.90, "floor_pct": 36, "abs_int": 7, "itf": 1.52},
+    {"label": "Level 1 - Strict", "cellprob": 0.64, "flow": 0.80, "snr": 3.30, "floor_pct": 92, "abs_int": 35, "itf": 0.36, "int_mode": "max", "max_int_thr": 0.3},
+    {"label": "Level 2 - Semi-strict", "cellprob": 0.5511, "flow": 0.6978, "snr": 3.03, "floor_pct": 85.8, "abs_int": 31.89, "itf": 0.4889, "int_mode": "max", "max_int_thr": 0.25},
+    {"label": "Level 3 - Balanced", "cellprob": 0.4622, "flow": 0.5956, "snr": 2.77, "floor_pct": 79.6, "abs_int": 28.78, "itf": 0.6178, "int_mode": "max", "max_int_thr": 0.2},
+    {"label": "Level 4 - Balanced+", "cellprob": 0.3733, "flow": 0.4933, "snr": 2.50, "floor_pct": 73.3, "abs_int": 25.67, "itf": 0.7467, "int_mode": "max", "max_int_thr": 0.15},
+    {"label": "Level 5 - Moderate", "cellprob": 0.2844, "flow": 0.3911, "snr": 2.23, "floor_pct": 67.1, "abs_int": 22.56, "itf": 0.8756, "int_mode": "max", "max_int_thr": 0.12},
+    {"label": "Level 6 - Medium-high", "cellprob": 0.1956, "flow": 0.2889, "snr": 1.97, "floor_pct": 60.9, "abs_int": 19.44, "itf": 1.0044, "int_mode": "max", "max_int_thr": 0.1},
+    {"label": "Level 7 - Sensitive", "cellprob": 0.1067, "flow": 0.1867, "snr": 1.70, "floor_pct": 54.7, "abs_int": 16.33, "itf": 1.1333, "int_mode": "max", "max_int_thr": 0.08},
+    {"label": "Level 8 - High sensitivity", "cellprob": 0.0178, "flow": 0.0844, "snr": 1.43, "floor_pct": 48.4, "abs_int": 13.22, "itf": 1.2622, "int_mode": "max", "max_int_thr": 0.05},
+    {"label": "Level 9 - Very high sensitivity", "cellprob": -0.0711, "flow": -0.0178, "snr": 1.17, "floor_pct": 42.2, "abs_int": 10.11, "itf": 1.3911, "int_mode": "max", "max_int_thr": 0.03},
+    {"label": "Level 10 - Ultra sensitive", "cellprob": -0.16, "flow": -0.12, "snr": 0.90, "floor_pct": 36, "abs_int": 7, "itf": 1.52, "int_mode": "max", "max_int_thr": 0.01},
 ]
 
 def _normalize_channel_levels(raw):
@@ -1464,6 +1464,8 @@ def run_det_thread(cfg: dict):
                     filters_block['intensity_threshold_factor'] = round(level_info['itf'], 4)
                     adv_block['snr_min'] = round(level_info['snr'], 2)
                     adv_block['abs_floor_percentile'] = int(round(level_info['floor_pct']))
+                    adv_block['intensity_mode'] = level_info.get('int_mode', 'max')
+                    adv_block['max_intensity_threshold'] = round(level_info.get('max_int_thr', 0.1), 2)
                     proc_block['intensity_threshold'] = int(round(level_info['abs_int']))
                 elif channel_level_info is not None:
                     cp_block['flow_threshold'] = round(channel_level_info['flow'], 4)
@@ -1471,6 +1473,8 @@ def run_det_thread(cfg: dict):
                     filters_block['intensity_threshold_factor'] = round(channel_level_info['itf'], 4)
                     adv_block['snr_min'] = round(channel_level_info['snr'], 2)
                     adv_block['abs_floor_percentile'] = int(round(channel_level_info['floor_pct']))
+                    adv_block['intensity_mode'] = channel_level_info.get('int_mode', 'max')
+                    adv_block['max_intensity_threshold'] = round(channel_level_info.get('max_int_thr', 0.1), 2)
                     proc_block['intensity_threshold'] = int(round(channel_level_info['abs_int']))
 
                 tmp_cfg_path = None

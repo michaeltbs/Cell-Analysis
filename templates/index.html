@@ -1264,16 +1264,16 @@ function toArray(input){
 }
 
 const SENSITIVITY_LEVELS=[
-  {label:'Level 1    Only brightest',         cellprob:0.90, flow:1.10, snr:4.2, floorPct:98, absInt:45, itf:0.10},
-  {label:'Level 2    Very conservative',      cellprob:0.78, flow:0.95, snr:3.8, floorPct:95, absInt:40, itf:0.22},
-  {label:'Level 3    Strict',                 cellprob:0.64, flow:0.80, snr:3.3, floorPct:92, absInt:35, itf:0.36},
-  {label:'Level 4    Semi-strict',            cellprob:0.50, flow:0.65, snr:2.8, floorPct:88, absInt:30, itf:0.52},
-  {label:'Level 5    Balanced',               cellprob:0.36, flow:0.50, snr:2.3, floorPct:82, absInt:25, itf:0.72},
-  {label:'Level 6    Moderate sensitivity',   cellprob:0.20, flow:0.32, snr:2.0, floorPct:74, absInt:21, itf:0.92},
-  {label:'Level 7    Liberal',                cellprob:0.04, flow:0.15, snr:1.6, floorPct:64, absInt:16, itf:1.12},
-  {label:'Level 8    Very liberal',           cellprob:-0.08, flow:0.00, snr:1.2, floorPct:45, absInt:10, itf:1.32},
-  {label:'Level 9    High sensitivity',       cellprob:-0.16, flow:-0.12, snr:0.9, floorPct:36, absInt:7, itf:1.52},
-  {label:'Level 10    Counts very weak',      cellprob:-0.24, flow:-0.22, snr:0.6, floorPct:20, absInt:3, itf:1.72}
+  {label:'Level 1    Only brightest',         cellprob:0.90, flow:1.10, snr:4.2, floorPct:98, absInt:45, itf:0.10, intMode:'max', maxIntThr:0.5},
+  {label:'Level 2    Very conservative',      cellprob:0.78, flow:0.95, snr:3.8, floorPct:95, absInt:40, itf:0.22, intMode:'max', maxIntThr:0.4},
+  {label:'Level 3    Strict',                 cellprob:0.64, flow:0.80, snr:3.3, floorPct:92, absInt:35, itf:0.36, intMode:'max', maxIntThr:0.3},
+  {label:'Level 4    Semi-strict',            cellprob:0.50, flow:0.65, snr:2.8, floorPct:88, absInt:30, itf:0.52, intMode:'max', maxIntThr:0.2},
+  {label:'Level 5    Balanced',               cellprob:0.36, flow:0.50, snr:2.3, floorPct:82, absInt:25, itf:0.72, intMode:'max', maxIntThr:0.15},
+  {label:'Level 6    Moderate sensitivity',   cellprob:0.20, flow:0.32, snr:2.0, floorPct:74, absInt:21, itf:0.92, intMode:'max', maxIntThr:0.1},
+  {label:'Level 7    Liberal',                cellprob:0.04, flow:0.15, snr:1.6, floorPct:64, absInt:16, itf:1.12, intMode:'max', maxIntThr:0.08},
+  {label:'Level 8    Very liberal',           cellprob:-0.08, flow:0.00, snr:1.2, floorPct:45, absInt:10, itf:1.32, intMode:'max', maxIntThr:0.05},
+  {label:'Level 9    High sensitivity',       cellprob:-0.16, flow:-0.12, snr:0.9, floorPct:36, absInt:7, itf:1.52, intMode:'max', maxIntThr:0.03},
+  {label:'Level 10    Counts very weak',      cellprob:-0.24, flow:-0.22, snr:0.6, floorPct:20, absInt:3, itf:1.72, intMode:'max', maxIntThr:0.01}
 ];
 
 // Detection Functions
@@ -1327,6 +1327,9 @@ function applySensitivity(val){
   set('det_cpsam_abs_floor', p.floorPct);
   set('det_cpsam_intensity_thr', p.absInt);
   set('det_cpsam_itf', p.itf, 2);
+  // New intensity filter settings
+  set('det_cpsam_intensity_mode', p.intMode || 'max');
+  set('det_cpsam_max_intensity_threshold', p.maxIntThr, 2);
 }
 
 function toggleDetTestOptions(){
