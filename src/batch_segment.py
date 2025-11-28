@@ -425,6 +425,10 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
     mean_intensity_threshold = min(1.0, intensity_thresh / intensity_factor) if intensity_thresh > 0 else 0.0
 
     remove_edge = bool(proc_cfg.get("remove_edge_cells", False))
+    
+    # New: Use max_intensity for bright cell detection (prevents filtering bright cells)
+    use_max_intensity = bool(adv_cfg.get("use_max_intensity_fallback", True))
+    bright_cell_threshold = float(adv_cfg.get("bright_cell_threshold", 0.8) or 0.8)
 
     flat = gray_norm[np.isfinite(gray_norm)]
     if flat.size == 0:
@@ -440,6 +444,9 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
     bg_std = float(np.std(bg_vals)) if bg_vals.size else float(np.std(flat))
     if not np.isfinite(bg_std) or bg_std < 1e-6:
         bg_std = 1e-6
+    
+    # Compute global intensity max for bright cell detection
+    global_max = float(np.percentile(flat, 99.5))
 
     snr_min = float(adv_cfg.get("snr_min", 0.0) or 0.0)
 
@@ -449,24 +456,37 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
         "initial": len(props),
         "removed": 0,
         "removed_area": 0,
+        "removed_bright": 0,  # Track how many bright cells were saved
         "kept": 0,
+    }
+    
+    # Track filter reasons for debugging
+    filter_reasons: Dict[str, int] = {
+        "min_area": 0, "max_area": 0, "circularity": 0, "hole_ratio": 0,
+        "edge": 0, "intensity": 0, "bg_floor": 0, "snr": 0
     }
 
     for region in props:
         keep = True
+        filter_reason = None
         area = int(region.area)
+        
         if min_area and area < min_area:
             keep = False
+            filter_reason = "min_area"
         if keep and max_area and area > max_area:
             keep = False
+            filter_reason = "max_area"
 
         perimeter = float(region.perimeter or 0.0)
         if keep and perimeter > 0.0 and (min_circ or max_circ):
             circularity = (4.0 * math.pi * area) / (perimeter ** 2) if perimeter > 0 else 1.0
             if min_circ and circularity < min_circ:
                 keep = False
+                filter_reason = "circularity"
             if max_circ and circularity > max_circ:
                 keep = False
+                filter_reason = "circularity"
 
         filled_area = int(getattr(region, "filled_area", area))
         hole_ratio = 0.0
@@ -474,35 +494,56 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
             hole_ratio = float(filled_area - area) / float(filled_area)
         if keep and max_hole is not None and hole_ratio > max_hole:
             keep = False
+            filter_reason = "hole_ratio"
 
         if keep and remove_edge and _touches_border(region.bbox, image_shape):
             keep = False
+            filter_reason = "edge"
 
         mean_intensity = float(region.mean_intensity or 0.0)
+        max_intensity = float(region.max_intensity or 0.0) if hasattr(region, 'max_intensity') else mean_intensity
+        
+        # Check if this is a bright cell (should be kept even if other filters would remove it)
+        is_bright_cell = use_max_intensity and (max_intensity >= global_max * bright_cell_threshold)
+        
         if keep and mean_intensity_threshold > 0.0 and mean_intensity < mean_intensity_threshold:
-            keep = False
+            if not is_bright_cell:
+                keep = False
+                filter_reason = "intensity"
 
         if keep and enable_adv:
             if mean_intensity <= bg_floor:
-                keep = False
+                # Allow bright cells even if mean is below floor (can happen with bright spots)
+                if not is_bright_cell:
+                    keep = False
+                    filter_reason = "bg_floor"
             else:
                 snr = (mean_intensity - bg_mean) / (bg_std + 1e-6)
                 if snr < snr_min:
-                    keep = False
+                    # Allow very bright cells even with low SNR
+                    if not is_bright_cell:
+                        keep = False
+                        filter_reason = "snr"
 
         if keep:
             keep_labels.append(region.label)
+            if is_bright_cell and filter_reason is not None:
+                stats["removed_bright"] += 1  # Was saved due to brightness
         else:
             stats["removed"] += 1
             stats["removed_area"] += area
+            if filter_reason:
+                filter_reasons[filter_reason] = filter_reasons.get(filter_reason, 0) + 1
 
     if not keep_labels:
+        stats["filter_reasons"] = filter_reasons
         return np.zeros_like(mask, dtype=np.uint16), stats
 
     filtered = np.zeros_like(mask, dtype=np.uint16)
     for new_idx, lbl in enumerate(keep_labels, start=1):
         filtered[mask == lbl] = new_idx
     stats["kept"] = len(keep_labels)
+    stats["filter_reasons"] = filter_reasons
     return filtered, stats
 
 # -----------------------------
@@ -973,7 +1014,15 @@ def _segment_dir(
 
                 filtered_mask, filter_stats = _apply_filters(masks_arr, gray_norm, cfg_scaled, gray_norm.shape)
                 if filter_stats.get("removed"):
-                    print(f"[INFO] {img_path.name}: filtered {filter_stats['removed']} cells (kept {filter_stats.get('kept', 0)})")
+                    reasons = filter_stats.get("filter_reasons", {})
+                    reasons_str = ", ".join(f"{k}={v}" for k, v in reasons.items() if v > 0)
+                    saved_bright = filter_stats.get("removed_bright", 0)
+                    msg = f"[INFO] {img_path.name}: filtered {filter_stats['removed']} cells (kept {filter_stats.get('kept', 0)})"
+                    if reasons_str:
+                        msg += f" [{reasons_str}]"
+                    if saved_bright > 0:
+                        msg += f" (saved {saved_bright} bright cells)"
+                    print(msg)
                 masks_arr = filtered_mask
 
             if needs_processing or not mask_tif.exists():

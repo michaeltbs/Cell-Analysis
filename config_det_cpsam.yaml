@@ -1,9 +1,11 @@
 advanced_filtering:
   abs_floor_percentile: 74
+  bright_cell_threshold: 0.8
   enable_advanced: false
   foreground_block_size: 501
   foreground_offset: 15
   snr_min: 2
+  use_max_intensity_fallback: true
 cell_filtering: {}
 cellpose:
   batch_size: 4
@@ -47,10 +49,13 @@ overlays:
 paths:
   input_neg: /app/data/Input/TV3_TIFF/Input_neg
   input_pos: /app/data/Input/TV3_TIFF/Input_pos
-  output_root: /app/results/TV3_sweep3
+  output_root: /app/results/final/TV3
 preprocessing:
-  contrast_stretch: false
-  tophat: false
+  clahe: true
+  clahe_clip_limit: 0.03
+  contrast_stretch: true
+  tophat: true
+  tophat_radius: 15
 processing:
   clahe: false
   clahe_clip_limit: 0.03
