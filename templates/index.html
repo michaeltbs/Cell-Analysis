@@ -1035,6 +1035,17 @@ document.addEventListener('DOMContentLoaded', () => {
   syncDetProcessingUI();
   syncCoexprModeUI();
   toggleDetTestOptions();
+  // Initialize default channel selector with channels 0-3
+  renderDetChannelSelector({
+    channels: [0, 1, 2, 3],
+    channel_labels: [
+      {index: 0, name: 'Channel 0'},
+      {index: 1, name: 'Channel 1'},
+      {index: 2, name: 'Channel 2'},
+      {index: 3, name: 'Channel 3'}
+    ],
+    det_channel_selection: [0]
+  });
 });
 
 // CZI Conversion Functions
