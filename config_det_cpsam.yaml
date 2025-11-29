@@ -1,21 +1,19 @@
 advanced_filtering:
   abs_floor_percentile: 74
+  background_percentile: 5.0
   background_radius: 50
   enable_advanced: false
   foreground_block_size: 501
   foreground_offset: 15
-  # "global" is best for dense cell clusters - uses global percentile thresholds
   intensity_mode: global
   max_intensity_threshold: 0.1
-  min_local_contrast: 1.3
+  min_local_contrast: 1.0
   noise_radius: 25
   save_debug_images: false
+  signal_percentile: 99.5
   snr_min: 2
   snr_threshold: 2.5
   use_robust_normalization: false
-  # Global normalization settings
-  background_percentile: 5.0
-  signal_percentile: 99.5
 cell_filtering: {}
 cellpose:
   batch_size: 4
@@ -39,7 +37,7 @@ filters:
   max_circularity: 1
   max_hole_ratio: 0.8
   min_area: 16
-  min_circularity: 0.01
+  min_circularity: 0.0
 microscope:
   auto_from_path: true
   current_magnification: 10.0
@@ -59,7 +57,7 @@ overlays:
 paths:
   input_neg: /app/data/Input/TV3_TIFF/Input_neg
   input_pos: /app/data/Input/TV3_TIFF/Input_pos
-  output_root: /app/results/final/TV3_test5
+  output_root: /app/results/final/TV3_test6
 preprocessing:
   clahe: true
   clahe_clip_limit: 0.03

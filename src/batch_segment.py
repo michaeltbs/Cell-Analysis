@@ -658,7 +658,9 @@ def _apply_filters(
             filter_reason = "max_area"
 
         perimeter = float(region.perimeter or 0.0)
-        if keep and perimeter > 0.0 and (min_circ or max_circ):
+        # Skip circularity check for small cells (<100 pixels) - perimeter is too inaccurate
+        # This is common at low magnifications (5x) where cells are only a few pixels
+        if keep and perimeter > 0.0 and (min_circ or max_circ) and area >= 100:
             circularity = (4.0 * math.pi * area) / (perimeter ** 2) if perimeter > 0 else 1.0
             if min_circ and circularity < min_circ:
                 keep = False
@@ -706,8 +708,9 @@ def _apply_filters(
                 if max_intensity < global_bg_thr + max_intensity_threshold:
                     keep = False
                     filter_reason = "intensity_max"
-                # Additional: local contrast check still useful
-                elif local_contrast < min_local_contrast and min_local_contrast > 1.0:
+                # Local contrast check only if explicitly enabled (>1.0)
+                # Disabled by default as it rejects uniformly bright cells
+                elif min_local_contrast > 1.05 and local_contrast < min_local_contrast:
                     keep = False
                     filter_reason = "low_contrast"
             else:
@@ -738,11 +741,12 @@ def _apply_filters(
                     filter_reason = "intensity_max"
         elif keep and intensity_mode == "max":
             # Use max_intensity for filtering - best for fluorescent signals
-            # Cell must have max intensity above threshold AND show local contrast
+            # Cell must have max intensity above threshold
             if rel_max_intensity < max_intensity_threshold:
                 keep = False
                 filter_reason = "intensity_max"
-            elif local_contrast < min_local_contrast and min_local_contrast > 1.0:
+            # Local contrast check only if explicitly enabled (>1.05)
+            elif min_local_contrast > 1.05 and local_contrast < min_local_contrast:
                 keep = False
                 filter_reason = "low_contrast"
         elif keep and intensity_mode == "mean":
