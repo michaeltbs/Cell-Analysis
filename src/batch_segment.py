@@ -234,6 +234,87 @@ def _normalize_image(arr: np.ndarray) -> np.ndarray:
     return arr / max_val
 
 
+def _global_intensity_normalize(
+    img: np.ndarray,
+    background_percentile: float = 5.0,
+    signal_percentile: float = 99.5,
+    debug: bool = False
+) -> Tuple[np.ndarray, Dict[str, float]]:
+    """
+    Globale Intensitäts-Normalisierung ohne lokalen Hintergrund.
+    
+    Diese Methode ist robust bei dichten Zellclustern, da sie:
+    1. Globalen Hintergrund aus den dunkelsten Pixeln schätzt (z.B. 5% Percentil)
+    2. Signal-Range global normalisiert
+    3. Keine lokale Subtraktion macht (die bei dichten Zellen versagt)
+    
+    Args:
+        img: Input-Bild (2D array)
+        background_percentile: Percentil für Hintergrund (niedrig, z.B. 5)
+        signal_percentile: Percentil für Signal-Maximum (hoch, z.B. 99.5)
+        debug: Wenn True, gibt zusätzliche Debug-Info aus
+    
+    Returns:
+        Tuple von:
+        - normalized: Global normalisiertes Bild (0-1)
+        - stats: Dictionary mit Statistiken für Filterung
+    """
+    img = np.asarray(img, dtype=np.float32)
+    if img.size == 0:
+        return img, {}
+    
+    flat = img.flatten()
+    
+    # 1. Globaler Hintergrund aus niedrigstem Percentil
+    # Das sind garantiert Pixel ohne Zellen
+    global_bg = float(np.percentile(flat, background_percentile))
+    
+    # 2. Signal-Maximum aus hohem Percentil (ignoriert Ausreißer)
+    global_max = float(np.percentile(flat, signal_percentile))
+    
+    # 3. Median als robuste Mitte
+    global_median = float(np.median(flat))
+    
+    # 4. Signal-Range
+    signal_range = global_max - global_bg
+    if signal_range <= 0:
+        signal_range = 1.0
+    
+    # 5. Rausch-Schätzung aus niedrigen Intensitäten
+    # Nimm Standardabweichung der dunkelsten 30% als Rausch-Schätzung
+    low_threshold = float(np.percentile(flat, 30))
+    low_pixels = flat[flat <= low_threshold]
+    if low_pixels.size > 10:
+        global_noise = float(np.std(low_pixels))
+    else:
+        global_noise = signal_range * 0.01  # Fallback: 1% des Signals
+    global_noise = max(global_noise, 1e-6)
+    
+    # 6. Normalisierung: Hintergrund auf 0, Signal auf 1
+    normalized = (img - global_bg) / signal_range
+    normalized = np.clip(normalized, 0, 1).astype(np.float32)
+    
+    # Statistiken für Filterung zurückgeben
+    stats = {
+        'global_bg': global_bg,
+        'global_max': global_max,
+        'global_median': global_median,
+        'signal_range': signal_range,
+        'global_noise': global_noise,
+        # Schwellwerte für Zell-Filterung (als Fraktion des Signal-Range)
+        'bg_threshold': (global_median - global_bg) / signal_range,  # Unter diesem Wert ist Hintergrund
+    }
+    
+    if debug:
+        print(f"[DEBUG] Global BG (p{background_percentile}): {global_bg:.2f}")
+        print(f"[DEBUG] Global Max (p{signal_percentile}): {global_max:.2f}")
+        print(f"[DEBUG] Signal Range: {signal_range:.2f}")
+        print(f"[DEBUG] Global Noise: {global_noise:.4f}")
+        print(f"[DEBUG] BG Threshold: {stats['bg_threshold']:.3f}")
+    
+    return normalized, stats
+
+
 def _robust_background_normalize(
     img: np.ndarray, 
     background_radius: int = 50,
@@ -241,25 +322,11 @@ def _robust_background_normalize(
     debug: bool = False
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Robuste Normalisierung mit Hintergrund-Schätzung und SNR-Map.
+    DEPRECATED: Lokale Hintergrund-Normalisierung.
+    Problem: Bei dichten Zellclustern wird der Hintergrund zu hell geschätzt.
     
-    Diese Methode:
-    1. Schätzt den lokalen Hintergrund mit großem Median-Filter
-    2. Berechnet lokales Rauschen (Standardabweichung)
-    3. Subtrahiert Hintergrund und normalisiert Signal
-    4. Erstellt SNR-Map für Filterung
-    
-    Args:
-        img: Input-Bild (2D array)
-        background_radius: Radius für Hintergrund-Schätzung (größer = glatter)
-        noise_radius: Radius für Rausch-Schätzung (kleiner als background)
-        debug: Wenn True, gibt zusätzliche Debug-Info aus
-    
-    Returns:
-        Tuple von:
-        - signal_normalized: Hintergrund-subtrahiert und normalisiert (0-1)
-        - snr_map: Signal-to-Noise Ratio pro Pixel
-        - background: Geschätzter Hintergrund
+    Verwende stattdessen _global_intensity_normalize() für robustere Ergebnisse.
+    Diese Funktion bleibt für Rückwärtskompatibilität erhalten.
     """
     from scipy.ndimage import median_filter, uniform_filter
     
@@ -491,7 +558,8 @@ def _apply_filters(
     gray_norm: np.ndarray, 
     cfg: dict, 
     image_shape: Tuple[int, int],
-    snr_map: Optional[np.ndarray] = None
+    snr_map: Optional[np.ndarray] = None,
+    global_stats: Optional[Dict[str, float]] = None
 ) -> Tuple[np.ndarray, Dict[str, Any]]:
     """Apply geometric and intensity filters to mask labels based on config.
     
@@ -500,7 +568,8 @@ def _apply_filters(
         gray_norm: Normalized grayscale image (0-1)
         cfg: Configuration dictionary
         image_shape: (height, width) of image
-        snr_map: Optional SNR map from robust normalization (für SNR-basierte Filterung)
+        snr_map: Optional SNR map from robust normalization (deprecated, use global_stats)
+        global_stats: Optional stats from _global_intensity_normalize for global filtering
     """
     filters_cfg = cfg.get("filters", {}) or {}
     proc_cfg = cfg.get("processing", {}) or {}
@@ -622,27 +691,51 @@ def _apply_filters(
         # This filters out flat/uniform regions that are not real cells
         local_contrast = max_intensity / mean_intensity if mean_intensity > 1e-6 else 0.0
         
-        # SNR-based filtering using the SNR map (if provided)
-        cell_snr_mean = 0.0
-        cell_snr_max = 0.0
-        if snr_map is not None and intensity_mode == "snr":
-            # Get SNR values within this cell
-            cell_mask_region = mask == region.label
-            cell_snr_values = snr_map[cell_mask_region]
-            if cell_snr_values.size > 0:
-                cell_snr_mean = float(np.mean(cell_snr_values))
-                cell_snr_max = float(np.max(cell_snr_values))
-        
         # Apply intensity filter based on mode
-        if keep and intensity_mode == "snr":
+        if keep and intensity_mode == "global":
+            # Global intensity filtering: Uses global stats, robust for dense cell clusters
+            # This mode doesn't use local background which fails with many bright cells
+            if global_stats:
+                # Use global background threshold
+                global_bg_thr = global_stats.get('bg_threshold', 0.1)
+                global_noise = global_stats.get('global_noise', 0.01)
+                signal_range_gs = global_stats.get('signal_range', 1.0)
+                
+                # Cell must be significantly above background
+                # max_intensity is already in 0-1 range (normalized image)
+                if max_intensity < global_bg_thr + max_intensity_threshold:
+                    keep = False
+                    filter_reason = "intensity_max"
+                # Additional: local contrast check still useful
+                elif local_contrast < min_local_contrast and min_local_contrast > 1.0:
+                    keep = False
+                    filter_reason = "low_contrast"
+            else:
+                # Fallback to simple relative threshold if no global_stats
+                if rel_max_intensity < max_intensity_threshold:
+                    keep = False
+                    filter_reason = "intensity_max"
+        elif keep and intensity_mode == "snr":
             # SNR-based filtering: uses the SNR map from robust normalization
             # More robust against variable background than intensity-based methods
-            if cell_snr_max < snr_threshold:
-                keep = False
-                filter_reason = "snr"
-            elif cell_snr_mean < snr_threshold * 0.5:  # Mean should be at least half of threshold
-                keep = False
-                filter_reason = "snr"
+            if snr_map is not None:
+                # Get SNR values within this cell
+                cell_mask_region = mask == region.label
+                cell_snr_values = snr_map[cell_mask_region]
+                if cell_snr_values.size > 0:
+                    cell_snr_mean = float(np.mean(cell_snr_values))
+                    cell_snr_max = float(np.max(cell_snr_values))
+                    if cell_snr_max < snr_threshold:
+                        keep = False
+                        filter_reason = "snr"
+                    elif cell_snr_mean < snr_threshold * 0.5:
+                        keep = False
+                        filter_reason = "snr"
+            else:
+                # Fallback if no SNR map: use relative intensity
+                if rel_max_intensity < max_intensity_threshold:
+                    keep = False
+                    filter_reason = "intensity_max"
         elif keep and intensity_mode == "max":
             # Use max_intensity for filtering - best for fluorescent signals
             # Cell must have max intensity above threshold AND show local contrast
@@ -1145,8 +1238,29 @@ def _segment_dir(
             snr_map = None
             background_img = None
             
-            if use_robust_norm:
-                # Use robust background normalization for better artifact removal
+            # Check normalization mode
+            adv_cfg_img = cfg_scaled.get("advanced_filtering", {}) or {}
+            intensity_mode = str(adv_cfg_img.get("intensity_mode", "global") or "global").lower()
+            use_robust_norm = intensity_mode == "snr" or bool(adv_cfg_img.get("use_robust_normalization", False))
+            use_global_norm = intensity_mode == "global"
+            
+            snr_map = None
+            background_img = None
+            global_stats = None
+            
+            if use_global_norm:
+                # Use global intensity normalization - best for dense cell clusters
+                bg_pct = float(adv_cfg_img.get("background_percentile", 5.0) or 5.0)
+                sig_pct = float(adv_cfg_img.get("signal_percentile", 99.5) or 99.5)
+                gray_norm, global_stats = _global_intensity_normalize(
+                    gray_proc,
+                    background_percentile=bg_pct,
+                    signal_percentile=sig_pct,
+                    debug=False
+                )
+                print(f"[INFO] {img_path.name}: using global normalization (bg_pct={bg_pct}, bg_thr={global_stats.get('bg_threshold', 0):.3f})")
+            elif use_robust_norm:
+                # Use robust background normalization (local SNR) - may fail with dense cells
                 background_radius = int(adv_cfg_img.get("background_radius", 50) or 50)
                 noise_radius = int(adv_cfg_img.get("noise_radius", 25) or 25)
                 gray_norm, snr_map, background_img = _robust_background_normalize(
@@ -1182,14 +1296,15 @@ def _segment_dir(
                         print(f"[INFO] {img_path.name}: split touching cells {orig_count}->{new_count}")
                     masks_arr = split_mask
 
-                # Pass SNR map to filter function for SNR-based filtering
+                # Pass global_stats or snr_map to filter function
                 filtered_mask, filter_stats = _apply_filters(
-                    masks_arr, gray_norm, cfg_scaled, gray_norm.shape, snr_map=snr_map
+                    masks_arr, gray_norm, cfg_scaled, gray_norm.shape, 
+                    snr_map=snr_map, global_stats=global_stats
                 )
                 if filter_stats.get("removed"):
                     reasons = filter_stats.get("filter_reasons", {})
                     reasons_str = ", ".join(f"{k}={v}" for k, v in reasons.items() if v > 0)
-                    mode_info = filter_stats.get("intensity_mode", "max")
+                    mode_info = filter_stats.get("intensity_mode", "global")
                     msg = f"[INFO] {img_path.name}: filtered {filter_stats['removed']} cells (kept {filter_stats.get('kept', 0)}, mode={mode_info})"
                     if reasons_str:
                         msg += f" [{reasons_str}]"

@@ -32,10 +32,15 @@ contrast_stretch: false
 cpsam:
   advanced_filtering:
     abs_floor_percentile: 74
+    background_radius: 50
     enable_advanced: false
-    intensity_mode: mean
+    intensity_mode: snr
     max_intensity_threshold: 0.1
+    noise_radius: 25
+    save_debug_images: true
     snr_min: 2
+    snr_threshold: 2.5
+    use_robust_normalization: true
   cell_filtering: {}
   cellpose:
     resize_max: 2048
@@ -56,7 +61,6 @@ cpsam:
     split_touching: false
 cur_mag: 5
 det_channel_selection:
-- 1
 - 2
 det_script_path: ''
 diameter: 0
@@ -67,7 +71,7 @@ microscope:
   current_magnification: 10
   reference_magnification: 10
 model_type: cpsam
-output_results_dir: /app/results/final/TV3_test4
+output_results_dir: /app/results/final/TV3_test5
 ref_mag: 10
 resize_max: 2048
 save_overlay: false
