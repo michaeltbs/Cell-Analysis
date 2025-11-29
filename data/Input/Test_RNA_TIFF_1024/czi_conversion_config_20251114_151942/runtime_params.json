@@ -1,0 +1,20 @@
+{
+  "input_root": "/app/data/Input/RNASCOPE_GAL_PPP1R17_EBF3",
+  "output_base": "/app/data/Input/Test_RNA_TIFF_1024",
+  "channels": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "target_size": 2048,
+  "per_channel_normalize": true,
+  "dtype": "uint16",
+  "overwrite": true,
+  "save_per_channel": false,
+  "save_stack_tiff": true,
+  "save_rgb_preview": false,
+  "save_color_composite": false,
+  "n_conditions": 2,
+  "n_total_files": 15
+}

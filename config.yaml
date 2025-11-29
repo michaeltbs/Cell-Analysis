@@ -1,4 +1,7 @@
-batch_size: 16
+analysis:
+  enable_anova: false
+auto_mag_from_path: false
+batch_size: 4
 cellprob_threshold: 0.2
 channel_labels:
 - index: 0
@@ -8,12 +11,12 @@ channel_labels:
 - index: 2
   name: Gal
 - index: 3
-  name: Gal
+  name: DAPI
 channel_levels:
 - index: 0
   level: 5
 - index: 1
-  level: 4
+  level: 5
 - index: 2
   level: 5
 - index: 3
@@ -23,70 +26,51 @@ channels:
 - 1
 - 2
 - 3
+clahe: true
+clahe_clip_limit: 0.03
+contrast_stretch: false
 cpsam:
   advanced_filtering:
     abs_floor_percentile: 74
-    foreground_block_size: 127
-    foreground_offset: 4
+    enable_advanced: false
+    intensity_mode: mean
+    max_intensity_threshold: 0.1
     snr_min: 2
+  cell_filtering: {}
   cellpose:
-    channel: 0
-    niter: 1000
-    resize_max: 4048
-    save_masks: false
-    split_regions: false
-  conditions:
-    neg_pattern: Input_neg
-    pos_pattern: Input_pos
-  enable_advanced_filtering: true
-  filters:
-    intensity_threshold_factor: 0.92
-    max_area: 32000
-    max_circularity: 1
-    max_hole_ratio: 0.8
-    min_area: 16
-    min_circularity: 0.01
+    resize_max: 2048
+  conditions: {}
+  filters: {}
   microscope: {}
-  outputs:
-    base_name: cell_analysis
-  overlays:
-    contour_color: red
-    dpi: 600
-    figsize:
-    - 12
-    - 12
-    line_width: 1
-    overlay_mode: contours
-  processing:
+  overlay: {}
+  preprocessing:
+    clahe: true
+    clahe_clip_limit: 0.03
     contrast_stretch: false
-    intensity_threshold: 21
-    merge_adjacent_cells: false
-    remove_edge_cells: false
-    split_area_multiplier: 2.5
-    split_min_area: 0
-    split_min_distance: 4
-    split_rel_peak_threshold: 0.4
-    split_touching_cells: false
-    stretch_percentiles:
-    - 5
-    - 100
     tophat: false
-    tophat_radius: 4
+    tophat_radius: 15
+  processing: {}
+  save_masks: false
+  split_regions: false
+  watershed_split:
+    split_touching: false
+cur_mag: 5
 det_channel_selection:
-- 0
 - 1
 - 2
 det_script_path: ''
-diameter: 12
+diameter: 0
 flow_threshold: 0.32
-input_tiffs_dir: /app/data/Input/TV3_1_Tiff/all/5X
+image_aware_scaling: true
+input_tiffs_dir: /app/data/Input/TV3_TIFF
 microscope:
-  current_magnification: 5
+  current_magnification: 10
   reference_magnification: 10
 model_type: cpsam
-output_results_dir: /app/results/TV312
-overlay_suffix: _overlay.png
-save_overlay: true
+output_results_dir: /app/results/final/TV3_test4
+ref_mag: 10
+resize_max: 2048
+save_overlay: false
 testing:
   enabled: true
   levels:
@@ -102,9 +86,10 @@ testing:
   - 9
   mode: advanced
   samples_per_channel: 1
-  selected_image: P148_slice5_5x_stack.tif
-  selected_images:
-    neg: P146_slice7_5x_stack.tif
-    pos: P148_slice5_5x_stack.tif
+  seed: null
+  specific_image_neg: /app/data/Input/TV3_TIFF/Input_neg/DMH/O567_slice6_5x_stack.tif
+  specific_image_pos: /app/data/Input/TV3_TIFF/Input_pos/Arc/O835_slice2_5x_stack.tif
+tophat: false
+tophat_radius: 15
 use_gpu: true
 verbose: false

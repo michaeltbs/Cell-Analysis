@@ -1,0 +1,20 @@
+{
+  "input_root": "/app/data/Input/TV3",
+  "output_base": "/app/data/Input/TV3_TIFF",
+  "channels": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "target_size": 2024,
+  "per_channel_normalize": true,
+  "dtype": "uint16",
+  "overwrite": true,
+  "save_per_channel": false,
+  "save_stack_tiff": true,
+  "save_rgb_preview": false,
+  "save_color_composite": false,
+  "n_conditions": 1,
+  "n_total_files": 67
+}

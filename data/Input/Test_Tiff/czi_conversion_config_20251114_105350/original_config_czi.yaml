@@ -1,8 +1,8 @@
 channel_colors:
-- '#ff0000'
-- '#00ff00'
-- '#0000ff'
-- '#ffff00'
+- yellow
+- green
+- red
+- red
 channel_names: []
 channels:
 - 0
@@ -11,17 +11,21 @@ channels:
 - 3
 dtype: uint16
 imagej_hyperstack: true
-input_root: /app/data/Input/TV3
-output_base: /app/data/Input/TV3_TIFF
+input_root: /app/data/Input/Test
+output_base: /app/data/Input/Test_Tiff
 overwrite: true
 per_channel_normalize: true
-rgb_channels: 0,1,2,3
+rgb_channels:
+- 0
+- 1
+- 2
+- 3
 save_color_composite: false
-save_colored_pages: false
-save_ome_colors: false
+save_multichannel_colored_pages: false
+save_ome_tiff_colors: false
 save_per_channel: false
 save_rgb_preview: false
 save_stack_tiff: true
 stack_layout: CYX
-target_size: '2024'
+target_size: 2048
 verbose: false

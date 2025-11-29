@@ -11,8 +11,8 @@ channels:
 - 3
 dtype: uint16
 imagej_hyperstack: true
-input_root: /app/data/Input/TV3
-output_base: /app/data/Input/TV3_TIFF
+input_root: /app/data/Input/RNA
+output_base: /app/data/Input/RNA_TIFF2
 overwrite: true
 per_channel_normalize: true
 rgb_channels: 0,1,2,3

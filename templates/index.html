@@ -497,11 +497,12 @@
                 <label class="flex flex-col">
                   <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Intensity Mode</p>
                   <select id="det_cpsam_intensity_mode" class="form-select w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm">
-                    <option value="max" selected>Max Intensity (recommended)</option>
+                    <option value="snr">SNR-based (recommended)</option>
+                    <option value="max">Max Intensity</option>
                     <option value="mean">Mean Intensity</option>
                     <option value="both">Both (stricter)</option>
                   </select>
-                  <p class="text-neutral-500 text-xs mt-1">Max: best for fluorescent signals, keeps bright cells</p>
+                  <p class="text-neutral-500 text-xs mt-1">SNR: robust against variable backgrounds</p>
                 </label>
                 <label class="flex flex-col">
                   <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Max Intensity Threshold</p>
@@ -517,15 +518,53 @@
                   <p class="text-neutral-500 text-xs mt-1">Additional SNR and background floor filtering</p>
                 </label>
                 <label class="flex flex-col">
-                  <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">SNR Minimum</p>
+                  <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">SNR Threshold</p>
+                  <input id="det_cpsam_snr_threshold" type="number" step="0.1" min="0" value="2.5" class="form-input w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm"/>
+                  <p class="text-neutral-500 text-xs mt-1">Min SNR for cells (higher = fewer artifacts, used in SNR mode)</p>
+                </label>
+                <label class="flex flex-col">
+                  <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">SNR Minimum (legacy)</p>
                   <input id="det_cpsam_snr_min" type="number" step="0.1" min="0" value="2" class="form-input w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm"/>
-                  <p class="text-neutral-500 text-xs mt-1">Signal-to-noise ratio threshold (only if advanced enabled)</p>
+                  <p class="text-neutral-500 text-xs mt-1">Legacy SNR threshold (only if advanced enabled)</p>
                 </label>
                 <label class="flex flex-col">
                   <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Background Floor %</p>
                   <input id="det_cpsam_abs_floor" type="number" step="1" min="0" max="100" value="74" class="form-input w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm"/>
                   <p class="text-neutral-500 text-xs mt-1">Percentile for background estimation (only if advanced enabled)</p>
                 </label>
+              </div>
+              
+              <!-- Robust Background Normalization -->
+              <div class="mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+                <p class="text-black dark:text-white text-sm font-medium mb-4">Robust Background Normalization (for SNR mode)</p>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <label class="flex flex-col">
+                    <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Use Robust Norm</p>
+                    <select id="det_cpsam_use_robust_norm" class="form-select w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm">
+                      <option value="true" selected>Enabled</option>
+                      <option value="false">Disabled</option>
+                    </select>
+                    <p class="text-neutral-500 text-xs mt-1">Auto-enabled when using SNR mode</p>
+                  </label>
+                  <label class="flex flex-col">
+                    <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Background Radius</p>
+                    <input id="det_cpsam_background_radius" type="number" step="5" min="10" max="200" value="50" class="form-input w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm"/>
+                    <p class="text-neutral-500 text-xs mt-1">Larger = smoother background (px)</p>
+                  </label>
+                  <label class="flex flex-col">
+                    <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Noise Radius</p>
+                    <input id="det_cpsam_noise_radius" type="number" step="5" min="5" max="100" value="25" class="form-input w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm"/>
+                    <p class="text-neutral-500 text-xs mt-1">For local noise estimation (px)</p>
+                  </label>
+                  <label class="flex flex-col">
+                    <p class="text-black dark:text-white text-sm font-medium leading-normal pb-2">Save Debug Images</p>
+                    <select id="det_cpsam_save_debug_images" class="form-select w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm">
+                      <option value="true">Yes (SNR heatmap)</option>
+                      <option value="false" selected>No</option>
+                    </select>
+                    <p class="text-neutral-500 text-xs mt-1">Save SNR heatmap &amp; background for debugging</p>
+                  </label>
+                </div>
               </div>
             </div>
           </details>
@@ -1264,16 +1303,16 @@ function toArray(input){
 }
 
 const SENSITIVITY_LEVELS=[
-  {label:'Level 1    Strict',                 cellprob:0.64, flow:0.80, snr:3.3, floorPct:92, absInt:35, itf:0.36, intMode:'max', maxIntThr:0.35},
-  {label:'Level 2    Semi-strict',            cellprob:0.55, flow:0.70, snr:3.0, floorPct:86, absInt:32, itf:0.49, intMode:'max', maxIntThr:0.28},
-  {label:'Level 3    Balanced',               cellprob:0.46, flow:0.60, snr:2.8, floorPct:80, absInt:29, itf:0.62, intMode:'max', maxIntThr:0.22},
-  {label:'Level 4    Balanced+',              cellprob:0.37, flow:0.49, snr:2.5, floorPct:73, absInt:26, itf:0.75, intMode:'max', maxIntThr:0.17},
-  {label:'Level 5    Moderate',               cellprob:0.28, flow:0.39, snr:2.2, floorPct:67, absInt:23, itf:0.88, intMode:'max', maxIntThr:0.13},
-  {label:'Level 6    Medium-high',            cellprob:0.20, flow:0.29, snr:2.0, floorPct:61, absInt:19, itf:1.00, intMode:'max', maxIntThr:0.10},
-  {label:'Level 7    Sensitive',              cellprob:0.11, flow:0.19, snr:1.7, floorPct:55, absInt:16, itf:1.13, intMode:'max', maxIntThr:0.07},
-  {label:'Level 8    High sensitivity',       cellprob:0.02, flow:0.08, snr:1.4, floorPct:48, absInt:13, itf:1.26, intMode:'max', maxIntThr:0.05},
-  {label:'Level 9    Very high',              cellprob:-0.07, flow:-0.02, snr:1.2, floorPct:42, absInt:10, itf:1.39, intMode:'max', maxIntThr:0.03},
-  {label:'Level 10   Ultra sensitive',        cellprob:-0.16, flow:-0.12, snr:0.9, floorPct:36, absInt:7, itf:1.52, intMode:'max', maxIntThr:0.02}
+  {label:'Level 1    Strict',                 cellprob:0.64, flow:0.80, snr:3.3, floorPct:92, absInt:35, itf:0.36, intMode:'snr', maxIntThr:0.35, snrThr:4.0},
+  {label:'Level 2    Semi-strict',            cellprob:0.55, flow:0.70, snr:3.0, floorPct:86, absInt:32, itf:0.49, intMode:'snr', maxIntThr:0.28, snrThr:3.5},
+  {label:'Level 3    Balanced',               cellprob:0.46, flow:0.60, snr:2.8, floorPct:80, absInt:29, itf:0.62, intMode:'snr', maxIntThr:0.22, snrThr:3.0},
+  {label:'Level 4    Balanced+',              cellprob:0.37, flow:0.49, snr:2.5, floorPct:73, absInt:26, itf:0.75, intMode:'snr', maxIntThr:0.17, snrThr:2.7},
+  {label:'Level 5    Moderate',               cellprob:0.28, flow:0.39, snr:2.2, floorPct:67, absInt:23, itf:0.88, intMode:'snr', maxIntThr:0.13, snrThr:2.5},
+  {label:'Level 6    Medium-high',            cellprob:0.20, flow:0.29, snr:2.0, floorPct:61, absInt:19, itf:1.00, intMode:'snr', maxIntThr:0.10, snrThr:2.2},
+  {label:'Level 7    Sensitive',              cellprob:0.11, flow:0.19, snr:1.7, floorPct:55, absInt:16, itf:1.13, intMode:'snr', maxIntThr:0.07, snrThr:1.8},
+  {label:'Level 8    High sensitivity',       cellprob:0.02, flow:0.08, snr:1.4, floorPct:48, absInt:13, itf:1.26, intMode:'snr', maxIntThr:0.05, snrThr:1.5},
+  {label:'Level 9    Very high',              cellprob:-0.07, flow:-0.02, snr:1.2, floorPct:42, absInt:10, itf:1.39, intMode:'snr', maxIntThr:0.03, snrThr:1.2},
+  {label:'Level 10   Ultra sensitive',        cellprob:-0.16, flow:-0.12, snr:0.9, floorPct:36, absInt:7, itf:1.52, intMode:'snr', maxIntThr:0.02, snrThr:0.9}
 ];
 
 // Detection Functions
@@ -1324,11 +1363,12 @@ function applySensitivity(val){
   set('det_cell_thr', p.cellprob, 2);
   set('det_flow_thr', p.flow, 2);
   set('det_cpsam_snr_min', p.snr, 2);
+  set('det_cpsam_snr_threshold', p.snrThr || p.snr, 2);
   set('det_cpsam_abs_floor', p.floorPct);
   set('det_cpsam_intensity_thr', p.absInt);
   set('det_cpsam_itf', p.itf, 2);
   // New intensity filter settings
-  set('det_cpsam_intensity_mode', p.intMode || 'max');
+  set('det_cpsam_intensity_mode', p.intMode || 'snr');
   set('det_cpsam_max_intensity_threshold', p.maxIntThr, 2);
 }
 
@@ -1473,12 +1513,18 @@ async function loadDetConfig(specificPath){
     
     const cadv = cp.advanced_filtering || {};
     m('det_cpsam_enable_adv', String(cadv.enable_advanced !== false));
-    m('det_cpsam_intensity_mode', cadv.intensity_mode || 'max');
+    m('det_cpsam_intensity_mode', cadv.intensity_mode || 'snr');
     m('det_cpsam_max_intensity_threshold', cadv.max_intensity_threshold || '0.1');
     m('det_cpsam_snr_min', cadv.snr_min || '');
+    m('det_cpsam_snr_threshold', cadv.snr_threshold || '2.5');
     m('det_cpsam_abs_floor', cadv.abs_floor_percentile || '');
     m('det_cpsam_fg_block', cadv.foreground_block_size || '');
     m('det_cpsam_fg_offset', cadv.foreground_offset || '');
+    // Robust normalization params
+    m('det_cpsam_use_robust_norm', String(cadv.use_robust_normalization !== false));
+    m('det_cpsam_background_radius', cadv.background_radius || '50');
+    m('det_cpsam_noise_radius', cadv.noise_radius || '25');
+    m('det_cpsam_save_debug_images', String(cadv.save_debug_images === true));
 
     // Overlay & Output
     m('det_save_overlay', String(cfg.save_overlay !== false));
@@ -1797,12 +1843,18 @@ function buildDetConfigPayload(){
       },
       advanced_filtering: {
         enable_advanced: document.getElementById('det_cpsam_enable_adv')?.value === 'true',
-        intensity_mode: document.getElementById('det_cpsam_intensity_mode')?.value || 'max',
+        intensity_mode: document.getElementById('det_cpsam_intensity_mode')?.value || 'snr',
         max_intensity_threshold: toFloat(document.getElementById('det_cpsam_max_intensity_threshold')?.value) || 0.1,
         snr_min: toFloat(document.getElementById('det_cpsam_snr_min')?.value),
+        snr_threshold: toFloat(document.getElementById('det_cpsam_snr_threshold')?.value) || 2.5,
         abs_floor_percentile: toInt(document.getElementById('det_cpsam_abs_floor')?.value),
         foreground_block_size: toInt(document.getElementById('det_cpsam_fg_block')?.value),
-        foreground_offset: toInt(document.getElementById('det_cpsam_fg_offset')?.value)
+        foreground_offset: toInt(document.getElementById('det_cpsam_fg_offset')?.value),
+        // Robust normalization params
+        use_robust_normalization: document.getElementById('det_cpsam_use_robust_norm')?.value === 'true',
+        background_radius: toInt(document.getElementById('det_cpsam_background_radius')?.value) || 50,
+        noise_radius: toInt(document.getElementById('det_cpsam_noise_radius')?.value) || 25,
+        save_debug_images: document.getElementById('det_cpsam_save_debug_images')?.value === 'true'
       },
       overlay: {
         mode: document.getElementById('det_cpsam_overlay_mode')?.value,

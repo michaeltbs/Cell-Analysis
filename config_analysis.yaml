@@ -1,84 +1,86 @@
+auto_threshold: true
+blend_base_color: '#0000ff'
+blend_formats:
+- png
+- tiff
+blend_other_color: '#80ff00'
+blend_overlap_color: '#ff0000'
+centroid_overlap_fraction: 0.5
 channel_config:
-- color: yellow
+- color: '#a358fe'
   enabled: true
   index: 0
-  name: PomC
-- color: '#00ff28'
+  name: Casp3
+- color: '#ffd500'
   enabled: true
   index: 1
-  name: DREADD
-- color: magenta
+  name: Fos
+- color: '#24ff32'
   enabled: true
   index: 2
-  name: FOS
-- color: cyan
+  name: Gal
+- color: '#1f39ff'
   enabled: true
   index: 3
-  name: Gal
+  name: DAPI
 channels_limit: 4
-coexpression:
-  blend_base_color: '#b9b9b9'
-  blend_channel_colors:
-    '0': yellow
-    '1': '#00ff28'
-    '2': magenta
-    '3': cyan
-  blend_other_color: '#40c4ff'
-  blend_output_formats:
-  - png
-  - tiff
-  - jpg
-  blend_overlap_color: '#ff0000'
-  blend_overlap_fraction: 0.4
-  centroid_max_distance: 10
-  centroid_overlap_fraction: 0.005
-  mode: blend
-  overlay_output_formats:
-  - png
-  sweep:
-    enabled: false
-    modes: []
-    sample_key: ''
+coexpr_mode: blend
 combos_enabled:
 - 2
 - 3
 - 4
-debug: false
-fallback_from_overlays: false
-overlay_colors:
-  2-way: blue
-  3-way: green
-  4-way: cyan
-overlay_params:
-  base_channel_index: 2
-  centroid_marker_size: 10
-  colors_by_k:
-    '2': blue
-    '3': green
-    '4': cyan
-  dpi: 800
+dataset_name: ''
+input_dir: /app/results/final/TV3
+output_dir: /app/results/final/CoexTV3
+overlap_threshold: 30
+overlay_formats:
+- png
+overlay_visualization:
+  centroid_heatmap: true
+  centroid_size: 3
+  color_k2: '#ff0000'
+  color_k3: '#ff0000'
+  color_k4: '#ff0000'
+  dpi: 600
   even_layout: grid
   figure_type: mask
-  fill_alpha: 1
-  line_width: 5
-  overlay_style: mixed
-  save_centroid_heatmap: true
-  single_positive_color: gray
-paths:
-  base_results_dir: /app/results/Final/TV2
-  output_dir: /app/results/TV2_Coex_heat_8
-save_composite_figure: true
+  fill_alpha: 0.45
+  overlay_style: filled
+  show_only_coexpressing: true
+  single_color: '#808080'
+save_figure: true
 selected_combos:
 - - 0
   - 1
 - - 0
   - 2
+- - 0
+  - 3
+- - 1
+  - 2
+- - 1
+  - 3
+- - 2
+  - 3
+- - 0
+  - 1
+  - 2
+- - 0
+  - 1
+  - 3
+- - 0
+  - 2
+  - 3
+- - 1
+  - 2
   - 3
 - - 0
   - 1
   - 2
   - 3
-testing:
-  enabled: true
-  mode: simple
-use_detection_masks: true
+test_mode:
+  seed: ''
+  sweep_modes: []
+  sweep_sample: ''
+  type: 'off'
+use_masks: true
