@@ -233,6 +233,90 @@ def _normalize_image(arr: np.ndarray) -> np.ndarray:
         return np.zeros_like(arr, dtype=np.float32)
     return arr / max_val
 
+
+def _robust_background_normalize(
+    img: np.ndarray, 
+    background_radius: int = 50,
+    noise_radius: int = 25,
+    debug: bool = False
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Robuste Normalisierung mit Hintergrund-Schätzung und SNR-Map.
+    
+    Diese Methode:
+    1. Schätzt den lokalen Hintergrund mit großem Median-Filter
+    2. Berechnet lokales Rauschen (Standardabweichung)
+    3. Subtrahiert Hintergrund und normalisiert Signal
+    4. Erstellt SNR-Map für Filterung
+    
+    Args:
+        img: Input-Bild (2D array)
+        background_radius: Radius für Hintergrund-Schätzung (größer = glatter)
+        noise_radius: Radius für Rausch-Schätzung (kleiner als background)
+        debug: Wenn True, gibt zusätzliche Debug-Info aus
+    
+    Returns:
+        Tuple von:
+        - signal_normalized: Hintergrund-subtrahiert und normalisiert (0-1)
+        - snr_map: Signal-to-Noise Ratio pro Pixel
+        - background: Geschätzter Hintergrund
+    """
+    from scipy.ndimage import median_filter, uniform_filter
+    
+    img = np.asarray(img, dtype=np.float32)
+    if img.size == 0:
+        return img, np.zeros_like(img), np.zeros_like(img)
+    
+    # Sicherstellen dass Radien sinnvoll sind
+    h, w = img.shape
+    background_radius = min(background_radius, min(h, w) // 4)
+    background_radius = max(background_radius, 3)
+    noise_radius = min(noise_radius, background_radius // 2)
+    noise_radius = max(noise_radius, 3)
+    
+    # 1. Hintergrund-Schätzung mit großem Median-Filter
+    # Median ist robust gegen helle Zellen (Ausreißer)
+    background = median_filter(img, size=background_radius)
+    
+    # 2. Lokale Statistiken für Rausch-Schätzung
+    # Verwende Fenster kleiner als Hintergrund für feinere Rausch-Details
+    local_mean = uniform_filter(img, size=noise_radius)
+    local_sqr_mean = uniform_filter(img ** 2, size=noise_radius)
+    local_var = np.maximum(local_sqr_mean - local_mean ** 2, 0)
+    local_std = np.sqrt(local_var)
+    
+    # Minimale Standardabweichung um Division durch 0 zu vermeiden
+    # Schätze globales Rauschen als Fallback
+    global_noise = float(np.percentile(local_std[local_std > 0], 50)) if np.any(local_std > 0) else 1.0
+    local_std = np.maximum(local_std, global_noise * 0.1)
+    
+    # 3. Signal-Extraktion (Hintergrund-Subtraktion)
+    signal = np.clip(img - background, 0, None)
+    
+    # 4. SNR-Map: Wie stark ist Signal über lokalem Rauschen
+    snr_map = signal / local_std
+    
+    # 5. Signal-Normalisierung für Cellpose (0-1 Range)
+    # Verwende 99.5-Percentil um Ausreißer zu ignorieren
+    signal_p995 = float(np.percentile(signal, 99.5))
+    if signal_p995 > 0:
+        signal_normalized = np.clip(signal / signal_p995, 0, 1).astype(np.float32)
+    else:
+        # Fallback: einfache Normalisierung
+        signal_max = float(np.max(signal))
+        if signal_max > 0:
+            signal_normalized = (signal / signal_max).astype(np.float32)
+        else:
+            signal_normalized = np.zeros_like(signal, dtype=np.float32)
+    
+    if debug:
+        print(f"[DEBUG] Background range: {background.min():.2f} - {background.max():.2f}")
+        print(f"[DEBUG] Signal range: {signal.min():.2f} - {signal.max():.2f}")
+        print(f"[DEBUG] SNR range: {snr_map.min():.2f} - {snr_map.max():.2f}")
+        print(f"[DEBUG] Global noise estimate: {global_noise:.4f}")
+    
+    return signal_normalized, snr_map, background
+
 def _preprocess_image(img: np.ndarray, proc_cfg: Dict[str, Any]) -> np.ndarray:
     """Apply optional preprocessing (CLAHE, tophat, contrast stretch)."""
     if not isinstance(proc_cfg, dict) or not proc_cfg:
@@ -402,8 +486,22 @@ def _split_touching_cells(mask: np.ndarray, proc_cfg: Dict[str, Any], min_area: 
         return mask
     return new_mask.astype(np.uint16)
 
-def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_shape: Tuple[int, int]) -> Tuple[np.ndarray, Dict[str, Any]]:
-    """Apply geometric and intensity filters to mask labels based on config."""
+def _apply_filters(
+    mask: np.ndarray, 
+    gray_norm: np.ndarray, 
+    cfg: dict, 
+    image_shape: Tuple[int, int],
+    snr_map: Optional[np.ndarray] = None
+) -> Tuple[np.ndarray, Dict[str, Any]]:
+    """Apply geometric and intensity filters to mask labels based on config.
+    
+    Args:
+        mask: Labeled mask from Cellpose
+        gray_norm: Normalized grayscale image (0-1)
+        cfg: Configuration dictionary
+        image_shape: (height, width) of image
+        snr_map: Optional SNR map from robust normalization (für SNR-basierte Filterung)
+    """
     filters_cfg = cfg.get("filters", {}) or {}
     proc_cfg = cfg.get("processing", {}) or {}
     adv_cfg = cfg.get("advanced_filtering", {}) or {}
@@ -426,12 +524,16 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
 
     remove_edge = bool(proc_cfg.get("remove_edge_cells", False))
     
-    # Intensity mode: "max" = use max_intensity, "mean" = use mean_intensity, "both" = use both
+    # Intensity mode: "max" = use max_intensity, "mean" = use mean_intensity, "both" = use both, "snr" = use SNR-map
     intensity_mode = str(adv_cfg.get("intensity_mode", "max") or "max").lower()
     # Threshold for max_intensity filter (percentage of global max, e.g. 0.1 = 10%)
     max_intensity_threshold = float(adv_cfg.get("max_intensity_threshold", 0.1) or 0.1)
     # Minimum local contrast: cell max must exceed cell mean by this factor
     min_local_contrast = float(adv_cfg.get("min_local_contrast", 1.2) or 1.2)
+    # SNR threshold for snr mode (minimum mean SNR within cell)
+    snr_threshold = float(adv_cfg.get("snr_threshold", 2.0) or 2.0)
+    # Use robust normalization with SNR-map
+    use_robust_norm = intensity_mode == "snr" or bool(adv_cfg.get("use_robust_normalization", False))
 
     flat = gray_norm[np.isfinite(gray_norm)]
     if flat.size == 0:
@@ -520,8 +622,28 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
         # This filters out flat/uniform regions that are not real cells
         local_contrast = max_intensity / mean_intensity if mean_intensity > 1e-6 else 0.0
         
+        # SNR-based filtering using the SNR map (if provided)
+        cell_snr_mean = 0.0
+        cell_snr_max = 0.0
+        if snr_map is not None and intensity_mode == "snr":
+            # Get SNR values within this cell
+            cell_mask_region = mask == region.label
+            cell_snr_values = snr_map[cell_mask_region]
+            if cell_snr_values.size > 0:
+                cell_snr_mean = float(np.mean(cell_snr_values))
+                cell_snr_max = float(np.max(cell_snr_values))
+        
         # Apply intensity filter based on mode
-        if keep and intensity_mode == "max":
+        if keep and intensity_mode == "snr":
+            # SNR-based filtering: uses the SNR map from robust normalization
+            # More robust against variable background than intensity-based methods
+            if cell_snr_max < snr_threshold:
+                keep = False
+                filter_reason = "snr"
+            elif cell_snr_mean < snr_threshold * 0.5:  # Mean should be at least half of threshold
+                keep = False
+                filter_reason = "snr"
+        elif keep and intensity_mode == "max":
             # Use max_intensity for filtering - best for fluorescent signals
             # Cell must have max intensity above threshold AND show local contrast
             if rel_max_intensity < max_intensity_threshold:
@@ -543,7 +665,7 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
 
         # Advanced filtering (SNR and background floor) - now uses max_intensity when mode is "max"
         if keep and enable_adv:
-            check_intensity = max_intensity if intensity_mode == "max" else mean_intensity
+            check_intensity = max_intensity if intensity_mode in ("max", "snr") else mean_intensity
             if check_intensity <= bg_floor:
                 keep = False
                 filter_reason = "bg_floor"
@@ -1014,7 +1136,29 @@ def _segment_dir(
                     print(f"[WARN] {img_path.name}: diameter {diameter:.1f}px is below optimal but cannot upscale further")
             
             gray_proc = _preprocess_image(gray_raw, proc_img)
-            gray_norm = _normalize_image(gray_proc)
+            
+            # Check if we should use robust background normalization (SNR mode)
+            adv_cfg_img = cfg_scaled.get("advanced_filtering", {}) or {}
+            intensity_mode = str(adv_cfg_img.get("intensity_mode", "max") or "max").lower()
+            use_robust_norm = intensity_mode == "snr" or bool(adv_cfg_img.get("use_robust_normalization", False))
+            
+            snr_map = None
+            background_img = None
+            
+            if use_robust_norm:
+                # Use robust background normalization for better artifact removal
+                background_radius = int(adv_cfg_img.get("background_radius", 50) or 50)
+                noise_radius = int(adv_cfg_img.get("noise_radius", 25) or 25)
+                gray_norm, snr_map, background_img = _robust_background_normalize(
+                    gray_proc, 
+                    background_radius=background_radius,
+                    noise_radius=noise_radius,
+                    debug=False
+                )
+                print(f"[INFO] {img_path.name}: using robust normalization (bg_radius={background_radius}, SNR range={snr_map.min():.1f}-{snr_map.max():.1f})")
+            else:
+                # Standard normalization
+                gray_norm = _normalize_image(gray_proc)
 
             if masks_arr is None:
                 masks_arr, _, _ = model.eval(
@@ -1038,7 +1182,10 @@ def _segment_dir(
                         print(f"[INFO] {img_path.name}: split touching cells {orig_count}->{new_count}")
                     masks_arr = split_mask
 
-                filtered_mask, filter_stats = _apply_filters(masks_arr, gray_norm, cfg_scaled, gray_norm.shape)
+                # Pass SNR map to filter function for SNR-based filtering
+                filtered_mask, filter_stats = _apply_filters(
+                    masks_arr, gray_norm, cfg_scaled, gray_norm.shape, snr_map=snr_map
+                )
                 if filter_stats.get("removed"):
                     reasons = filter_stats.get("filter_reasons", {})
                     reasons_str = ", ".join(f"{k}={v}" for k, v in reasons.items() if v > 0)
@@ -1057,6 +1204,37 @@ def _segment_dir(
                     _save_overlay(gray_norm, masks_arr, overlay_png, color=color, line_width=line_w, dpi=dpi, figsize=figsize, mode=mode)
                 except Exception as e:
                     print(f"[WARN] overlay failed for {img_path.name}: {e}")
+            
+            # Save debug heatmaps if enabled (SNR map and background)
+            save_debug_images = bool(adv_cfg_img.get("save_debug_images", False))
+            if save_debug_images and snr_map is not None:
+                try:
+                    import matplotlib.pyplot as plt
+                    
+                    # Save SNR heatmap
+                    snr_png = out_dir / f"{img_path.stem}_snr_heatmap.png"
+                    fig, ax = plt.subplots(figsize=figsize, dpi=dpi//2)
+                    snr_clipped = np.clip(snr_map, 0, 10)  # Clip for better visualization
+                    im = ax.imshow(snr_clipped, cmap='hot', interpolation='nearest')
+                    ax.set_axis_off()
+                    plt.colorbar(im, ax=ax, label='SNR')
+                    ax.set_title(f'SNR Map - {img_path.name}')
+                    fig.savefig(snr_png, bbox_inches='tight', pad_inches=0.1)
+                    plt.close(fig)
+                    
+                    # Save background estimate
+                    if background_img is not None:
+                        bg_png = out_dir / f"{img_path.stem}_background.png"
+                        fig, ax = plt.subplots(figsize=figsize, dpi=dpi//2)
+                        ax.imshow(background_img, cmap='gray', interpolation='nearest')
+                        ax.set_axis_off()
+                        ax.set_title(f'Estimated Background - {img_path.name}')
+                        fig.savefig(bg_png, bbox_inches='tight', pad_inches=0.1)
+                        plt.close(fig)
+                    
+                    print(f"[DEBUG] Saved SNR heatmap: {snr_png.name}")
+                except Exception as e:
+                    print(f"[WARN] Could not save debug images: {e}")
 
             labeled = measure.label(masks_arr > 0)
             regions = measure.regionprops(labeled, intensity_image=gray_raw)
