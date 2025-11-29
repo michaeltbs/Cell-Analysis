@@ -430,6 +430,8 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
     intensity_mode = str(adv_cfg.get("intensity_mode", "max") or "max").lower()
     # Threshold for max_intensity filter (percentage of global max, e.g. 0.1 = 10%)
     max_intensity_threshold = float(adv_cfg.get("max_intensity_threshold", 0.1) or 0.1)
+    # Minimum local contrast: cell max must exceed cell mean by this factor
+    min_local_contrast = float(adv_cfg.get("min_local_contrast", 1.2) or 1.2)
 
     flat = gray_norm[np.isfinite(gray_norm)]
     if flat.size == 0:
@@ -447,9 +449,11 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
         bg_std = 1e-6
     
     # Compute global intensity stats for threshold calculation
+    # Use median as reference point instead of min for more robust thresholding
     global_max = float(np.percentile(flat, 99.5))
-    global_min = float(np.percentile(flat, 1))
-    intensity_range = global_max - global_min if global_max > global_min else 1.0
+    global_median = float(np.median(flat))
+    # Dynamic range above median (where real signals should be)
+    signal_range = global_max - global_median if global_max > global_median else 1.0
 
     snr_min = float(adv_cfg.get("snr_min", 0.0) or 0.0)
 
@@ -467,7 +471,7 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
     filter_reasons: Dict[str, int] = {
         "min_area": 0, "max_area": 0, "circularity": 0, "hole_ratio": 0,
         "edge": 0, "intensity": 0, "intensity_max": 0, "intensity_mean": 0, 
-        "bg_floor": 0, "snr": 0
+        "low_contrast": 0, "bg_floor": 0, "snr": 0
     }
 
     for region in props:
@@ -507,15 +511,25 @@ def _apply_filters(mask: np.ndarray, gray_norm: np.ndarray, cfg: dict, image_sha
         mean_intensity = float(region.mean_intensity or 0.0)
         max_intensity = float(region.max_intensity or 0.0) if hasattr(region, 'max_intensity') else mean_intensity
         
-        # Calculate relative max intensity (0-1 range based on global intensity range)
-        rel_max_intensity = (max_intensity - global_min) / intensity_range if intensity_range > 0 else 0.0
+        # Calculate relative max intensity based on signal range (above median)
+        # This is more robust than using global_min which can be very low
+        rel_max_intensity = (max_intensity - global_median) / signal_range if signal_range > 0 else 0.0
+        rel_max_intensity = max(0.0, rel_max_intensity)  # Clamp to 0 if below median
+        
+        # Local contrast check: max intensity should be significantly higher than mean
+        # This filters out flat/uniform regions that are not real cells
+        local_contrast = max_intensity / mean_intensity if mean_intensity > 1e-6 else 0.0
         
         # Apply intensity filter based on mode
         if keep and intensity_mode == "max":
-            # Use only max_intensity for filtering - best for fluorescent signals
+            # Use max_intensity for filtering - best for fluorescent signals
+            # Cell must have max intensity above threshold AND show local contrast
             if rel_max_intensity < max_intensity_threshold:
                 keep = False
                 filter_reason = "intensity_max"
+            elif local_contrast < min_local_contrast and min_local_contrast > 1.0:
+                keep = False
+                filter_reason = "low_contrast"
         elif keep and intensity_mode == "mean":
             # Use only mean_intensity (legacy behavior)
             if mean_intensity_threshold > 0.0 and mean_intensity < mean_intensity_threshold:

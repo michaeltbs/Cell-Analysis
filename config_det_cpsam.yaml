@@ -4,7 +4,8 @@ advanced_filtering:
   foreground_block_size: 501
   foreground_offset: 15
   intensity_mode: max
-  max_intensity_threshold: 0.1
+  max_intensity_threshold: 0.15
+  min_local_contrast: 1.3
   snr_min: 2
 cell_filtering: {}
 cellpose:
@@ -49,12 +50,12 @@ overlays:
 paths:
   input_neg: /app/data/Input/TV3_TIFF/Input_neg
   input_pos: /app/data/Input/TV3_TIFF/Input_pos
-  output_root: /app/results/final/TV3
+  output_root: /app/results/final/TV3_test2
 preprocessing:
   clahe: true
   clahe_clip_limit: 0.03
-  contrast_stretch: true
-  tophat: true
+  contrast_stretch: false
+  tophat: false
   tophat_radius: 15
 processing:
   clahe: false
