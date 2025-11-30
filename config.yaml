@@ -71,7 +71,7 @@ microscope:
   current_magnification: 10
   reference_magnification: 10
 model_type: cpsam
-output_results_dir: /app/results/final/TV3_test6
+output_results_dir: /app/results/final/TV3_test7
 ref_mag: 10
 resize_max: 2048
 save_overlay: false

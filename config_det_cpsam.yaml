@@ -11,7 +11,7 @@ advanced_filtering:
   noise_radius: 25
   save_debug_images: false
   signal_percentile: 99.5
-  snr_min: 2
+  snr_min: 2.5
   snr_threshold: 2.5
   use_robust_normalization: false
 cell_filtering: {}
@@ -57,7 +57,7 @@ overlays:
 paths:
   input_neg: /app/data/Input/TV3_TIFF/Input_neg
   input_pos: /app/data/Input/TV3_TIFF/Input_pos
-  output_root: /app/results/final/TV3_test6
+  output_root: /app/results/final/TV3_test7
 preprocessing:
   clahe: true
   clahe_clip_limit: 0.03
