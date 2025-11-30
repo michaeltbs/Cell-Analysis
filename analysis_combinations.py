@@ -45,7 +45,7 @@ selected_combos: []
 
 # Overlay drawing (optional)
 overlay_params:
-  dpi: 200
+  dpi: 300
   line_width: 2
   figsize: [12, 12]
   colors_by_k:
@@ -126,7 +126,7 @@ class ChannelCfg:
 
 @dataclass
 class OverlayParams:
-    dpi: int = 200
+    dpi: int = 300
     line_width: int = 2
     figsize: Sequence[int] = field(default_factory=lambda: (12, 12))
     colors_by_k: Dict[str, str] = field(default_factory=lambda: {"2": "red", "3": "magenta", "4": "cyan"})
@@ -1537,28 +1537,30 @@ def _save_composite_figure(
         ax.set_axis_off()
         if use_mask_panels:
             mask_disp = _prepare_display(normalized_masks[panel_idx].astype(np.float32))
-            ax.imshow(mask_disp, cmap="gray", interpolation="nearest")
+            ax.imshow(mask_disp, cmap="gray", interpolation="bilinear")
             continue
         if img is None:
             ax.text(0.5, 0.5, "n/a", ha="center", va="center", color="red", fontsize=10)
             continue
         arr = _prepare_display(img)
         if arr.ndim == 2:
-            ax.imshow(arr, cmap="gray", interpolation="nearest")
+            ax.imshow(arr, cmap="gray", interpolation="bilinear")
         else:
-            ax.imshow(arr, interpolation="nearest")
+            ax.imshow(arr, interpolation="bilinear")
 
     last_ax = axes_flat[len(images)]
     last_ax.set_title("Co-expression", fontsize=10)
     last_ax.set_axis_off()
-    last_ax.imshow(colored, interpolation="nearest")
+    last_ax.imshow(colored, interpolation="bilinear")
 
     for ax in axes_flat[len(images) + 1 :]:
         ax.set_axis_off()
 
     fig.tight_layout()
     _ensure_dir(out_path.parent)
-    fig.savefig(out_path, dpi=dpi)
+    # Use higher DPI for better quality
+    effective_dpi = max(dpi, 300)
+    fig.savefig(out_path, dpi=effective_dpi, bbox_inches="tight")
     plt.close(fig)
 
 def _glob_channel_files(base: Path, ch: ChannelCfg, use_masks: bool, fallback_overlays: bool) -> Dict[str, Path]:
@@ -1633,12 +1635,14 @@ def _save_overlay(
     colored = styled
     if has_contour:
         colored = _apply_colored_outline(colored, co_mask_rs, multi_color, thickness)
-    fig = plt.figure(figsize=figsize, dpi=dpi)
+    # Use higher quality: ensure minimum DPI 300, bilinear interpolation
+    effective_dpi = max(dpi, 300)
+    fig = plt.figure(figsize=figsize, dpi=effective_dpi)
     ax = plt.axes([0, 0, 1, 1])
-    ax.imshow(colored, interpolation="nearest")
+    ax.imshow(colored, interpolation="bilinear")
     ax.axis("off")
     _ensure_dir(out_path.parent)
-    fig.savefig(out_path, bbox_inches="tight", pad_inches=0)
+    fig.savefig(out_path, bbox_inches="tight", pad_inches=0, dpi=effective_dpi)
     plt.close(fig)
 
 
@@ -1912,13 +1916,14 @@ def _save_centroid_heatmap(
     if not coords:
         return
     ys, xs = zip(*coords)
-    fig = plt.figure(figsize=(display.shape[1] / dpi, display.shape[0] / dpi), dpi=dpi)
+    effective_dpi = max(dpi, 300)
+    fig = plt.figure(figsize=(display.shape[1] / effective_dpi, display.shape[0] / effective_dpi), dpi=effective_dpi)
     ax = plt.axes([0, 0, 1, 1])
-    ax.imshow(display, interpolation="nearest")
+    ax.imshow(display, interpolation="bilinear")
     ax.scatter(xs, ys, s=max(marker_size, 10), c=multi_color, alpha=0.8, edgecolors="none")
     ax.axis("off")
     _ensure_dir(out_path.parent)
-    fig.savefig(out_path, bbox_inches="tight", pad_inches=0)
+    fig.savefig(out_path, bbox_inches="tight", pad_inches=0, dpi=effective_dpi)
     plt.close(fig)
 
 # ------------------------------------------------------------

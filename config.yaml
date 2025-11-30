@@ -16,9 +16,9 @@ channel_levels:
 - index: 0
   level: 5
 - index: 1
-  level: 5
+  level: 2
 - index: 2
-  level: 5
+  level: 3
 - index: 3
   level: 5
 channels:
@@ -35,7 +35,7 @@ cpsam:
     background_radius: 50
     enable_advanced: false
     intensity_mode: global
-    max_intensity_threshold: 0.1
+    max_intensity_threshold: 0.2
     noise_radius: 25
     save_debug_images: false
     snr_min: 2.5
@@ -66,6 +66,7 @@ cpsam:
     split_touching: false
 cur_mag: 5
 det_channel_selection:
+- 1
 - 2
 det_script_path: ''
 diameter: 0
@@ -76,25 +77,14 @@ microscope:
   current_magnification: 10
   reference_magnification: 10
 model_type: cpsam
-output_results_dir: /app/results/final/TV3_test8
+output_results_dir: /app/results/final/TV3_OnlyGalFos
 ref_mag: 10
 resize_max: 2048
 save_overlay: false
 testing:
-  enabled: true
-  levels:
-  - 0
-  - 1
-  - 2
-  - 3
-  - 4
-  - 5
-  - 6
-  - 7
-  - 8
-  - 9
-  mode: advanced
-  samples_per_channel: 1
+  enabled: false
+  mode: disabled
+  samples_per_channel: 0
   seed: null
   specific_image_neg: /app/data/Input/TV3_TIFF/Input_neg/DMH/O567_slice6_5x_stack.tif
   specific_image_pos: /app/data/Input/TV3_TIFF/Input_pos/Arc/O835_slice2_5x_stack.tif

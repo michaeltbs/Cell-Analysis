@@ -909,7 +909,7 @@
                 <label class="flex flex-col"><span class="text-xs text-neutral-500 mb-1">Figure Type</span><select id="ov_figure_type" class="form-select rounded-lg h-9 px-3 text-sm bg-neutral-100 dark:bg-neutral-800/50 border-neutral-300 dark:border-neutral-700"><option value="overlay">Overlay</option><option value="mask">Mask only</option></select></label>
                 <label class="flex flex-col"><span class="text-xs text-neutral-500 mb-1">Layout</span><select id="ov_even_layout" class="form-select rounded-lg h-9 px-3 text-sm bg-neutral-100 dark:bg-neutral-800/50 border-neutral-300 dark:border-neutral-700"><option value="line">Single row</option><option value="grid">Block (2x2)</option></select></label>
                 <label class="flex flex-col"><span class="text-xs text-neutral-500 mb-1">Line Width</span><input id="ov_line_width" type="number" class="form-input rounded-lg h-9 px-3 text-sm bg-neutral-100 dark:bg-neutral-800/50 border-neutral-300 dark:border-neutral-700"/></label>
-                <label class="flex flex-col"><span class="text-xs text-neutral-500 mb-1">DPI</span><input id="ov_dpi" type="number" class="form-input rounded-lg h-9 px-3 text-sm bg-neutral-100 dark:bg-neutral-800/50 border-neutral-300 dark:border-neutral-700"/></label>
+                <label class="flex flex-col"><span class="text-xs text-neutral-500 mb-1">DPI</span><input id="ov_dpi" type="number" value="300" min="100" max="600" class="form-input rounded-lg h-9 px-3 text-sm bg-neutral-100 dark:bg-neutral-800/50 border-neutral-300 dark:border-neutral-700"/></label>
                 <label class="flex flex-col"><span class="text-xs text-neutral-500 mb-1">Overlay Style</span><select id="ov_overlay_style" class="form-select rounded-lg h-9 px-3 text-sm bg-neutral-100 dark:bg-neutral-800/50 border-neutral-300 dark:border-neutral-700"><option value="mixed">Contours + Heatmap</option><option value="contour">Contours only</option><option value="filled">Heatmap only</option><option value="blend">Blend-style</option></select></label>
                 <label class="flex flex-col"><span class="text-xs text-neutral-500 mb-1">Fill Opacity</span><input id="ov_fill_alpha" type="number" min="0" max="1" step="0.05" value="0.45" class="form-input rounded-lg h-9 px-3 text-sm bg-neutral-100 dark:bg-neutral-800/50 border-neutral-300 dark:border-neutral-700"/></label>
                 <label class="flex flex-col"><span class="text-xs text-neutral-500 mb-1">Centroid Size</span><input id="ov_centroid_size" type="number" value="4" class="form-input w-16 rounded-lg h-8 px-2 text-sm bg-neutral-100 dark:bg-neutral-800/50 border-neutral-300 dark:border-neutral-700"/></label>
@@ -2004,7 +2004,7 @@ async function loadConfig() {
     document.getElementById('ov_figure_type').value = ov.figure_type || 'overlay';
     document.getElementById('ov_even_layout').value = ov.even_layout || 'line';
     document.getElementById('ov_line_width').value = ov.line_width || '';
-    document.getElementById('ov_dpi').value = ov.dpi || '';
+    document.getElementById('ov_dpi').value = ov.dpi || 300;
     document.getElementById('ov_overlay_style').value = ov.overlay_style || 'mixed';
     document.getElementById('ov_fill_alpha').value = ov.fill_alpha || 0.45;
     document.getElementById('ov_centroid_heatmap').checked = ov.centroid_heatmap !== false;
@@ -2075,7 +2075,7 @@ async function saveConfig(options={}) {
       figure_type: document.getElementById('ov_figure_type').value,
       even_layout: document.getElementById('ov_even_layout').value,
       line_width: toInt(document.getElementById('ov_line_width').value),
-      dpi: toInt(document.getElementById('ov_dpi').value),
+      dpi: toInt(document.getElementById('ov_dpi').value) || 300,
       overlay_style: document.getElementById('ov_overlay_style').value,
       fill_alpha: toFloat(document.getElementById('ov_fill_alpha').value),
       centroid_heatmap: document.getElementById('ov_centroid_heatmap').checked,

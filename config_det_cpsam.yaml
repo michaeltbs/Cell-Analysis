@@ -6,7 +6,7 @@ advanced_filtering:
   foreground_block_size: 501
   foreground_offset: 15
   intensity_mode: global
-  max_intensity_threshold: 0.1
+  max_intensity_threshold: 0.2
   min_local_contrast: 1.0
   noise_radius: 25
   save_debug_images: false
@@ -62,7 +62,7 @@ overlays:
 paths:
   input_neg: /app/data/Input/TV3_TIFF/Input_neg
   input_pos: /app/data/Input/TV3_TIFF/Input_pos
-  output_root: /app/results/final/TV3_test8
+  output_root: /app/results/final/TV3_OnlyGalFos
 preprocessing:
   clahe: true
   clahe_clip_limit: 0.03

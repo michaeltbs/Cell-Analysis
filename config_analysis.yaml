@@ -1,83 +1,53 @@
 auto_threshold: true
-blend_base_color: '#0000ff'
+blend_base_color: '#000000'
 blend_formats:
 - png
 - tiff
-blend_other_color: '#80ff00'
-blend_overlap_color: '#ff0000'
+blend_other_color: '#000000'
+blend_overlap_color: '#000000'
 centroid_overlap_fraction: 0.5
 channel_config:
-- color: '#a358fe'
-  enabled: true
+- color: '#40c4ff'
+  enabled: false
   index: 0
-  name: Casp3
-- color: '#ffd500'
+  name: ''
+- color: '#1eff00'
   enabled: true
   index: 1
-  name: Fos
-- color: '#24ff32'
+  name: ''
+- color: '#3300ff'
   enabled: true
   index: 2
-  name: Gal
-- color: '#1f39ff'
-  enabled: true
-  index: 3
-  name: DAPI
-channels_limit: 4
+  name: ''
+channels_limit: 3
 coexpr_mode: blend
 combos_enabled:
 - 2
-- 3
-- 4
 dataset_name: ''
-input_dir: /app/results/final/TV3
-output_dir: /app/results/final/CoexTV3
+input_dir: /app/results/final/TV3_OnlyGalFos
+output_dir: /app/results/final/TV3_OnlyGalFos/Coex1
 overlap_threshold: 30
 overlay_formats:
 - png
+- tiff
 overlay_visualization:
-  centroid_heatmap: true
-  centroid_size: 3
+  centroid_heatmap: false
+  centroid_size: 4
   color_k2: '#ff0000'
   color_k3: '#ff0000'
   color_k4: '#ff0000'
-  dpi: 600
-  even_layout: grid
+  dpi: 300
+  even_layout: line
   figure_type: mask
-  fill_alpha: 0.45
-  overlay_style: filled
-  show_only_coexpressing: true
+  fill_alpha: 1
+  line_width: 3
+  overlay_style: contour
+  show_only_coexpressing: false
   single_color: '#808080'
 save_figure: true
 selected_combos:
-- - 0
-  - 1
-- - 0
-  - 2
-- - 0
-  - 3
 - - 1
   - 2
-- - 1
-  - 3
-- - 2
-  - 3
-- - 0
-  - 1
-  - 2
-- - 0
-  - 1
-  - 3
-- - 0
-  - 2
-  - 3
-- - 1
-  - 2
-  - 3
-- - 0
-  - 1
-  - 2
-  - 3
 test_mode:
   seed: ''
   sweep_modes: []
