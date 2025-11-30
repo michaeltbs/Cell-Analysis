@@ -658,14 +658,15 @@ def _apply_filters(
             filter_reason = "max_area"
 
         perimeter = float(region.perimeter or 0.0)
-        # Skip circularity check for small cells (<100 pixels) - perimeter is too inaccurate
-        # This is common at low magnifications (5x) where cells are only a few pixels
-        if keep and perimeter > 0.0 and (min_circ or max_circ) and area >= 100:
+        # Skip circularity check if disabled (min_circ=0 and max_circ=1 means disabled)
+        # Also skip for small cells (<100 pixels) - perimeter is too inaccurate at low magnifications
+        circ_enabled = (min_circ > 0.0) or (max_circ > 0.0 and max_circ < 1.0)
+        if keep and perimeter > 0.0 and circ_enabled and area >= 100:
             circularity = (4.0 * math.pi * area) / (perimeter ** 2) if perimeter > 0 else 1.0
-            if min_circ and circularity < min_circ:
+            if min_circ > 0.0 and circularity < min_circ:
                 keep = False
                 filter_reason = "circularity"
-            if max_circ and circularity > max_circ:
+            if max_circ > 0.0 and max_circ < 1.0 and circularity > max_circ:
                 keep = False
                 filter_reason = "circularity"
 

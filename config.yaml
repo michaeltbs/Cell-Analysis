@@ -38,10 +38,15 @@ cpsam:
     max_intensity_threshold: 0.1
     noise_radius: 25
     save_debug_images: false
-    snr_min: 2
+    snr_min: 2.5
     snr_threshold: 2.5
     use_robust_normalization: false
-  cell_filtering: {}
+  cell_filtering:
+    max_area: 32000
+    max_circularity: 1
+    max_hole_ratio: 0.5
+    min_area: 16
+    min_circularity: 0
   cellpose:
     resize_max: 2048
   conditions: {}
@@ -71,7 +76,7 @@ microscope:
   current_magnification: 10
   reference_magnification: 10
 model_type: cpsam
-output_results_dir: /app/results/final/TV3_test7
+output_results_dir: /app/results/final/TV3_test8
 ref_mag: 10
 resize_max: 2048
 save_overlay: false

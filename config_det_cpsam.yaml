@@ -14,7 +14,12 @@ advanced_filtering:
   snr_min: 2.5
   snr_threshold: 2.5
   use_robust_normalization: false
-cell_filtering: {}
+cell_filtering:
+  max_area: 32000
+  max_circularity: 1
+  max_hole_ratio: 0.5
+  min_area: 16
+  min_circularity: 0
 cellpose:
   batch_size: 4
   cellprob_threshold: 0.2
@@ -57,7 +62,7 @@ overlays:
 paths:
   input_neg: /app/data/Input/TV3_TIFF/Input_neg
   input_pos: /app/data/Input/TV3_TIFF/Input_pos
-  output_root: /app/results/final/TV3_test7
+  output_root: /app/results/final/TV3_test8
 preprocessing:
   clahe: true
   clahe_clip_limit: 0.03
