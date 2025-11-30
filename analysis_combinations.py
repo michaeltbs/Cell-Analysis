@@ -524,17 +524,32 @@ def _ensure_rgb(arr: np.ndarray) -> np.ndarray:
 
 
 def _mask_outline(mask_bool: np.ndarray, thickness: int = 1) -> np.ndarray:
+    """Create outline of mask with specified thickness."""
     mask_bool = np.asarray(mask_bool, dtype=bool)
     if not np.any(mask_bool):
         return mask_bool
-    steps = max(int(round(thickness)), 1)
-    current = mask_bool.copy()
-    for _ in range(steps):
-        next_eroded = morphology.binary_erosion(current, morphology.disk(1))
-        if not np.any(next_eroded):
-            break
-        current = next_eroded
-    outline = mask_bool & ~current
+    
+    # For thick outlines, dilate first then subtract original
+    # This creates an outline AROUND the mask, not inside it
+    thickness = max(int(round(thickness)), 1)
+    
+    if thickness >= 2:
+        # Dilate mask to create outer boundary
+        dilated = morphology.binary_dilation(mask_bool, morphology.disk(thickness))
+        # Also erode slightly for inner boundary
+        eroded = morphology.binary_erosion(mask_bool, morphology.disk(max(1, thickness // 2)))
+        if not np.any(eroded):
+            eroded = mask_bool
+        # Outline is dilated minus eroded (thick ring around cells)
+        outline = dilated & ~eroded
+    else:
+        # Thin outline: just erode once
+        eroded = morphology.binary_erosion(mask_bool, morphology.disk(1))
+        if not np.any(eroded):
+            outline = mask_bool
+        else:
+            outline = mask_bool & ~eroded
+    
     if not np.any(outline):
         outline = mask_bool
     return outline
@@ -1138,6 +1153,7 @@ def _run_coexpression_mode(
                         figsize=tuple(cfg.overlay_params.figsize),
                         style=cfg.overlay_params.overlay_style,
                         fill_alpha=cfg.overlay_params.fill_alpha,
+                        show_only_coexpressing=True,  # Nur doppelpositive anzeigen
                     )
                 else:
                     _save_overlay(
@@ -1613,10 +1629,16 @@ def _save_overlay(
     style: str = "contour",
     fill_alpha: float = 0.45,
 ) -> None:
+    """
+    Save overlay showing ONLY co-expressing cells on the base channel background.
+    Cells are clearly circled with thick contours.
+    """
     base_mask = np.asarray(base_mask, dtype=bool)
     co_mask = np.asarray(co_mask, dtype=bool)
     if base_mask.size == 0:
         return
+    
+    # Get background from base image
     background = _extract_background(base_img)
     display = _prepare_display(background)
     if display.size > 0:
@@ -1624,22 +1646,34 @@ def _save_overlay(
     else:
         target_shape = base_mask.shape
         display = _prepare_display(base_mask.astype(np.float32))
+    
+    # Resize co_mask to target shape
     co_mask_rs = _resize_bool(co_mask, target_shape)
-    styled = display.copy()
+    
+    # Start with background
+    styled = _ensure_rgb(display).copy()
+    
     style_norm = (style or "contour").lower()
     has_fill = style_norm in ("filled", "mixed")
     has_contour = style_norm in ("contour", "mixed")
-    if has_fill:
+    
+    # Use thicker lines for better visibility (minimum 2, scale with config)
+    thickness = max(2, _line_width_to_thickness(lw) + 1)
+    
+    # Apply fill if requested (semi-transparent)
+    if has_fill and np.any(co_mask_rs):
         styled = _apply_colored_fill(styled, co_mask_rs, multi_color, alpha=fill_alpha)
-    thickness = _line_width_to_thickness(lw)
-    colored = styled
-    if has_contour:
-        colored = _apply_colored_outline(colored, co_mask_rs, multi_color, thickness)
-    # Use higher quality: ensure minimum DPI 300, bilinear interpolation
+    
+    # Always draw thick contours for clear cell circling
+    if np.any(co_mask_rs):
+        # Use thicker outline for visibility
+        styled = _apply_colored_outline(styled, co_mask_rs, multi_color, thickness)
+    
+    # High quality output
     effective_dpi = max(dpi, 300)
     fig = plt.figure(figsize=figsize, dpi=effective_dpi)
     ax = plt.axes([0, 0, 1, 1])
-    ax.imshow(colored, interpolation="bilinear")
+    ax.imshow(styled, interpolation="bilinear")
     ax.axis("off")
     _ensure_dir(out_path.parent)
     fig.savefig(out_path, bbox_inches="tight", pad_inches=0, dpi=effective_dpi)
@@ -1660,12 +1694,18 @@ def _save_multichannel_overlay(
     style: str = "contour",
     fill_alpha: float = 0.45,
     output_formats: Sequence[str] = ("png",),
+    show_only_coexpressing: bool = True,
 ) -> None:
     """
-    Erzeugt ein Overlay mit individuellen Farben pro Kanal.
-    - Einzelne Kanäle in ihrer spezifischen Farbe
-    - Co-exprimierende Regionen in overlap_color
-    - Speichert in den angegebenen Formaten (png, tiff, jpg)
+    Creates overlay showing co-expressing cells clearly circled.
+    
+    When show_only_coexpressing=True (default):
+    - Only co-expressing cells are shown with thick colored circles
+    - Background is the base channel image
+    
+    When show_only_coexpressing=False:
+    - Individual channels shown in their colors
+    - Co-expressing regions highlighted in overlap_color
     """
     if not mask_list:
         return
@@ -1678,59 +1718,61 @@ def _save_multichannel_overlay(
         target_shape = mask_list[0].shape
         display = _prepare_display(mask_list[0].astype(np.float32))
     
-    styled = display.copy()
+    styled = _ensure_rgb(display).copy()
     style_norm = (style or "contour").lower()
     has_fill = style_norm in ("filled", "mixed")
     has_contour = style_norm in ("contour", "mixed")
-    thickness = _line_width_to_thickness(lw)
+    
+    # Use thicker lines for better visibility
+    thickness = max(2, _line_width_to_thickness(lw) + 1)
     
     # Resize co_mask
     co_mask_rs = _resize_bool(np.asarray(co_mask, dtype=bool), target_shape)
     
-    # Erstelle Union aller Masken für Single-Channel-Bereiche
-    all_masks_union = np.zeros(target_shape, dtype=bool)
-    for mask in mask_list:
-        all_masks_union |= _resize_bool(np.asarray(mask, dtype=bool), target_shape)
-    
-    # Single-positive Bereiche (in Kanälen vorhanden, aber nicht co-expressing)
-    single_positive = all_masks_union & ~co_mask_rs
-    
-    # Zeichne einzelne Kanäle in ihren Farben
-    for idx, mask in enumerate(mask_list):
-        if idx >= len(combo_channels):
-            continue
-        ch_id = combo_channels[idx]
-        ch_color = channel_colors.get(ch_id, "#808080")
+    if show_only_coexpressing:
+        # ONLY show co-expressing cells - clear and simple
+        if has_fill and co_mask_rs.any():
+            styled = _apply_colored_fill(styled, co_mask_rs, overlap_color, alpha=fill_alpha)
+        if co_mask_rs.any():
+            styled = _apply_colored_outline(styled, co_mask_rs, overlap_color, thickness)
+    else:
+        # Show individual channels + co-expressing overlay
+        for idx, mask in enumerate(mask_list):
+            if idx >= len(combo_channels):
+                continue
+            ch_id = combo_channels[idx]
+            ch_color = channel_colors.get(ch_id, "#808080")
+            
+            mask_rs = _resize_bool(np.asarray(mask, dtype=bool), target_shape)
+            # Only areas that are NOT co-expressing
+            ch_single = mask_rs & ~co_mask_rs
+            
+            if has_fill and ch_single.any():
+                styled = _apply_colored_fill(styled, ch_single, ch_color, alpha=fill_alpha * 0.6)
+            if has_contour and ch_single.any():
+                styled = _apply_colored_outline(styled, ch_single, ch_color, thickness)
         
-        mask_rs = _resize_bool(np.asarray(mask, dtype=bool), target_shape)
-        # Nur Bereiche, die nicht co-expressing sind
-        ch_single = mask_rs & ~co_mask_rs
-        
-        if has_fill and ch_single.any():
-            styled = _apply_colored_fill(styled, ch_single, ch_color, alpha=fill_alpha * 0.6)
-        if has_contour and ch_single.any():
-            styled = _apply_colored_outline(styled, ch_single, ch_color, thickness)
+        # Draw co-expressing regions in overlap_color
+        if has_fill and co_mask_rs.any():
+            styled = _apply_colored_fill(styled, co_mask_rs, overlap_color, alpha=fill_alpha)
+        if co_mask_rs.any():
+            styled = _apply_colored_outline(styled, co_mask_rs, overlap_color, thickness)
     
-    # Zeichne co-expressing Regionen in overlap_color
-    if has_fill and co_mask_rs.any():
-        styled = _apply_colored_fill(styled, co_mask_rs, overlap_color, alpha=fill_alpha)
-    if has_contour and co_mask_rs.any():
-        styled = _apply_colored_outline(styled, co_mask_rs, overlap_color, thickness)
-    
-    # Höhere Qualität: DPI 300, bilineare Interpolation
-    fig = plt.figure(figsize=figsize, dpi=300)
+    # High quality output
+    effective_dpi = max(dpi, 300)
+    fig = plt.figure(figsize=figsize, dpi=effective_dpi)
     ax = plt.axes([0, 0, 1, 1])
     ax.imshow(styled, interpolation="bilinear")
     ax.axis("off")
     _ensure_dir(out_path.parent)
     
-    # Speichere in gewählten Formaten
+    # Save in requested formats
     formats = [fmt.lower().strip() for fmt in output_formats] if output_formats else ["png"]
     
     for fmt in formats:
         if fmt == "png":
             out_file = out_path.with_suffix('.png')
-            fig.savefig(out_file, bbox_inches="tight", pad_inches=0, dpi=300)
+            fig.savefig(out_file, bbox_inches="tight", pad_inches=0, dpi=effective_dpi)
         elif fmt in ("tiff", "tif"):
             out_file = out_path.with_suffix('.tif')
             try:
@@ -1742,7 +1784,7 @@ def _save_multichannel_overlay(
                 pass
         elif fmt in ("jpg", "jpeg"):
             out_file = out_path.with_suffix('.jpg')
-            fig.savefig(out_file, bbox_inches="tight", pad_inches=0, dpi=300, format='jpg', quality=95)
+            fig.savefig(out_file, bbox_inches="tight", pad_inches=0, dpi=effective_dpi, format='jpg')
     
     plt.close(fig)
 
