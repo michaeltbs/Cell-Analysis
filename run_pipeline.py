@@ -29,16 +29,31 @@ def _print_env() -> None:
     except Exception:
         version = "<unknown>"
     print(f"[env] torch={version}")
+    
+    # Check CUDA (NVIDIA)
     try:
         cuda_ok = torch.cuda.is_available()
     except Exception:
         cuda_ok = False
     print(f"[env] cuda_available={cuda_ok}")
+    
+    # Check MPS (Apple Silicon)
+    try:
+        mps_ok = hasattr(torch.backends, 'mps') and torch.backends.mps.is_available()
+    except Exception:
+        mps_ok = False
+    print(f"[env] mps_available={mps_ok}")
+    
+    # Print device info
     if cuda_ok:
         try:
-            print(f"[env] device={torch.cuda.get_device_name(0)}")
+            print(f"[env] device=NVIDIA {torch.cuda.get_device_name(0)}")
         except Exception:
             pass
+    elif mps_ok:
+        print("[env] device=Apple Silicon (MPS)")
+    else:
+        print("[env] device=CPU")
 
 
 def _load_cfg(path: Path) -> dict:

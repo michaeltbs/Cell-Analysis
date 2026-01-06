@@ -1,0 +1,36 @@
+# Docker Compose for Apple Silicon (M1/M2/M3 Macs)
+# 
+# IMPORTANT: Docker on macOS cannot access the Apple Silicon GPU (Metal/MPS).
+# This configuration runs the container in CPU-only mode.
+# For GPU acceleration with MPS, run the application natively (see start_native_mac.sh).
+#
+# Usage:
+#   docker compose -f docker-compose.apple.yml build
+#   docker compose -f docker-compose.apple.yml up
+#
+services:
+  cellanalysis:
+    build:
+      context: .
+      target: apple
+      args:
+        # macOS default UID/GID
+        USER_ID: ${HOST_UID:-501}
+        GROUP_ID: ${HOST_GID:-20}
+    image: cellanalysis:apple-arm64
+    platform: linux/arm64
+    container_name: cellanalysis_apple
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - HOST_DATA=${HOST_DATA:-./data}
+      - CONTAINER_DATA_ROOT=${HOST_DATA:-/data}
+      # MPS is not available in Docker, but these vars are set for consistency
+      - PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0
+      # Force CPU mode since MPS is not available in Docker
+      - CELLPOSE_USE_GPU=0
+    volumes:
+      - ./data:/data:rw
+      - ./results:/app/results:rw
+      - .:/app:rw
