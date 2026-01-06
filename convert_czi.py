@@ -424,23 +424,49 @@ def process_czi_file(inp_path: str, group: str, target_size: Optional[int], chan
                     meta = {'axes': axes}
                     desc = json.dumps({'shape': [int(x) for x in arr.shape]})
                     
-                    # For CYX, we can use imagej=True to ensure it opens correctly as a stack
-                    is_imagej = (layout == 'CYX')
+                    # Check if file size would exceed ImageJ limits (~4GB or large dimensions)
+                    # ImageJ format has limitations, so only use it for smaller files
+                    total_pixels = np.prod(arr.shape)
+                    bytes_per_pixel = 2 if out_dtype == 'uint16' else 1
+                    estimated_size = total_pixels * bytes_per_pixel
+                    
+                    # Use ImageJ format only for smaller files (<2GB to be safe)
+                    is_imagej = (layout == 'CYX') and (estimated_size < 2_000_000_000)
                     
                     if axes == 'YXC' and arr.shape[-1] == 3:
                         photometric = 'rgb'
                     else:
                         photometric = 'minisblack'
-                        
-                    tiff.imwrite(str(stack_path), arr, photometric=photometric, metadata=meta, description=desc, imagej=is_imagej)
+                    
+                    # Write with bigtiff if needed for large files
+                    use_bigtiff = estimated_size > 3_500_000_000
+                    
+                    written = tiff.imwrite(
+                        str(stack_path), 
+                        arr, 
+                        photometric=photometric, 
+                        metadata=meta, 
+                        description=desc, 
+                        imagej=is_imagej,
+                        bigtiff=use_bigtiff
+                    )
+                    
+                    # Verify the file was written correctly
+                    if stack_path.exists() and stack_path.stat().st_size > 1000:
+                        if verbose: print(f"[SAVE] {stack_path.name}")
+                        saved_any = True
+                        if saved_main_path is None:
+                            saved_main_path = str(stack_path)
+                    else:
+                        print(f"[WARN] Save stack failed: {estimated_size} requested and {stack_path.stat().st_size if stack_path.exists() else 0} written")
                 else:
                     # Fallback to skimage (mostly handles YXC or CYX reasonably well, but less control)
                     skio.imsave(str(stack_path), arr, check_contrast=False)
+                    if verbose: print(f"[SAVE] {stack_path.name}")
+                    saved_any = True
+                    if saved_main_path is None:
+                        saved_main_path = str(stack_path)
                     
-                if verbose: print(f"[SAVE] {stack_path.name}")
-                saved_any = True
-                if saved_main_path is None:
-                    saved_main_path = str(stack_path)
             except Exception as e:
                 print(f"[WARN] Save stack failed: {e}")
 

@@ -1,0 +1,65 @@
+dataset_name: ''
+channels:
+- index: 0
+  name: Glp1r
+  enabled: true
+- index: 1
+  name: PomC
+  enabled: true
+- index: 2
+  name: Gal
+  enabled: true
+- index: 3
+  name: GAL
+  enabled: false
+combos_enabled:
+- 2
+- 3
+selected_combos:
+- - 0
+  - 1
+- - 0
+  - 2
+- - 1
+  - 2
+- - 0
+  - 1
+  - 2
+overlay_params:
+  dpi: 600
+  line_width: 3
+  figsize:
+  - 12
+  - 12
+  colors_by_k:
+    '2': red
+    '3': magenta
+    '4': cyan
+  single_positive_color: gray
+  base_channel_index: null
+  figure_type: mask
+  even_layout: line
+  overlay_style: contour
+  fill_alpha: 0.45
+  save_centroid_heatmap: false
+  centroid_marker_size: 80
+coexpression:
+  mode: blend
+  centroid_max_distance: 8.0
+  blend_base_color: '#b9b9b9'
+  blend_other_color: '#40c4ff'
+  blend_overlap_color: '#ff0000'
+  blend_overlap_fraction: 0.02
+  centroid_overlap_fraction: 0.5
+  blend_channel_colors:
+    0: '#00ffff'
+    1: '#d4ff00'
+    2: '#00ff37'
+    3: '#00ff37'
+  sweep:
+    enabled: false
+    modes:
+    - overlap
+    - either
+    - intersection
+    sample_key: ''

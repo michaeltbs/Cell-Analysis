@@ -1,0 +1,30 @@
+input_root: /app/data/Input/Glp1r_adult_aged
+output_base: /app/data/Input/Glp1r_adult_aged_Tiff_uncut
+channels:
+- 0
+- 1
+- 2
+- 3
+target_size: 2024
+per_channel_normalize: true
+overwrite: true
+save_per_channel: false
+save_stack_tiff: true
+save_rgb_preview: false
+rgb_channels:
+- 0
+- 1
+- 2
+dtype: uint16
+stack_layout: CYX
+imagej_hyperstack: true
+channel_names: []
+save_color_composite: false
+channel_colors:
+- '#ff0000'
+- '#00ff00'
+- '#0000ff'
+- '#ffff00'
+save_colored_pages: false
+save_ome_colors: false
+verbose: false

@@ -1,0 +1,37 @@
+channel_colors:
+- '#ff0000'
+- '#00ff00'
+- '#0000ff'
+- '#ffff00'
+channel_names: []
+channels:
+- 0
+- 1
+- 2
+- 3
+dtype: uint16
+imagej_hyperstack: true
+input_root: /app/data/Input/RNA_5X
+output_base: /app/data/Input/PPP_Uncut
+overwrite: true
+per_channel_normalize: true
+rgb_channels: 0,1,2
+save_color_composite: false
+save_colored_pages: false
+save_ome_colors: false
+save_per_channel: false
+save_rgb_preview: false
+save_stack_tiff: true
+stack_layout: CYX
+target_size: '2024'
+verbose: false
+paths:
+  input_pos: ''
+  input_neg: ''
+  output_root: ./results_det
+cellpose:
+  save_masks: true
+outputs: {}
+testing:
+  enabled: false
+  samples_per_channel: 0

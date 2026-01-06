@@ -65,6 +65,10 @@
           <span class="material-symbols-outlined">folder_open</span>
           <p class="text-sm font-medium leading-normal">Results</p>
         </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50" href="#" data-tab="calibration">
+          <span class="material-symbols-outlined">tune</span>
+          <p class="text-sm font-medium leading-normal">Calibration</p>
+        </a>
       </nav>
     </div>
     
@@ -213,12 +217,23 @@
                 </div>
               </div>
 
+              <!-- Config Selection -->
+              <div class="mt-6 flex items-center gap-4 p-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50">
+                <div class="flex-1">
+                  <label class="text-black dark:text-white text-sm font-medium leading-normal pb-2 block">Configuration File</label>
+                  <select id="czi_config_select" class="form-select w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm">
+                    <option value="config_czi.yaml">config_czi.yaml</option>
+                  </select>
+                </div>
+                <div class="flex items-end gap-2 pt-6">
+                  <button onclick="loadCziConfig()" class="h-11 px-4 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors font-medium text-sm">Load</button>
+                  <button onclick="refreshCziConfigList()" class="h-11 px-3 bg-neutral-200 dark:bg-neutral-700 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors flex items-center justify-center" title="Refresh List">
+                    <span class="material-symbols-outlined text-black dark:text-white">refresh</span>
+                  </button>
+                </div>
+              </div>
+
               <div class="mt-6 flex gap-3">
-                <button 
-                  onclick="loadCziConfig()" 
-                  class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-neutral-200 dark:bg-neutral-700 text-black dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-neutral-300 dark:hover:bg-neutral-600">
-                  <span class="truncate">Load Config</span>
-                </button>
                 <button 
                   onclick="saveCziConfig()" 
                   class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-neutral-200 dark:bg-neutral-700 text-black dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-neutral-300 dark:hover:bg-neutral-600">
@@ -312,8 +327,8 @@
             <div class="p-4 border-t border-neutral-200 dark:border-neutral-800">
               <div class="flex flex-col gap-4">
                 <div class="flex items-center gap-4">
-                  <input type="range" id="det-sensitivity" class="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer dark:bg-neutral-700 accent-primary" min="0" max="9" value="4" step="1">
-                  <span id="det-sensitivity-value" class="text-sm font-medium text-black dark:text-white whitespace-nowrap min-w-[140px]">Level 5 Balanced</span>
+                  <input type="range" id="det-sensitivity" class="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer dark:bg-neutral-700 accent-primary" min="0" max="14" value="5" step="1">
+                  <span id="det-sensitivity-value" class="text-sm font-medium text-black dark:text-white whitespace-nowrap min-w-[160px]">Level 6 Balanced</span>
                 </div>
                 <div class="flex justify-between text-xs text-neutral-500 dark:text-neutral-400 px-1">
                   <span>Only brightest</span>
@@ -684,11 +699,24 @@
             </div>
           </details>
 
+          <!-- Config Selection -->
+          <div class="flex items-center gap-4 mb-4 p-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-background-dark/50">
+            <div class="flex-1">
+              <label class="text-black dark:text-white text-sm font-medium leading-normal pb-2 block">Configuration File</label>
+              <select id="det_config_select" class="form-select w-full rounded-lg text-black dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm">
+                <option value="config_det_cpsam.yaml">config_det_cpsam.yaml</option>
+              </select>
+            </div>
+            <div class="flex items-end gap-2 pt-6">
+              <button onclick="loadDetConfig()" class="h-11 px-4 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors font-medium text-sm">Load</button>
+              <button onclick="refreshDetConfigList()" class="h-11 px-3 bg-neutral-200 dark:bg-neutral-700 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors flex items-center justify-center" title="Refresh List">
+                <span class="material-symbols-outlined text-black dark:text-white">refresh</span>
+              </button>
+            </div>
+          </div>
+
           <!-- Actions -->
           <div class="flex gap-3 justify-end">
-            <button onclick="loadDetConfig()" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-neutral-200 dark:bg-neutral-700 text-black dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-neutral-300 dark:hover:bg-neutral-600">
-              <span class="truncate">Load Config</span>
-            </button>
             <button onclick="saveDetConfig()" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-neutral-200 dark:bg-neutral-700 text-black dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-neutral-300 dark:hover:bg-neutral-600">
               <span class="truncate">Save Config</span>
             </button>
@@ -1073,6 +1101,371 @@
         <p class="text-neutral-400">Documentation coming soon...</p>
       </div>
 
+      <!-- Calibration Tab -->
+      <div id="tab-calibration" class="tab-content hidden">
+        <header class="flex flex-wrap items-center justify-between gap-4 mb-8">
+          <div class="flex flex-col gap-2">
+            <p class="text-black dark:text-white text-3xl font-bold leading-tight tracking-tight">Sensitivity Calibration</p>
+            <p class="text-neutral-500 dark:text-neutral-400">Find optimal detection level by comparing with known cell counts</p>
+          </div>
+        </header>
+
+        <div class="flex flex-col gap-4">
+          <!-- Instructions -->
+          <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div class="flex gap-3">
+              <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">info</span>
+              <div class="text-sm text-blue-800 dark:text-blue-200">
+                <p class="font-medium mb-1">How Calibration Works</p>
+                <ol class="list-decimal list-inside space-y-1 text-blue-700 dark:text-blue-300">
+                  <li>Select 3-4 representative images from your input folder (1 per group/region recommended)</li>
+                  <li>Enter the expected cell count for each image (manually counted)</li>
+                  <li>Click "Start Calibration" - the system tests all 15 sensitivity levels</li>
+                  <li>Review results and apply the recommended level to Detection tab</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image Selection -->
+          <details class="flex flex-col rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-background-dark/50 group" open>
+            <summary class="flex cursor-pointer items-center justify-between gap-6 p-4">
+              <div class="flex flex-col">
+                <p class="text-black dark:text-white text-base font-medium leading-normal">1. Select Calibration Images</p>
+                <p class="text-neutral-500 dark:text-neutral-400 text-xs">Choose 3-4 images with known cell counts</p>
+              </div>
+              <span class="material-symbols-outlined text-neutral-600 dark:text-neutral-400 group-open:rotate-180 transition-transform">expand_more</span>
+            </summary>
+            <div class="p-4 border-t border-neutral-200 dark:border-neutral-800">
+              <div class="flex gap-4 mb-4">
+                <button onclick="loadCalibrationImages()" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary-dark">
+                  <span class="material-symbols-outlined mr-2 text-sm">refresh</span>
+                  <span class="truncate">Load Images from Input</span>
+                </button>
+                <span id="calib-image-count" class="text-sm text-neutral-500 dark:text-neutral-400 self-center">No images loaded</span>
+              </div>
+              
+              <!-- Available Images List -->
+              <div class="mb-4">
+                <label class="text-sm font-medium text-black dark:text-white mb-2 block">Available Images (click to add)</label>
+                <div id="calib-available-images" class="bg-neutral-100 dark:bg-neutral-800/50 rounded-lg p-3 max-h-48 overflow-y-auto">
+                  <p class="text-neutral-500 dark:text-neutral-400 text-sm">Click "Load Images from Input" to see available images</p>
+                </div>
+              </div>
+
+              <!-- Selected Images with Expected Counts -->
+              <div>
+                <label class="text-sm font-medium text-black dark:text-white mb-2 block">Selected Images for Calibration</label>
+                <div id="calib-selected-images" class="space-y-2">
+                  <p class="text-neutral-500 dark:text-neutral-400 text-sm bg-neutral-100 dark:bg-neutral-800/50 rounded-lg p-3">No images selected. Click images above to add them.</p>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- Run Calibration -->
+          <details class="flex flex-col rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-background-dark/50 group" open>
+            <summary class="flex cursor-pointer items-center justify-between gap-6 p-4">
+              <div class="flex flex-col">
+                <p class="text-black dark:text-white text-base font-medium leading-normal">2. Run Calibration</p>
+                <p class="text-neutral-500 dark:text-neutral-400 text-xs">Test all 15 sensitivity levels</p>
+              </div>
+              <span class="material-symbols-outlined text-neutral-600 dark:text-neutral-400 group-open:rotate-180 transition-transform">expand_more</span>
+            </summary>
+            <div class="p-4 border-t border-neutral-200 dark:border-neutral-800">
+              <div class="flex gap-4 mb-4">
+                <button id="calib-start-btn" onclick="startCalibration()" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-green-600 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-green-700">
+                  <span class="material-symbols-outlined mr-2 text-sm">play_arrow</span>
+                  <span class="truncate">Start Calibration</span>
+                </button>
+                <button id="calib-stop-btn" onclick="stopCalibration()" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-red-600 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-red-700 hidden">
+                  <span class="material-symbols-outlined mr-2 text-sm">stop</span>
+                  <span class="truncate">Stop</span>
+                </button>
+              </div>
+
+              <!-- Progress -->
+              <div id="calib-progress-container" class="hidden mb-4">
+                <div class="flex justify-between text-sm mb-1">
+                  <span id="calib-progress-text" class="text-neutral-600 dark:text-neutral-400">Processing...</span>
+                  <span id="calib-progress-pct" class="text-neutral-600 dark:text-neutral-400">0%</span>
+                </div>
+                <div class="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2.5">
+                  <div id="calib-progress-bar" class="bg-primary h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- Status Message -->
+              <div id="calib-status" class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+                Ready to calibrate
+              </div>
+            </div>
+          </details>
+
+          <!-- Results -->
+          <details class="flex flex-col rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-background-dark/50 group" open>
+            <summary class="flex cursor-pointer items-center justify-between gap-6 p-4">
+              <div class="flex flex-col">
+                <p class="text-black dark:text-white text-base font-medium leading-normal">3. Results & Recommendation</p>
+                <p class="text-neutral-500 dark:text-neutral-400 text-xs">View results and apply optimal level</p>
+              </div>
+              <span class="material-symbols-outlined text-neutral-600 dark:text-neutral-400 group-open:rotate-180 transition-transform">expand_more</span>
+            </summary>
+            <div class="p-4 border-t border-neutral-200 dark:border-neutral-800">
+              <!-- Recommendation Box -->
+              <div id="calib-recommendation" class="hidden bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
+                <div class="flex items-center justify-between">
+                  <div class="flex gap-3">
+                    <span class="material-symbols-outlined text-green-600 dark:text-green-400">recommend</span>
+                    <div>
+                      <p class="font-medium text-green-800 dark:text-green-200">Recommended Level</p>
+                      <p id="calib-recommended-level" class="text-2xl font-bold text-green-700 dark:text-green-300">Level 6</p>
+                      <p id="calib-recommended-mae" class="text-sm text-green-600 dark:text-green-400">MAE: 0.0 cells</p>
+                    </div>
+                  </div>
+                  <button id="calib-apply-btn" onclick="applyCalibrationLevel()" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-green-600 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-green-700">
+                    <span class="material-symbols-outlined mr-2 text-sm">check</span>
+                    <span class="truncate">Apply to Detection</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Results Table -->
+              <div class="overflow-x-auto">
+                <table id="calib-results-table" class="hidden w-full text-sm">
+                  <thead class="bg-neutral-100 dark:bg-neutral-800">
+                    <tr>
+                      <th class="text-left p-2 font-medium text-black dark:text-white">Level</th>
+                      <th class="text-right p-2 font-medium text-black dark:text-white">Total Detected</th>
+                      <th class="text-right p-2 font-medium text-black dark:text-white">Total Expected</th>
+                      <th class="text-right p-2 font-medium text-black dark:text-white">MAE</th>
+                      <th class="text-center p-2 font-medium text-black dark:text-white">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="calib-results-body" class="divide-y divide-neutral-200 dark:divide-neutral-700">
+                    <!-- Results rows rendered here -->
+                  </tbody>
+                </table>
+                <p id="calib-no-results" class="text-neutral-500 dark:text-neutral-400 text-sm">Run calibration to see results</p>
+              </div>
+            </div>
+          </details>
+
+          <!-- History -->
+          <details class="flex flex-col rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-background-dark/50 group">
+            <summary class="flex cursor-pointer items-center justify-between gap-6 p-4">
+              <div class="flex flex-col">
+                <p class="text-black dark:text-white text-base font-medium leading-normal">Calibration History</p>
+                <p class="text-neutral-500 dark:text-neutral-400 text-xs">Previous calibration results</p>
+              </div>
+              <span class="material-symbols-outlined text-neutral-600 dark:text-neutral-400 group-open:rotate-180 transition-transform">expand_more</span>
+            </summary>
+            <div class="p-4 border-t border-neutral-200 dark:border-neutral-800">
+              <div id="calib-history-list" class="space-y-2">
+                <p class="text-neutral-500 dark:text-neutral-400 text-sm">No previous calibrations found</p>
+              </div>
+            </div>
+          </details>
+
+          <!-- Divider -->
+          <div class="border-t border-neutral-300 dark:border-neutral-700 my-6"></div>
+
+          <!-- Colocalization Calibration Section -->
+          <header class="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <div class="flex flex-col gap-2">
+              <p class="text-black dark:text-white text-2xl font-bold leading-tight tracking-tight">Colocalization Calibration</p>
+              <p class="text-neutral-500 dark:text-neutral-400">Find optimal overlap/centroid parameters by comparing with known co-expression counts</p>
+            </div>
+          </header>
+
+          <!-- Coloc Instructions -->
+          <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4 mb-4">
+            <div class="flex gap-3">
+              <span class="material-symbols-outlined text-purple-600 dark:text-purple-400">info</span>
+              <div class="text-sm text-purple-800 dark:text-purple-200">
+                <p class="font-medium mb-1">How Colocalization Calibration Works</p>
+                <ol class="list-decimal list-inside space-y-1 text-purple-700 dark:text-purple-300">
+                  <li>Run Detection first to generate mask files</li>
+                  <li>Select 3-4 samples with known co-expression cell counts</li>
+                  <li>Choose which channel pair to calibrate (e.g., Ch0 + Ch1)</li>
+                  <li>System tests 9 parameter combinations and finds optimal settings</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coloc Sample Selection -->
+          <details class="flex flex-col rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-background-dark/50 group" open>
+            <summary class="flex cursor-pointer items-center justify-between gap-6 p-4">
+              <div class="flex flex-col">
+                <p class="text-black dark:text-white text-base font-medium leading-normal">1. Select Samples & Channel Pair</p>
+                <p class="text-neutral-500 dark:text-neutral-400 text-xs">Choose detection results with known co-expression counts</p>
+              </div>
+              <span class="material-symbols-outlined text-neutral-600 dark:text-neutral-400 group-open:rotate-180 transition-transform">expand_more</span>
+            </summary>
+            <div class="p-4 border-t border-neutral-200 dark:border-neutral-800">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="text-sm font-medium text-black dark:text-white mb-2 block">Channel Pair</label>
+                  <div class="flex gap-2">
+                    <select id="coloc-calib-ch-a" class="form-select flex-1 rounded-lg text-black dark:text-white border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm">
+                      <option value="0">Channel 0</option>
+                      <option value="1">Channel 1</option>
+                      <option value="2">Channel 2</option>
+                      <option value="3">Channel 3</option>
+                    </select>
+                    <span class="self-center text-neutral-500">+</span>
+                    <select id="coloc-calib-ch-b" class="form-select flex-1 rounded-lg text-black dark:text-white border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm">
+                      <option value="0">Channel 0</option>
+                      <option value="1" selected>Channel 1</option>
+                      <option value="2">Channel 2</option>
+                      <option value="3">Channel 3</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label class="text-sm font-medium text-black dark:text-white mb-2 block">Analysis Mode</label>
+                  <select id="coloc-calib-mode" class="form-select w-full rounded-lg text-black dark:text-white border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/50 h-11 px-3 text-sm">
+                    <option value="overlap">Overlap</option>
+                    <option value="centroid">Centroid</option>
+                    <option value="either">Either (Union)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="flex gap-4 mb-4">
+                <button onclick="loadColocCalibSamples()" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-purple-600 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-purple-700">
+                  <span class="material-symbols-outlined mr-2 text-sm">refresh</span>
+                  <span class="truncate">Load Samples from Results</span>
+                </button>
+                <span id="coloc-calib-sample-count" class="text-sm text-neutral-500 dark:text-neutral-400 self-center">No samples loaded</span>
+              </div>
+              
+              <!-- Available Samples -->
+              <div class="mb-4">
+                <label class="text-sm font-medium text-black dark:text-white mb-2 block">Available Samples (click to add)</label>
+                <div id="coloc-calib-available" class="bg-neutral-100 dark:bg-neutral-800/50 rounded-lg p-3 max-h-48 overflow-y-auto">
+                  <p class="text-neutral-500 dark:text-neutral-400 text-sm">Click "Load Samples from Results" to see available samples</p>
+                </div>
+              </div>
+
+              <!-- Selected Samples -->
+              <div>
+                <label class="text-sm font-medium text-black dark:text-white mb-2 block">Selected Samples for Calibration</label>
+                <div id="coloc-calib-selected" class="space-y-2">
+                  <p class="text-neutral-500 dark:text-neutral-400 text-sm bg-neutral-100 dark:bg-neutral-800/50 rounded-lg p-3">No samples selected. Click samples above to add them.</p>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- Run Coloc Calibration -->
+          <details class="flex flex-col rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-background-dark/50 group" open>
+            <summary class="flex cursor-pointer items-center justify-between gap-6 p-4">
+              <div class="flex flex-col">
+                <p class="text-black dark:text-white text-base font-medium leading-normal">2. Run Calibration</p>
+                <p class="text-neutral-500 dark:text-neutral-400 text-xs">Test all 9 parameter combinations</p>
+              </div>
+              <span class="material-symbols-outlined text-neutral-600 dark:text-neutral-400 group-open:rotate-180 transition-transform">expand_more</span>
+            </summary>
+            <div class="p-4 border-t border-neutral-200 dark:border-neutral-800">
+              <div class="flex gap-4 mb-4">
+                <button id="coloc-calib-start-btn" onclick="startColocCalibration()" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-green-600 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-green-700">
+                  <span class="material-symbols-outlined mr-2 text-sm">play_arrow</span>
+                  <span class="truncate">Start Calibration</span>
+                </button>
+                <button id="coloc-calib-stop-btn" onclick="stopColocCalibration()" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-red-600 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-red-700 hidden">
+                  <span class="material-symbols-outlined mr-2 text-sm">stop</span>
+                  <span class="truncate">Stop</span>
+                </button>
+              </div>
+
+              <!-- Progress -->
+              <div id="coloc-calib-progress-container" class="hidden mb-4">
+                <div class="flex justify-between text-sm mb-1">
+                  <span id="coloc-calib-progress-text" class="text-neutral-600 dark:text-neutral-400">Processing...</span>
+                  <span id="coloc-calib-progress-pct" class="text-neutral-600 dark:text-neutral-400">0%</span>
+                </div>
+                <div class="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2.5">
+                  <div id="coloc-calib-progress-bar" class="bg-purple-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <div id="coloc-calib-status" class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+                Ready to calibrate
+              </div>
+            </div>
+          </details>
+
+          <!-- Coloc Results -->
+          <details class="flex flex-col rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-background-dark/50 group" open>
+            <summary class="flex cursor-pointer items-center justify-between gap-6 p-4">
+              <div class="flex flex-col">
+                <p class="text-black dark:text-white text-base font-medium leading-normal">3. Results & Recommendation</p>
+                <p class="text-neutral-500 dark:text-neutral-400 text-xs">View results and apply optimal level</p>
+              </div>
+              <span class="material-symbols-outlined text-neutral-600 dark:text-neutral-400 group-open:rotate-180 transition-transform">expand_more</span>
+            </summary>
+            <div class="p-4 border-t border-neutral-200 dark:border-neutral-800">
+              <!-- Recommendation Box -->
+              <div id="coloc-calib-recommendation" class="hidden bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4 mb-4">
+                <div class="flex items-center justify-between">
+                  <div class="flex gap-3">
+                    <span class="material-symbols-outlined text-purple-600 dark:text-purple-400">recommend</span>
+                    <div>
+                      <p class="font-medium text-purple-800 dark:text-purple-200">Recommended Level</p>
+                      <p id="coloc-calib-recommended-level" class="text-2xl font-bold text-purple-700 dark:text-purple-300">Level 5</p>
+                      <p id="coloc-calib-recommended-params" class="text-sm text-purple-600 dark:text-purple-400">Overlap: 8%, Centroid: 8px</p>
+                      <p id="coloc-calib-recommended-mae" class="text-sm text-purple-600 dark:text-purple-400">MAE: 0.0 cells</p>
+                    </div>
+                  </div>
+                  <button id="coloc-calib-apply-btn" onclick="applyColocCalibrationLevel()" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-purple-600 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-purple-700">
+                    <span class="material-symbols-outlined mr-2 text-sm">check</span>
+                    <span class="truncate">Apply to Co-Expression</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Results Table -->
+              <div class="overflow-x-auto">
+                <table id="coloc-calib-results-table" class="hidden w-full text-sm">
+                  <thead class="bg-neutral-100 dark:bg-neutral-800">
+                    <tr>
+                      <th class="text-left p-2 font-medium text-black dark:text-white">Level</th>
+                      <th class="text-right p-2 font-medium text-black dark:text-white">Overlap %</th>
+                      <th class="text-right p-2 font-medium text-black dark:text-white">Centroid Dist</th>
+                      <th class="text-right p-2 font-medium text-black dark:text-white">Detected</th>
+                      <th class="text-right p-2 font-medium text-black dark:text-white">Expected</th>
+                      <th class="text-right p-2 font-medium text-black dark:text-white">MAE</th>
+                      <th class="text-center p-2 font-medium text-black dark:text-white">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="coloc-calib-results-body" class="divide-y divide-neutral-200 dark:divide-neutral-700">
+                  </tbody>
+                </table>
+                <p id="coloc-calib-no-results" class="text-neutral-500 dark:text-neutral-400 text-sm">Run calibration to see results</p>
+              </div>
+            </div>
+          </details>
+
+          <!-- Coloc History -->
+          <details class="flex flex-col rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-background-dark/50 group">
+            <summary class="flex cursor-pointer items-center justify-between gap-6 p-4">
+              <div class="flex flex-col">
+                <p class="text-black dark:text-white text-base font-medium leading-normal">Colocalization Calibration History</p>
+                <p class="text-neutral-500 dark:text-neutral-400 text-xs">Previous colocalization calibration results</p>
+              </div>
+              <span class="material-symbols-outlined text-neutral-600 dark:text-neutral-400 group-open:rotate-180 transition-transform">expand_more</span>
+            </summary>
+            <div class="p-4 border-t border-neutral-200 dark:border-neutral-800">
+              <div id="coloc-calib-history-list" class="space-y-2">
+                <p class="text-neutral-500 dark:text-neutral-400 text-sm">No previous colocalization calibrations found</p>
+              </div>
+            </div>
+          </details>
+        </div>
+      </div>
+
     </div>
   </main>
 </div>
@@ -1161,6 +1554,8 @@ document.querySelectorAll('[data-tab]').forEach(link => {
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   refreshConfigList();
+  refreshCziConfigList();
+  refreshDetConfigList();
   // Initialize UI sync for conditional fields
   syncDetPreprocessingUI();
   syncDetOverlayUI();
@@ -1178,12 +1573,141 @@ document.addEventListener('DOMContentLoaded', () => {
     ],
     det_channel_selection: [0]
   });
+  // Initialize test level checkboxes (default: all unchecked)
+  renderDetTestLevels([]);
 });
 
+// === Config History System ===
+const CONFIG_HISTORY_KEY = 'cellAnalysisConfigHistory';
+const MAX_HISTORY = 5;
+
+function getConfigHistory() {
+  try {
+    const stored = localStorage.getItem(CONFIG_HISTORY_KEY);
+    return stored ? JSON.parse(stored) : { czi: [], det: [], analysis: [] };
+  } catch (e) {
+    return { czi: [], det: [], analysis: [] };
+  }
+}
+
+function saveConfigHistory(history) {
+  try {
+    localStorage.setItem(CONFIG_HISTORY_KEY, JSON.stringify(history));
+  } catch (e) {
+    console.error('Error saving config history:', e);
+  }
+}
+
+function addToConfigHistory(type, filename) {
+  if (!filename) return;
+  const history = getConfigHistory();
+  if (!history[type]) history[type] = [];
+  // Remove if already exists
+  history[type] = history[type].filter(f => f !== filename);
+  // Add to front
+  history[type].unshift(filename);
+  // Keep only last MAX_HISTORY
+  history[type] = history[type].slice(0, MAX_HISTORY);
+  saveConfigHistory(history);
+}
+
+function updateConfigHistoryDropdown(type, selectId) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  const history = getConfigHistory();
+  const items = history[type] || [];
+  const current = select.value;
+  
+  select.innerHTML = '';
+  
+  // Add placeholder option
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = items.length > 0 ? '-- Letzte Configs --' : '-- Keine History --';
+  placeholder.disabled = true;
+  select.appendChild(placeholder);
+  
+  if (items.length > 0) {
+    items.forEach((file, idx) => {
+      const option = document.createElement('option');
+      option.value = file;
+      option.textContent = `${idx + 1}. ${file}`;
+      select.appendChild(option);
+    });
+    // Restore current value if it exists
+    if (items.includes(current)) {
+      select.value = current;
+    } else {
+      select.value = items[0];
+    }
+  }
+}
+
 // CZI Conversion Functions
+async function refreshCziConfigList() {
+  try {
+    const response = await fetch('/api/czi/config/list');
+    const data = await response.json();
+    const select = document.getElementById('czi_config_select');
+    const current = select.value;
+    const history = getConfigHistory();
+    const historyItems = history.czi || [];
+    
+    select.innerHTML = '';
+    
+    // Add history section first
+    if (historyItems.length > 0) {
+      const historyGroup = document.createElement('optgroup');
+      historyGroup.label = '📋 Letzte 5 verwendet';
+      historyItems.forEach((file, idx) => {
+        const option = document.createElement('option');
+        option.value = file;
+        option.textContent = `${idx + 1}. ${file}`;
+        historyGroup.appendChild(option);
+      });
+      select.appendChild(historyGroup);
+    }
+    
+    // Add all files section
+    if (data.files && data.files.length > 0) {
+      const allGroup = document.createElement('optgroup');
+      allGroup.label = '📁 Alle Configs';
+      data.files.forEach(file => {
+        const option = document.createElement('option');
+        option.value = file;
+        option.textContent = file;
+        allGroup.appendChild(option);
+      });
+      select.appendChild(allGroup);
+      
+      // Restore selection
+      if (current && data.files.includes(current)) {
+        select.value = current;
+      } else if (historyItems.length > 0) {
+        select.value = historyItems[0];
+      } else if (data.files.includes('config_czi.yaml')) {
+        select.value = 'config_czi.yaml';
+      }
+    } else {
+      const option = document.createElement('option');
+      option.value = 'config_czi.yaml';
+      option.textContent = 'config_czi.yaml (default)';
+      select.appendChild(option);
+    }
+  } catch (error) {
+    console.error('Error listing CZI configs:', error);
+  }
+}
+
 async function loadCziConfig() {
   try {
-    const response = await fetch('/api/czi/config');
+    const filename = document.getElementById('czi_config_select')?.value;
+    if (!filename) {
+      logToConsole('czi-console', 'Please select a config file', 'warn');
+      return;
+    }
+    const url = `/api/czi/config?file=${encodeURIComponent(filename)}`;
+    const response = await fetch(url);
     const config = await response.json();
     document.getElementById('czi-input-dir').value = config.input_root || '';
     document.getElementById('czi-output-dir').value = config.output_base || '';
@@ -1208,7 +1732,11 @@ async function loadCziConfig() {
         if(el) el.value = colors[i] || '#ffffff';
     }
     
-    logToConsole('czi-console', 'Config loaded successfully');
+    // Add to history
+    addToConfigHistory('czi', filename);
+    refreshCziConfigList(); // Refresh to show updated history
+    
+    logToConsole('czi-console', `Config "${filename}" loaded successfully`);
   } catch (error) {
     logToConsole('czi-console', `Error loading config: ${error.message}`, 'error');
   }
@@ -1246,6 +1774,11 @@ async function saveCziConfig() {
       body: JSON.stringify(config)
     });
     const result = await response.json();
+    
+    // Add to history (saves as config_czi.yaml by default)
+    addToConfigHistory('czi', 'config_czi.yaml');
+    refreshCziConfigList();
+    
     logToConsole('czi-console', result.message || 'Config saved successfully');
   } catch (error) {
     logToConsole('czi-console', `Error saving config: ${error.message}`, 'error');
@@ -1341,16 +1874,25 @@ function toArray(input){
 }
 
 const SENSITIVITY_LEVELS=[
-  {label:'Level 1    Strict',                 cellprob:0.64, flow:0.80, snr:3.3, floorPct:92, absInt:35, itf:0.36, intMode:'global', maxIntThr:0.35},
-  {label:'Level 2    Semi-strict',            cellprob:0.55, flow:0.70, snr:3.0, floorPct:86, absInt:32, itf:0.49, intMode:'global', maxIntThr:0.28},
-  {label:'Level 3    Balanced',               cellprob:0.46, flow:0.60, snr:2.8, floorPct:80, absInt:29, itf:0.62, intMode:'global', maxIntThr:0.22},
-  {label:'Level 4    Balanced+',              cellprob:0.37, flow:0.49, snr:2.5, floorPct:73, absInt:26, itf:0.75, intMode:'global', maxIntThr:0.17},
-  {label:'Level 5    Moderate',               cellprob:0.28, flow:0.39, snr:2.2, floorPct:67, absInt:23, itf:0.88, intMode:'global', maxIntThr:0.13},
-  {label:'Level 6    Medium-high',            cellprob:0.20, flow:0.29, snr:2.0, floorPct:61, absInt:19, itf:1.00, intMode:'global', maxIntThr:0.10},
-  {label:'Level 7    Sensitive',              cellprob:0.11, flow:0.19, snr:1.7, floorPct:55, absInt:16, itf:1.13, intMode:'global', maxIntThr:0.07},
-  {label:'Level 8    High sensitivity',       cellprob:0.02, flow:0.08, snr:1.4, floorPct:48, absInt:13, itf:1.26, intMode:'global', maxIntThr:0.05},
-  {label:'Level 9    Very high',              cellprob:-0.07, flow:-0.02, snr:1.2, floorPct:42, absInt:10, itf:1.39, intMode:'global', maxIntThr:0.03},
-  {label:'Level 10   Ultra sensitive',        cellprob:-0.16, flow:-0.12, snr:0.9, floorPct:36, absInt:7, itf:1.52, intMode:'global', maxIntThr:0.02}
+  // Strenge Level (1-5): Für sehr helle, klar definierte Zellen
+  {label:'Level 1    Ultra Strict',           cellprob:0.80, flow:0.95, snr:4.5, floorPct:97, absInt:45, itf:0.15, intMode:'global', maxIntThr:0.50},
+  {label:'Level 2    Very Strict',            cellprob:0.72, flow:0.88, snr:4.0, floorPct:95, absInt:42, itf:0.22, intMode:'global', maxIntThr:0.45},
+  {label:'Level 3    Strict',                 cellprob:0.64, flow:0.80, snr:3.5, floorPct:92, absInt:38, itf:0.30, intMode:'global', maxIntThr:0.40},
+  {label:'Level 4    Semi-Strict',            cellprob:0.55, flow:0.70, snr:3.2, floorPct:88, absInt:34, itf:0.40, intMode:'global', maxIntThr:0.35},
+  {label:'Level 5    Moderate-Strict',        cellprob:0.48, flow:0.62, snr:2.9, floorPct:84, absInt:30, itf:0.50, intMode:'global', maxIntThr:0.30},
+  // Balanced Level (6-8): Standard-Einstellungen
+  {label:'Level 6    Balanced',               cellprob:0.40, flow:0.52, snr:2.6, floorPct:78, absInt:26, itf:0.62, intMode:'global', maxIntThr:0.25},
+  {label:'Level 7    Balanced+',              cellprob:0.32, flow:0.44, snr:2.4, floorPct:72, absInt:23, itf:0.75, intMode:'global', maxIntThr:0.20},
+  {label:'Level 8    Moderate',               cellprob:0.24, flow:0.36, snr:2.1, floorPct:66, absInt:20, itf:0.88, intMode:'global', maxIntThr:0.16},
+  // Sensitive Level (9-12): Für schwächere Signale
+  {label:'Level 9    Medium-Sensitive',       cellprob:0.16, flow:0.28, snr:1.9, floorPct:60, absInt:17, itf:1.00, intMode:'global', maxIntThr:0.12},
+  {label:'Level 10   Sensitive',              cellprob:0.08, flow:0.20, snr:1.6, floorPct:54, absInt:14, itf:1.15, intMode:'global', maxIntThr:0.09},
+  {label:'Level 11   High Sensitivity',       cellprob:0.00, flow:0.12, snr:1.4, floorPct:48, absInt:11, itf:1.28, intMode:'global', maxIntThr:0.06},
+  {label:'Level 12   Very High',              cellprob:-0.08, flow:0.04, snr:1.2, floorPct:42, absInt:9, itf:1.40, intMode:'global', maxIntThr:0.04},
+  // Ultra-Sensitive Level (13-15): Für sehr schwache Signale
+  {label:'Level 13   Ultra Sensitive',        cellprob:-0.16, flow:-0.04, snr:1.0, floorPct:36, absInt:7, itf:1.55, intMode:'global', maxIntThr:0.03},
+  {label:'Level 14   Maximum',                cellprob:-0.24, flow:-0.12, snr:0.8, floorPct:30, absInt:5, itf:1.70, intMode:'global', maxIntThr:0.02},
+  {label:'Level 15   Absolute Max',           cellprob:-0.32, flow:-0.20, snr:0.5, floorPct:24, absInt:3, itf:1.85, intMode:'global', maxIntThr:0.01}
 ];
 
 // Detection Functions
@@ -1422,11 +1964,72 @@ function toggleDetTestOptions(){
   if(seed) seed.disabled = mode === 'disabled';
 }
 
+async function refreshDetConfigList() {
+  try {
+    const response = await fetch('/api/det/config/list');
+    const data = await response.json();
+    const select = document.getElementById('det_config_select');
+    const current = select.value;
+    const history = getConfigHistory();
+    const historyItems = history.det || [];
+    
+    select.innerHTML = '';
+    
+    // Add history section first
+    if (historyItems.length > 0) {
+      const historyGroup = document.createElement('optgroup');
+      historyGroup.label = '📋 Letzte 5 verwendet';
+      historyItems.forEach((file, idx) => {
+        const option = document.createElement('option');
+        option.value = file;
+        option.textContent = `${idx + 1}. ${file}`;
+        historyGroup.appendChild(option);
+      });
+      select.appendChild(historyGroup);
+    }
+    
+    // Add all files section
+    if (data.files && data.files.length > 0) {
+      const allGroup = document.createElement('optgroup');
+      allGroup.label = '📁 Alle Configs';
+      data.files.forEach(file => {
+        const option = document.createElement('option');
+        option.value = file;
+        option.textContent = file;
+        allGroup.appendChild(option);
+      });
+      select.appendChild(allGroup);
+      
+      // Restore selection
+      if (current && data.files.includes(current)) {
+        select.value = current;
+      } else if (historyItems.length > 0) {
+        select.value = historyItems[0];
+      } else if (data.files.includes('config_det_cpsam.yaml')) {
+        select.value = 'config_det_cpsam.yaml';
+      }
+    } else {
+      const option = document.createElement('option');
+      option.value = 'config_det_cpsam.yaml';
+      option.textContent = 'config_det_cpsam.yaml (default)';
+      select.appendChild(option);
+    }
+  } catch (error) {
+    console.error('Error listing detection configs:', error);
+  }
+}
+
 async function loadDetConfig(specificPath){
   try{
     let url = '/api/det/config';
+    // Use dropdown selection if no specific path provided
     if(specificPath && typeof specificPath === 'string' && specificPath.trim()){
         url += '?path=' + encodeURIComponent(specificPath.trim());
+    } else {
+        const filename = document.getElementById('det_config_select')?.value;
+        if(filename) {
+            url += '?path=' + encodeURIComponent(filename);
+        }
     }
     const res=await fetch(url); if(!res.ok) throw new Error('HTTP '+res.status);
     const cfg=await res.json();
@@ -1579,6 +2182,11 @@ async function loadDetConfig(specificPath){
     m('det_cpsam_figsize', (cov.figsize || []).join(','));
     m('det_cpsam_base_name', cov.base_name || '');
 
+    // Add to history
+    const loadedFilename = document.getElementById('det_config_select')?.value || specificPath || 'config_det_cpsam.yaml';
+    addToConfigHistory('det', loadedFilename);
+    refreshDetConfigList(); // Refresh to show updated history
+
     logToConsole('det-log', 'Detection config loaded');
   }catch(e){ logToConsole('det-log', 'Load detection config failed: '+e.message, 'error'); }
 }
@@ -1593,6 +2201,11 @@ async function saveDetConfig(options={}){
       body:JSON.stringify(cfg)
     });
     if(!response.ok) throw new Error('HTTP '+response.status);
+    
+    // Add to history (saves as config_det_cpsam.yaml by default)
+    addToConfigHistory('det', 'config_det_cpsam.yaml');
+    refreshDetConfigList();
+    
     if(!opts.silent){
       logToConsole('det-log', 'Detection config saved');
     }
@@ -1926,17 +2539,41 @@ async function refreshConfigList() {
     const data = await response.json();
     const select = document.getElementById('config_file_select');
     const current = select.value;
+    const history = getConfigHistory();
+    const historyItems = history.analysis || [];
+    
     select.innerHTML = '';
     
+    // Add history section first
+    if (historyItems.length > 0) {
+      const historyGroup = document.createElement('optgroup');
+      historyGroup.label = '📋 Letzte 5 verwendet';
+      historyItems.forEach((file, idx) => {
+        const option = document.createElement('option');
+        option.value = file;
+        option.textContent = `${idx + 1}. ${file}`;
+        historyGroup.appendChild(option);
+      });
+      select.appendChild(historyGroup);
+    }
+    
+    // Add all files section
     if (data.files && data.files.length > 0) {
+      const allGroup = document.createElement('optgroup');
+      allGroup.label = '📁 Alle Configs';
       data.files.forEach(file => {
         const option = document.createElement('option');
         option.value = file;
         option.textContent = file;
-        select.appendChild(option);
+        allGroup.appendChild(option);
       });
-      if (data.files.includes(current)) {
+      select.appendChild(allGroup);
+      
+      // Restore selection
+      if (current && data.files.includes(current)) {
         select.value = current;
+      } else if (historyItems.length > 0) {
+        select.value = historyItems[0];
       } else if (data.files.includes('config_analysis.yaml')) {
         select.value = 'config_analysis.yaml';
       }
@@ -1976,7 +2613,7 @@ async function loadConfig() {
     // Blend Colors
     document.getElementById('blend_base_color').value = toHexColorValue(config.blend_base_color, '#0000ff');
     document.getElementById('blend_other_color').value = toHexColorValue(config.blend_other_color, '#ff0000');
-    document.getElementById('blend_overlap_color').value = toHexColorValue(config.blend_overlap_color, '#ffff00');
+    document.getElementById('blend_overlap_color').value = toHexColorValue(config.blend_overlap_color, '#ff0000');
     
     // Checkboxes
     document.getElementById('coexpr_use_masks').checked = config.use_masks !== false;
@@ -2023,6 +2660,10 @@ async function loadConfig() {
     toggleCoexprSections();
     syncCoexprModeUI();
     syncOverlayStyleUI();
+    
+    // Add to history
+    addToConfigHistory('analysis', filename || 'config_analysis.yaml');
+    refreshConfigList(); // Refresh to show updated history
     
     logToConsole('coexpr-log', `Configuration loaded successfully from ${filename || 'default'}`);
   } catch (error) {
@@ -2101,6 +2742,11 @@ async function saveConfig(options={}) {
       body: JSON.stringify(config)
     });
     const result = await response.json();
+    
+    // Add to history
+    addToConfigHistory('analysis', filename || 'config_analysis.yaml');
+    refreshConfigList();
+    
     if(!options.silent) {
         logToConsole('coexpr-log', `Configuration saved to ${filename || 'default'}`);
     }
@@ -2759,6 +3405,613 @@ async function loadResults() {
     });
   } catch (error) {
     console.error('Error loading results:', error);
+  }
+}
+
+// ============ CALIBRATION FUNCTIONS ============
+let calibrationImages = [];  // Available images from input
+let calibrationSamples = []; // Selected images with expected counts
+let calibrationPolling = null;
+let calibrationResults = null;
+let calibrationOptimalLevel = null;
+
+async function loadCalibrationImages() {
+  try {
+    const resp = await fetch('/api/calibration/images');
+    const data = await resp.json();
+    
+    if (data.error) {
+      document.getElementById('calib-available-images').innerHTML = 
+        `<p class="text-red-500 text-sm">${data.error}</p>`;
+      return;
+    }
+    
+    calibrationImages = data.images || [];
+    document.getElementById('calib-image-count').textContent = 
+      `${calibrationImages.length} images found`;
+    
+    const container = document.getElementById('calib-available-images');
+    if (calibrationImages.length === 0) {
+      container.innerHTML = '<p class="text-neutral-500 dark:text-neutral-400 text-sm">No TIFF images found in input directory</p>';
+      return;
+    }
+    
+    container.innerHTML = calibrationImages.map(img => `
+      <div class="flex items-center justify-between p-2 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 cursor-pointer text-sm" onclick="addCalibrationSample('${img.path.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">
+        <span class="truncate text-black dark:text-white flex-1" title="${img.path}">${img.filename}</span>
+        <span class="text-xs text-neutral-400 ml-2">${img.size_mb} MB</span>
+        <span class="material-symbols-outlined text-primary text-sm ml-2">add</span>
+      </div>
+    `).join('');
+    
+    // Also load history
+    loadCalibrationHistory();
+  } catch (err) {
+    console.error('Error loading calibration images:', err);
+    document.getElementById('calib-available-images').innerHTML = 
+      `<p class="text-red-500 text-sm">Error loading images: ${err.message}</p>`;
+  }
+}
+
+function addCalibrationSample(imagePath) {
+  // Check if already added
+  if (calibrationSamples.some(s => s.path === imagePath)) {
+    alert('This image is already selected.');
+    return;
+  }
+  
+  // Recommend max 4 images
+  if (calibrationSamples.length >= 4) {
+    if (!confirm('You already have 4 images. Adding more will increase calibration time. Continue?')) {
+      return;
+    }
+  }
+  
+  calibrationSamples.push({ path: imagePath, expectedCount: 0 });
+  renderCalibrationSamples();
+}
+
+function removeCalibrationSample(index) {
+  calibrationSamples.splice(index, 1);
+  renderCalibrationSamples();
+}
+
+function updateCalibrationExpectedCount(index, value) {
+  calibrationSamples[index].expectedCount = parseInt(value) || 0;
+}
+
+function renderCalibrationSamples() {
+  const container = document.getElementById('calib-selected-images');
+  
+  if (calibrationSamples.length === 0) {
+    container.innerHTML = '<p class="text-neutral-500 dark:text-neutral-400 text-sm bg-neutral-100 dark:bg-neutral-800/50 rounded-lg p-3">No images selected. Click images above to add them.</p>';
+    return;
+  }
+  
+  container.innerHTML = calibrationSamples.map((sample, idx) => `
+    <div class="flex items-center gap-3 p-3 bg-neutral-100 dark:bg-neutral-800/50 rounded-lg">
+      <span class="text-xs font-medium text-neutral-500 dark:text-neutral-400">${idx + 1}.</span>
+      <span class="flex-1 text-sm text-black dark:text-white truncate" title="${sample.path}">${sample.path.split(/[/\\]/).pop()}</span>
+      <div class="flex items-center gap-2">
+        <label class="text-xs text-neutral-500">Expected:</label>
+        <input type="number" min="0" value="${sample.expectedCount}" 
+          onchange="updateCalibrationExpectedCount(${idx}, this.value)"
+          class="w-20 px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white">
+      </div>
+      <button onclick="removeCalibrationSample(${idx})" class="text-red-500 hover:text-red-600">
+        <span class="material-symbols-outlined text-sm">close</span>
+      </button>
+    </div>
+  `).join('');
+}
+
+async function startCalibration() {
+  // Validation
+  if (calibrationSamples.length === 0) {
+    alert('Please select at least one image for calibration.');
+    return;
+  }
+  
+  const hasZeroCount = calibrationSamples.some(s => s.expectedCount <= 0);
+  if (hasZeroCount) {
+    if (!confirm('Some images have 0 as expected count. This may not give meaningful results. Continue anyway?')) {
+      return;
+    }
+  }
+  
+  // Prepare UI
+  document.getElementById('calib-start-btn').classList.add('hidden');
+  document.getElementById('calib-stop-btn').classList.remove('hidden');
+  document.getElementById('calib-progress-container').classList.remove('hidden');
+  document.getElementById('calib-status').textContent = 'Starting calibration...';
+  document.getElementById('calib-recommendation').classList.add('hidden');
+  document.getElementById('calib-results-table').classList.add('hidden');
+  document.getElementById('calib-no-results').classList.remove('hidden');
+  
+  try {
+    const payload = {
+      images: calibrationSamples.map(s => ({
+        path: s.path,
+        expected_count: s.expectedCount
+      }))
+    };
+    
+    const resp = await fetch('/api/calibration/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    
+    const data = await resp.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    
+    // Start polling
+    calibrationPolling = setInterval(pollCalibrationStatus, 1000);
+    
+  } catch (err) {
+    console.error('Error starting calibration:', err);
+    document.getElementById('calib-status').textContent = `Error: ${err.message}`;
+    resetCalibrationUI();
+  }
+}
+
+async function pollCalibrationStatus() {
+  try {
+    const resp = await fetch('/api/calibration/status');
+    const data = await resp.json();
+    
+    // Update progress
+    const pct = data.total_steps > 0 ? Math.round((data.current_step / data.total_steps) * 100) : 0;
+    document.getElementById('calib-progress-bar').style.width = `${pct}%`;
+    document.getElementById('calib-progress-pct').textContent = `${pct}%`;
+    document.getElementById('calib-progress-text').textContent = `Step ${data.current_step} of ${data.total_steps}`;
+    document.getElementById('calib-status').textContent = data.message || 'Processing...';
+    
+    if (!data.running) {
+      // Calibration complete
+      clearInterval(calibrationPolling);
+      calibrationPolling = null;
+      
+      if (data.results) {
+        calibrationResults = data.results;
+        calibrationOptimalLevel = data.optimal_level;
+        renderCalibrationResults();
+        
+        document.getElementById('calib-status').innerHTML = 
+          '<span class="text-green-600 dark:text-green-400 font-medium">✓ Calibration complete!</span>';
+      }
+      
+      resetCalibrationUI();
+      loadCalibrationHistory();
+    }
+  } catch (err) {
+    console.error('Error polling calibration status:', err);
+  }
+}
+
+async function stopCalibration() {
+  try {
+    await fetch('/api/calibration/stop', { method: 'POST' });
+    document.getElementById('calib-status').textContent = 'Stopping...';
+  } catch (err) {
+    console.error('Error stopping calibration:', err);
+  }
+}
+
+function resetCalibrationUI() {
+  document.getElementById('calib-start-btn').classList.remove('hidden');
+  document.getElementById('calib-stop-btn').classList.add('hidden');
+  document.getElementById('calib-progress-container').classList.add('hidden');
+}
+
+function renderCalibrationResults() {
+  if (!calibrationResults || !calibrationResults.level_results) return;
+  
+  const tbody = document.getElementById('calib-results-body');
+  tbody.innerHTML = '';
+  
+  calibrationResults.level_results.forEach(lr => {
+    const isOptimal = calibrationOptimalLevel && lr.level === calibrationOptimalLevel.level;
+    const row = document.createElement('tr');
+    row.className = isOptimal ? 'bg-green-50 dark:bg-green-900/20' : '';
+    row.innerHTML = `
+      <td class="p-2 text-black dark:text-white">
+        <span class="font-medium">${lr.label}</span>
+        ${isOptimal ? '<span class="ml-2 text-green-600 dark:text-green-400 text-xs">★ Best</span>' : ''}
+      </td>
+      <td class="p-2 text-right text-black dark:text-white">${lr.total_detected}</td>
+      <td class="p-2 text-right text-black dark:text-white">${lr.total_expected}</td>
+      <td class="p-2 text-right ${isOptimal ? 'text-green-600 dark:text-green-400 font-bold' : 'text-black dark:text-white'}">${lr.mae.toFixed(2)}</td>
+      <td class="p-2 text-center">
+        <button onclick="applySpecificLevel(${lr.level})" class="text-xs bg-primary/10 text-primary px-2 py-1 rounded hover:bg-primary/20">
+          Apply
+        </button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+  
+  document.getElementById('calib-results-table').classList.remove('hidden');
+  document.getElementById('calib-no-results').classList.add('hidden');
+  
+  // Show recommendation
+  if (calibrationOptimalLevel) {
+    document.getElementById('calib-recommended-level').textContent = calibrationOptimalLevel.label;
+    document.getElementById('calib-recommended-mae').textContent = `MAE: ${calibrationOptimalLevel.mae.toFixed(2)} cells`;
+    document.getElementById('calib-recommendation').classList.remove('hidden');
+  }
+}
+
+async function applyCalibrationLevel() {
+  if (!calibrationOptimalLevel) {
+    alert('No optimal level found. Please run calibration first.');
+    return;
+  }
+  await applySpecificLevel(calibrationOptimalLevel.level);
+}
+
+async function applySpecificLevel(level) {
+  try {
+    const resp = await fetch('/api/calibration/apply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ level: level })
+    });
+    
+    const data = await resp.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    
+    // Update the sensitivity slider in Detection tab
+    const slider = document.getElementById('det-sensitivity');
+    if (slider) {
+      slider.value = level;
+      slider.dispatchEvent(new Event('input'));
+    }
+    
+    alert(`Applied Level ${level} (${data.label}) to Detection settings.\n\nYou can now run detection with the optimized settings.`);
+    
+  } catch (err) {
+    console.error('Error applying level:', err);
+    alert(`Error applying level: ${err.message}`);
+  }
+}
+
+async function loadCalibrationHistory() {
+  try {
+    const resp = await fetch('/api/calibration/history');
+    const data = await resp.json();
+    
+    const container = document.getElementById('calib-history-list');
+    
+    if (!data.history || data.history.length === 0) {
+      container.innerHTML = '<p class="text-neutral-500 dark:text-neutral-400 text-sm">No previous calibrations found</p>';
+      return;
+    }
+    
+    container.innerHTML = data.history.map(h => `
+      <div class="flex items-center justify-between p-3 bg-neutral-100 dark:bg-neutral-800/50 rounded-lg">
+        <div>
+          <p class="text-sm font-medium text-black dark:text-white">${h.timestamp}</p>
+          <p class="text-xs text-neutral-500">${h.num_images} images, Optimal: ${h.optimal_label} (MAE: ${h.optimal_mae.toFixed(2)})</p>
+        </div>
+        <button onclick="applySpecificLevel(${h.optimal_level})" class="text-xs bg-primary/10 text-primary px-3 py-1 rounded hover:bg-primary/20">
+          Apply
+        </button>
+      </div>
+    `).join('');
+    
+  } catch (err) {
+    console.error('Error loading calibration history:', err);
+  }
+}
+
+// ============ COLOCALIZATION CALIBRATION FUNCTIONS ============
+let colocCalibSamples = [];  // Available samples from detection results
+let colocCalibSelected = []; // Selected samples with expected counts
+let colocCalibPolling = null;
+let colocCalibResults = null;
+let colocCalibOptimalLevel = null;
+
+async function loadColocCalibSamples() {
+  try {
+    const resp = await fetch('/api/coloc_calibration/samples');
+    const data = await resp.json();
+    
+    if (data.error) {
+      document.getElementById('coloc-calib-available').innerHTML = 
+        `<p class="text-red-500 text-sm">${data.error}</p>`;
+      return;
+    }
+    
+    colocCalibSamples = data.samples || [];
+    document.getElementById('coloc-calib-sample-count').textContent = 
+      `${colocCalibSamples.length} samples found`;
+    
+    const container = document.getElementById('coloc-calib-available');
+    if (colocCalibSamples.length === 0) {
+      container.innerHTML = '<p class="text-neutral-500 dark:text-neutral-400 text-sm">No samples found. Run detection first.</p>';
+      return;
+    }
+    
+    container.innerHTML = colocCalibSamples.map(s => `
+      <div class="flex items-center justify-between p-2 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 cursor-pointer text-sm" onclick="addColocCalibSample('${s.path.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', '${s.sample_name}')">
+        <span class="truncate text-black dark:text-white flex-1" title="${s.path}">${s.sample_name}</span>
+        <span class="text-xs text-neutral-400 ml-2">${s.n_masks} masks</span>
+        <span class="material-symbols-outlined text-purple-600 text-sm ml-2">add</span>
+      </div>
+    `).join('');
+    
+    // Also load history
+    loadColocCalibrationHistory();
+  } catch (err) {
+    console.error('Error loading coloc calibration samples:', err);
+    document.getElementById('coloc-calib-available').innerHTML = 
+      `<p class="text-red-500 text-sm">Error: ${err.message}</p>`;
+  }
+}
+
+function addColocCalibSample(path, name) {
+  if (colocCalibSelected.some(s => s.path === path)) {
+    alert('This sample is already selected.');
+    return;
+  }
+  
+  if (colocCalibSelected.length >= 4) {
+    if (!confirm('You already have 4 samples. Adding more will increase calibration time. Continue?')) {
+      return;
+    }
+  }
+  
+  colocCalibSelected.push({ path: path, sample_name: name, expected_count: 0 });
+  renderColocCalibSelected();
+}
+
+function removeColocCalibSample(index) {
+  colocCalibSelected.splice(index, 1);
+  renderColocCalibSelected();
+}
+
+function updateColocCalibExpectedCount(index, value) {
+  colocCalibSelected[index].expected_count = parseInt(value) || 0;
+}
+
+function renderColocCalibSelected() {
+  const container = document.getElementById('coloc-calib-selected');
+  
+  if (colocCalibSelected.length === 0) {
+    container.innerHTML = '<p class="text-neutral-500 dark:text-neutral-400 text-sm bg-neutral-100 dark:bg-neutral-800/50 rounded-lg p-3">No samples selected. Click samples above to add them.</p>';
+    return;
+  }
+  
+  container.innerHTML = colocCalibSelected.map((s, idx) => `
+    <div class="flex items-center gap-3 p-3 bg-neutral-100 dark:bg-neutral-800/50 rounded-lg">
+      <span class="text-xs font-medium text-neutral-500 dark:text-neutral-400">${idx + 1}.</span>
+      <span class="flex-1 text-sm text-black dark:text-white truncate" title="${s.path}">${s.sample_name}</span>
+      <div class="flex items-center gap-2">
+        <label class="text-xs text-neutral-500">Expected Co-Expr:</label>
+        <input type="number" min="0" value="${s.expected_count}" 
+          onchange="updateColocCalibExpectedCount(${idx}, this.value)"
+          class="w-20 px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white">
+      </div>
+      <button onclick="removeColocCalibSample(${idx})" class="text-red-500 hover:text-red-600">
+        <span class="material-symbols-outlined text-sm">close</span>
+      </button>
+    </div>
+  `).join('');
+}
+
+async function startColocCalibration() {
+  if (colocCalibSelected.length === 0) {
+    alert('Please select at least one sample for calibration.');
+    return;
+  }
+  
+  const hasZeroCount = colocCalibSelected.some(s => s.expected_count <= 0);
+  if (hasZeroCount) {
+    if (!confirm('Some samples have 0 as expected count. Continue anyway?')) {
+      return;
+    }
+  }
+  
+  // Prepare UI
+  document.getElementById('coloc-calib-start-btn').classList.add('hidden');
+  document.getElementById('coloc-calib-stop-btn').classList.remove('hidden');
+  document.getElementById('coloc-calib-progress-container').classList.remove('hidden');
+  document.getElementById('coloc-calib-status').textContent = 'Starting calibration...';
+  document.getElementById('coloc-calib-recommendation').classList.add('hidden');
+  document.getElementById('coloc-calib-results-table').classList.add('hidden');
+  document.getElementById('coloc-calib-no-results').classList.remove('hidden');
+  
+  try {
+    const chA = parseInt(document.getElementById('coloc-calib-ch-a').value);
+    const chB = parseInt(document.getElementById('coloc-calib-ch-b').value);
+    const mode = document.getElementById('coloc-calib-mode').value;
+    
+    const payload = {
+      samples: colocCalibSelected.map(s => ({
+        path: s.path,
+        expected_count: s.expected_count
+      })),
+      channel_pair: [chA, chB],
+      coexpr_mode: mode
+    };
+    
+    const resp = await fetch('/api/coloc_calibration/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    
+    const data = await resp.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    
+    // Start polling
+    colocCalibPolling = setInterval(pollColocCalibStatus, 1000);
+    
+  } catch (err) {
+    console.error('Error starting coloc calibration:', err);
+    document.getElementById('coloc-calib-status').textContent = `Error: ${err.message}`;
+    resetColocCalibUI();
+  }
+}
+
+async function pollColocCalibStatus() {
+  try {
+    const resp = await fetch('/api/coloc_calibration/status');
+    const data = await resp.json();
+    
+    const pct = data.total_steps > 0 ? Math.round((data.current_step / data.total_steps) * 100) : 0;
+    document.getElementById('coloc-calib-progress-bar').style.width = `${pct}%`;
+    document.getElementById('coloc-calib-progress-pct').textContent = `${pct}%`;
+    document.getElementById('coloc-calib-progress-text').textContent = `Step ${data.current_step} of ${data.total_steps}`;
+    document.getElementById('coloc-calib-status').textContent = data.message || 'Processing...';
+    
+    if (!data.running) {
+      clearInterval(colocCalibPolling);
+      colocCalibPolling = null;
+      
+      if (data.results) {
+        colocCalibResults = data.results;
+        colocCalibOptimalLevel = data.optimal_level;
+        renderColocCalibResults();
+        
+        document.getElementById('coloc-calib-status').innerHTML = 
+          '<span class="text-purple-600 dark:text-purple-400 font-medium">✓ Calibration complete!</span>';
+      }
+      
+      resetColocCalibUI();
+      loadColocCalibrationHistory();
+    }
+  } catch (err) {
+    console.error('Error polling coloc calibration status:', err);
+  }
+}
+
+async function stopColocCalibration() {
+  try {
+    await fetch('/api/coloc_calibration/stop', { method: 'POST' });
+    document.getElementById('coloc-calib-status').textContent = 'Stopping...';
+  } catch (err) {
+    console.error('Error stopping coloc calibration:', err);
+  }
+}
+
+function resetColocCalibUI() {
+  document.getElementById('coloc-calib-start-btn').classList.remove('hidden');
+  document.getElementById('coloc-calib-stop-btn').classList.add('hidden');
+  document.getElementById('coloc-calib-progress-container').classList.add('hidden');
+}
+
+function renderColocCalibResults() {
+  if (!colocCalibResults || !colocCalibResults.level_results) return;
+  
+  const tbody = document.getElementById('coloc-calib-results-body');
+  tbody.innerHTML = '';
+  
+  colocCalibResults.level_results.forEach(lr => {
+    const isOptimal = colocCalibOptimalLevel && lr.level === colocCalibOptimalLevel.level;
+    const row = document.createElement('tr');
+    row.className = isOptimal ? 'bg-purple-50 dark:bg-purple-900/20' : '';
+    row.innerHTML = `
+      <td class="p-2 text-black dark:text-white">
+        <span class="font-medium">${lr.label}</span>
+        ${isOptimal ? '<span class="ml-2 text-purple-600 dark:text-purple-400 text-xs">★ Best</span>' : ''}
+      </td>
+      <td class="p-2 text-right text-black dark:text-white">${lr.overlap_pct}%</td>
+      <td class="p-2 text-right text-black dark:text-white">${lr.centroid_dist}px</td>
+      <td class="p-2 text-right text-black dark:text-white">${lr.total_detected}</td>
+      <td class="p-2 text-right text-black dark:text-white">${lr.total_expected}</td>
+      <td class="p-2 text-right ${isOptimal ? 'text-purple-600 dark:text-purple-400 font-bold' : 'text-black dark:text-white'}">${lr.mae.toFixed(2)}</td>
+      <td class="p-2 text-center">
+        <button onclick="applyColocSpecificLevel(${lr.level})" class="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 px-2 py-1 rounded hover:bg-purple-200">
+          Apply
+        </button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+  
+  document.getElementById('coloc-calib-results-table').classList.remove('hidden');
+  document.getElementById('coloc-calib-no-results').classList.add('hidden');
+  
+  // Show recommendation
+  if (colocCalibOptimalLevel) {
+    document.getElementById('coloc-calib-recommended-level').textContent = colocCalibOptimalLevel.label;
+    document.getElementById('coloc-calib-recommended-params').textContent = 
+      `Overlap: ${colocCalibOptimalLevel.overlap_pct}%, Centroid: ${colocCalibOptimalLevel.centroid_dist}px`;
+    document.getElementById('coloc-calib-recommended-mae').textContent = `MAE: ${colocCalibOptimalLevel.mae.toFixed(2)} cells`;
+    document.getElementById('coloc-calib-recommendation').classList.remove('hidden');
+  }
+}
+
+async function applyColocCalibrationLevel() {
+  if (!colocCalibOptimalLevel) {
+    alert('No optimal level found. Please run calibration first.');
+    return;
+  }
+  await applyColocSpecificLevel(colocCalibOptimalLevel.level);
+}
+
+async function applyColocSpecificLevel(level) {
+  try {
+    const resp = await fetch('/api/coloc_calibration/apply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ level: level })
+    });
+    
+    const data = await resp.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    
+    // Update the co-expression UI fields if they exist
+    const distEl = document.getElementById('coexpr_centroid_distance');
+    if (distEl) distEl.value = data.centroid_dist;
+    
+    const overlapEl = document.getElementById('blend_overlap_fraction');
+    if (overlapEl) overlapEl.value = data.overlap_pct / 100;
+    
+    alert(`Applied ${data.label} to Co-Expression settings.\n\nOverlap: ${data.overlap_pct}%\nCentroid Distance: ${data.centroid_dist}px`);
+    
+  } catch (err) {
+    console.error('Error applying coloc level:', err);
+    alert(`Error applying level: ${err.message}`);
+  }
+}
+
+async function loadColocCalibrationHistory() {
+  try {
+    const resp = await fetch('/api/coloc_calibration/history');
+    const data = await resp.json();
+    
+    const container = document.getElementById('coloc-calib-history-list');
+    
+    if (!data.history || data.history.length === 0) {
+      container.innerHTML = '<p class="text-neutral-500 dark:text-neutral-400 text-sm">No previous colocalization calibrations found</p>';
+      return;
+    }
+    
+    container.innerHTML = data.history.map(h => `
+      <div class="flex items-center justify-between p-3 bg-neutral-100 dark:bg-neutral-800/50 rounded-lg">
+        <div>
+          <p class="text-sm font-medium text-black dark:text-white">${h.timestamp}</p>
+          <p class="text-xs text-neutral-500">${h.n_samples} samples, Ch${h.channel_pair[0]}+Ch${h.channel_pair[1]}, Optimal: ${h.optimal_label} (MAE: ${h.optimal_mae.toFixed(2)})</p>
+        </div>
+        <button onclick="applyColocSpecificLevel(${h.optimal_level})" class="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 px-3 py-1 rounded hover:bg-purple-200">
+          Apply
+        </button>
+      </div>
+    `).join('');
+    
+  } catch (err) {
+    console.error('Error loading coloc calibration history:', err);
   }
 }
 </script>

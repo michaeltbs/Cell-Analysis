@@ -6,26 +6,26 @@ advanced_filtering:
   foreground_block_size: 501
   foreground_offset: 15
   intensity_mode: global
-  max_intensity_threshold: 0.2
+  max_intensity_threshold: 0.1
   min_local_contrast: 1.0
   noise_radius: 25
   save_debug_images: false
   signal_percentile: 99.5
   snr_min: 2.5
   snr_threshold: 2.5
-  use_robust_normalization: false
+  use_robust_normalization: true
 cell_filtering:
   max_area: 32000
   max_circularity: 1
-  max_hole_ratio: 0.5
+  max_hole_ratio: 0.8
   min_area: 16
   min_circularity: 0
 cellpose:
-  batch_size: 4
-  cellprob_threshold: 0.2
+  batch_size: 8
+  cellprob_threshold: 0.0
   channel: 0
   diameter: 12
-  flow_threshold: 0.32
+  flow_threshold: 0.4
   model_name: cpsam
   niter: 1000
   resize_max: 2048
@@ -60,9 +60,9 @@ overlays:
   line_width: 1
   overlay_mode: contours
 paths:
-  input_neg: /app/data/Input/TV3_TIFF/Input_neg
-  input_pos: /app/data/Input/TV3_TIFF/Input_pos
-  output_root: /app/results/final/TV3_OnlyGalFos
+  input_neg: /app/data/Input/Glp1r_adult_aged_Tiff_uncut/Input_neg
+  input_pos: /app/data/Input/Glp1r_adult_aged_Tiff_uncut/Input_pos
+  output_root: /app/results/final/Glp1r
 preprocessing:
   clahe: true
   clahe_clip_limit: 0.03

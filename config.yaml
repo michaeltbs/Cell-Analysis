@@ -1,17 +1,17 @@
 analysis:
-  enable_anova: false
+  enable_anova: true
 auto_mag_from_path: false
-batch_size: 4
-cellprob_threshold: 0.2
+batch_size: 8
+cellprob_threshold: 0
 channel_labels:
 - index: 0
-  name: Casp3
+  name: Glp1r
 - index: 1
-  name: Fos
+  name: Pomc
 - index: 2
   name: Gal
 - index: 3
-  name: DAPI
+  name: Channel 3
 channel_levels:
 - index: 0
   level: 5
@@ -35,16 +35,16 @@ cpsam:
     background_radius: 50
     enable_advanced: false
     intensity_mode: global
-    max_intensity_threshold: 0.2
+    max_intensity_threshold: 0.1
     noise_radius: 25
     save_debug_images: false
     snr_min: 2.5
     snr_threshold: 2.5
-    use_robust_normalization: false
+    use_robust_normalization: true
   cell_filtering:
     max_area: 32000
     max_circularity: 1
-    max_hole_ratio: 0.5
+    max_hole_ratio: 0.8
     min_area: 16
     min_circularity: 0
   cellpose:
@@ -64,20 +64,20 @@ cpsam:
   split_regions: false
   watershed_split:
     split_touching: false
-cur_mag: 5
+cur_mag: 10
 det_channel_selection:
+- 0
 - 1
 - 2
 det_script_path: ''
-diameter: 0
-flow_threshold: 0.32
+flow_threshold: 0.4
 image_aware_scaling: true
-input_tiffs_dir: /app/data/Input/TV3_TIFF
+input_tiffs_dir: /app/data/Input/Glp1r_adult_aged_Tiff_uncut
 microscope:
   current_magnification: 10
   reference_magnification: 10
 model_type: cpsam
-output_results_dir: /app/results/final/TV3_OnlyGalFos
+output_results_dir: /app/results/final/Glp1r
 ref_mag: 10
 resize_max: 2048
 save_overlay: false
@@ -86,8 +86,8 @@ testing:
   mode: disabled
   samples_per_channel: 0
   seed: null
-  specific_image_neg: /app/data/Input/TV3_TIFF/Input_neg/DMH/O567_slice6_5x_stack.tif
-  specific_image_pos: /app/data/Input/TV3_TIFF/Input_pos/Arc/O835_slice2_5x_stack.tif
+  specific_image_neg: null
+  specific_image_pos: null
 tophat: false
 tophat_radius: 15
 use_gpu: true

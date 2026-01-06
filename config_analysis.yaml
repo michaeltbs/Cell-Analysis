@@ -4,28 +4,33 @@ blend_formats:
 - png
 - tiff
 blend_other_color: '#000000'
-blend_overlap_color: '#000000'
+blend_overlap_color: '#ff0000'
 centroid_overlap_fraction: 0.5
 channel_config:
-- color: '#40c4ff'
-  enabled: false
+- color: '#00ffff'
+  enabled: true
   index: 0
-  name: ''
-- color: '#1eff00'
+  name: Glp1r
+- color: '#d4ff00'
   enabled: true
   index: 1
-  name: ''
-- color: '#3300ff'
+  name: PomC
+- color: '#00ff37'
   enabled: true
   index: 2
-  name: ''
-channels_limit: 3
+  name: Gal
+- color: '#00ff37'
+  enabled: false
+  index: 3
+  name: GAL
+channels_limit: 4
 coexpr_mode: blend
 combos_enabled:
 - 2
+- 3
 dataset_name: ''
-input_dir: /app/results/final/TV3_OnlyGalFos
-output_dir: /app/results/final/TV3_OnlyGalFos/Coex1
+input_dir: /app/results/final/Glp1r
+output_dir: /app/results/final/Glp1r/Coex
 overlap_threshold: 30
 overlay_formats:
 - png
@@ -36,17 +41,24 @@ overlay_visualization:
   color_k2: '#ff0000'
   color_k3: '#ff0000'
   color_k4: '#ff0000'
-  dpi: 300
+  dpi: 600
   even_layout: line
   figure_type: mask
-  fill_alpha: 1
+  fill_alpha: 0.45
   line_width: 3
   overlay_style: contour
-  show_only_coexpressing: false
+  show_only_coexpressing: true
   single_color: '#808080'
 save_figure: true
 selected_combos:
+- - 0
+  - 1
+- - 0
+  - 2
 - - 1
+  - 2
+- - 0
+  - 1
   - 2
 test_mode:
   seed: ''

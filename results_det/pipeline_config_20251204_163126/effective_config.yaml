@@ -1,0 +1,75 @@
+auto_threshold: true
+blend_base_color: '#ff0000'
+blend_formats:
+- png
+- tiff
+blend_other_color: '#ff0000'
+blend_overlap_color: '#ff0000'
+centroid_overlap_fraction: 0.5
+channel_config:
+- color: '#006eff'
+  enabled: true
+  index: 0
+  name: Gal
+- color: '#fbff00'
+  enabled: true
+  index: 1
+  name: Fos
+- color: '#00ff40'
+  enabled: true
+  index: 2
+  name: Gck
+channels_limit: 3
+coexpr_mode: blend
+combos_enabled:
+- 2
+- 3
+dataset_name: ''
+input_dir: /app/results/MT01_Cut334
+output_dir: /app/results/final/MT01/Coex
+overlap_threshold: 30
+overlay_formats:
+- png
+- tiff
+overlay_visualization:
+  base_channel: 2
+  centroid_heatmap: true
+  centroid_size: 4
+  color_k2: '#ff0000'
+  color_k3: '#ff0000'
+  color_k4: '#ff0000'
+  dpi: 600
+  even_layout: line
+  figure_type: mask
+  fill_alpha: 1
+  line_width: 3
+  overlay_style: contour
+  show_only_coexpressing: true
+  single_color: '#808080'
+save_figure: true
+selected_combos:
+- - 0
+  - 1
+- - 0
+  - 2
+- - 1
+  - 2
+- - 0
+  - 1
+  - 2
+test_mode:
+  seed: ''
+  sweep_modes: []
+  sweep_sample: ''
+  type: 'off'
+use_masks: true
+paths:
+  input_pos: ''
+  input_neg: ''
+  output_root: ./results_det
+cellpose:
+  save_masks: true
+outputs: {}
+testing:
+  enabled: false
+  samples_per_channel: 0

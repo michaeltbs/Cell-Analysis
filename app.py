@@ -5,6 +5,7 @@ import yaml
 import subprocess
 import threading
 import json
+import traceback
 from datetime import datetime
 from pathlib import Path
 import sys
@@ -88,16 +89,25 @@ DET_CPSAM_CONFIG_PATH = 'config_det_cpsam.yaml'
 AI_CONFIG_PATH = 'config_ai.yaml'
 
 SENSITIVITY_LEVELS = [
-    {"label": "Level 1 - Strict", "cellprob": 0.64, "flow": 0.80, "snr": 3.3, "floor_pct": 92, "abs_int": 35, "itf": 0.36, "int_mode": "global", "max_int_thr": 0.35},
-    {"label": "Level 2 - Semi-strict", "cellprob": 0.55, "flow": 0.70, "snr": 3.0, "floor_pct": 86, "abs_int": 32, "itf": 0.49, "int_mode": "global", "max_int_thr": 0.28},
-    {"label": "Level 3 - Balanced", "cellprob": 0.46, "flow": 0.60, "snr": 2.8, "floor_pct": 80, "abs_int": 29, "itf": 0.62, "int_mode": "global", "max_int_thr": 0.22},
-    {"label": "Level 4 - Balanced+", "cellprob": 0.37, "flow": 0.49, "snr": 2.5, "floor_pct": 73, "abs_int": 26, "itf": 0.75, "int_mode": "global", "max_int_thr": 0.17},
-    {"label": "Level 5 - Moderate", "cellprob": 0.28, "flow": 0.39, "snr": 2.2, "floor_pct": 67, "abs_int": 23, "itf": 0.88, "int_mode": "global", "max_int_thr": 0.13},
-    {"label": "Level 6 - Medium-high", "cellprob": 0.20, "flow": 0.29, "snr": 2.0, "floor_pct": 61, "abs_int": 19, "itf": 1.00, "int_mode": "global", "max_int_thr": 0.10},
-    {"label": "Level 7 - Sensitive", "cellprob": 0.11, "flow": 0.19, "snr": 1.7, "floor_pct": 55, "abs_int": 16, "itf": 1.13, "int_mode": "global", "max_int_thr": 0.07},
-    {"label": "Level 8 - High sensitivity", "cellprob": 0.02, "flow": 0.08, "snr": 1.4, "floor_pct": 48, "abs_int": 13, "itf": 1.26, "int_mode": "global", "max_int_thr": 0.05},
-    {"label": "Level 9 - Very high sensitivity", "cellprob": -0.07, "flow": -0.02, "snr": 1.2, "floor_pct": 42, "abs_int": 10, "itf": 1.39, "int_mode": "global", "max_int_thr": 0.03},
-    {"label": "Level 10 - Ultra sensitive", "cellprob": -0.16, "flow": -0.12, "snr": 0.9, "floor_pct": 36, "abs_int": 7, "itf": 1.52, "int_mode": "global", "max_int_thr": 0.02},
+    # Strenge Level (1-5): Für sehr helle, klar definierte Zellen
+    {"label": "Level 1 - Ultra Strict", "cellprob": 0.80, "flow": 0.95, "snr": 4.5, "floor_pct": 97, "abs_int": 45, "itf": 0.15, "int_mode": "global", "max_int_thr": 0.50},
+    {"label": "Level 2 - Very Strict", "cellprob": 0.72, "flow": 0.88, "snr": 4.0, "floor_pct": 95, "abs_int": 42, "itf": 0.22, "int_mode": "global", "max_int_thr": 0.45},
+    {"label": "Level 3 - Strict", "cellprob": 0.64, "flow": 0.80, "snr": 3.5, "floor_pct": 92, "abs_int": 38, "itf": 0.30, "int_mode": "global", "max_int_thr": 0.40},
+    {"label": "Level 4 - Semi-Strict", "cellprob": 0.55, "flow": 0.70, "snr": 3.2, "floor_pct": 88, "abs_int": 34, "itf": 0.40, "int_mode": "global", "max_int_thr": 0.35},
+    {"label": "Level 5 - Moderate-Strict", "cellprob": 0.48, "flow": 0.62, "snr": 2.9, "floor_pct": 84, "abs_int": 30, "itf": 0.50, "int_mode": "global", "max_int_thr": 0.30},
+    # Balanced Level (6-8): Standard-Einstellungen
+    {"label": "Level 6 - Balanced", "cellprob": 0.40, "flow": 0.52, "snr": 2.6, "floor_pct": 78, "abs_int": 26, "itf": 0.62, "int_mode": "global", "max_int_thr": 0.25},
+    {"label": "Level 7 - Balanced+", "cellprob": 0.32, "flow": 0.44, "snr": 2.4, "floor_pct": 72, "abs_int": 23, "itf": 0.75, "int_mode": "global", "max_int_thr": 0.20},
+    {"label": "Level 8 - Moderate", "cellprob": 0.24, "flow": 0.36, "snr": 2.1, "floor_pct": 66, "abs_int": 20, "itf": 0.88, "int_mode": "global", "max_int_thr": 0.16},
+    # Sensitive Level (9-12): Für schwächere Signale
+    {"label": "Level 9 - Medium-Sensitive", "cellprob": 0.16, "flow": 0.28, "snr": 1.9, "floor_pct": 60, "abs_int": 17, "itf": 1.00, "int_mode": "global", "max_int_thr": 0.12},
+    {"label": "Level 10 - Sensitive", "cellprob": 0.08, "flow": 0.20, "snr": 1.6, "floor_pct": 54, "abs_int": 14, "itf": 1.15, "int_mode": "global", "max_int_thr": 0.09},
+    {"label": "Level 11 - High Sensitivity", "cellprob": 0.00, "flow": 0.12, "snr": 1.4, "floor_pct": 48, "abs_int": 11, "itf": 1.28, "int_mode": "global", "max_int_thr": 0.06},
+    {"label": "Level 12 - Very High", "cellprob": -0.08, "flow": 0.04, "snr": 1.2, "floor_pct": 42, "abs_int": 9, "itf": 1.40, "int_mode": "global", "max_int_thr": 0.04},
+    # Ultra-Sensitive Level (13-15): Für sehr schwache Signale
+    {"label": "Level 13 - Ultra Sensitive", "cellprob": -0.16, "flow": -0.04, "snr": 1.0, "floor_pct": 36, "abs_int": 7, "itf": 1.55, "int_mode": "global", "max_int_thr": 0.03},
+    {"label": "Level 14 - Maximum", "cellprob": -0.24, "flow": -0.12, "snr": 0.8, "floor_pct": 30, "abs_int": 5, "itf": 1.70, "int_mode": "global", "max_int_thr": 0.02},
+    {"label": "Level 15 - Absolute Max", "cellprob": -0.32, "flow": -0.20, "snr": 0.5, "floor_pct": 24, "abs_int": 3, "itf": 1.85, "int_mode": "global", "max_int_thr": 0.01},
 ]
 
 def _normalize_channel_levels(raw):
@@ -348,7 +358,7 @@ def save_config(config, filename=None):
         yaml.dump(config, f, default_flow_style=False, allow_unicode=True)
 
 # NEU: CZI Config Funktionen
-def load_czi_config():
+def load_czi_config(config_path=None):
     """Laedt CZI-Konvertierungs-Konfiguration"""
     defaults = {
         'input_root': '',
@@ -375,9 +385,10 @@ def load_czi_config():
         'save_ome_colors': True,
         'verbose': False,  # NEW
     }
-    if os.path.exists(CZI_CONFIG_PATH):
+    path_to_load = config_path if config_path else CZI_CONFIG_PATH
+    if os.path.exists(path_to_load):
         try:
-            with open(CZI_CONFIG_PATH, 'r', encoding='utf-8') as f:
+            with open(path_to_load, 'r', encoding='utf-8') as f:
                 loaded = yaml.safe_load(f) or {}
                 defaults.update(loaded)
         except Exception:
@@ -1904,7 +1915,8 @@ def index():
 def get_czi_config():
     """Liefert CZI-Konfiguration"""
     try:
-        config = load_czi_config() or {}
+        config_file = request.args.get('file')
+        config = load_czi_config(config_file) or {}
         return jsonify(config)
     except Exception as e:
         return jsonify({'error': str(e), 'config': {}}), 200
@@ -2232,6 +2244,30 @@ def list_configs():
         files = [f for f in os.listdir('.') if f.startswith('config_analysis') and f.endswith('.yaml')]
         # Sort: config_analysis.yaml first, then others alphabetically
         files.sort(key=lambda x: (x != 'config_analysis.yaml', x))
+        return jsonify({'files': files})
+    except Exception as e:
+        return jsonify({'error': str(e), 'files': []}), 500
+
+
+@app.route('/api/czi/config/list', methods=['GET'])
+def list_czi_configs():
+    """Lists available CZI conversion configuration files"""
+    try:
+        files = [f for f in os.listdir('.') if f.startswith('config_czi') and f.endswith('.yaml')]
+        # Sort: config_czi.yaml first, then others alphabetically
+        files.sort(key=lambda x: (x != 'config_czi.yaml', x))
+        return jsonify({'files': files})
+    except Exception as e:
+        return jsonify({'error': str(e), 'files': []}), 500
+
+
+@app.route('/api/det/config/list', methods=['GET'])
+def list_det_configs():
+    """Lists available detection configuration files"""
+    try:
+        files = [f for f in os.listdir('.') if f.startswith('config_det') and f.endswith('.yaml')]
+        # Sort: config_det_cpsam.yaml first, then others alphabetically
+        files.sort(key=lambda x: (x != 'config_det_cpsam.yaml', x))
         return jsonify({'files': files})
     except Exception as e:
         return jsonify({'error': str(e), 'files': []}), 500
@@ -3136,6 +3172,408 @@ def det_download_all_overlays():
             pass
         return response
     return send_file(zip_path, as_attachment=True, download_name=os.path.basename(zip_path))
+
+
+# =================== CALIBRATION API ===================
+# Status for calibration process
+calibration_status = {
+    'running': False,
+    'current_step': 0,
+    'total_steps': 0,
+    'message': '',
+    'results': None,
+    'error': None,
+}
+calibration_thread = None
+
+@app.route('/api/calibration/images', methods=['GET'])
+def calibration_list_images():
+    """List TIFF images available for calibration from the detection input directory."""
+    try:
+        from src.calibration_utils import list_tiff_images
+        
+        # Get input directory from detection config
+        cfg = load_det_config()
+        input_dir = cfg.get('input_tiffs_dir') or cfg.get('paths', {}).get('input_pos', '')
+        
+        if not input_dir or not os.path.isdir(input_dir):
+            # Try alternate paths
+            for alt_key in ['input_dir', 'input_pos', 'input_neg']:
+                alt_dir = cfg.get(alt_key, '')
+                if alt_dir and os.path.isdir(alt_dir):
+                    input_dir = alt_dir
+                    break
+        
+        if not input_dir or not os.path.isdir(input_dir):
+            return jsonify({'images': [], 'error': 'No valid input directory configured', 'input_dir': input_dir})
+        
+        images = list_tiff_images(input_dir, limit=100)
+        return jsonify({
+            'images': images,
+            'input_dir': input_dir,
+            'count': len(images),
+        })
+    except Exception as e:
+        return jsonify({'images': [], 'error': str(e)}), 500
+
+
+@app.route('/api/calibration/run', methods=['POST'])
+def calibration_run():
+    """Start calibration process with selected images and expected counts."""
+    global calibration_status, calibration_thread
+    
+    if calibration_status['running']:
+        return jsonify({'status': 'error', 'message': 'Calibration already running'}), 400
+    
+    try:
+        data = request.json or {}
+        images_with_counts = data.get('images', [])
+        
+        if not images_with_counts or len(images_with_counts) < 1:
+            return jsonify({'status': 'error', 'message': 'At least 1 image with expected count required'}), 400
+        
+        # Validate images
+        for img in images_with_counts:
+            if 'path' not in img or 'expected' not in img:
+                return jsonify({'status': 'error', 'message': 'Each image needs path and expected count'}), 400
+            if not os.path.isfile(img['path']):
+                return jsonify({'status': 'error', 'message': f"Image not found: {img['path']}"}), 400
+        
+        # Get detection config for model settings
+        cfg = load_det_config()
+        model_type = cfg.get('model_type', 'cyto2')
+        use_gpu = cfg.get('use_gpu', False)
+        diameter = cfg.get('diameter')
+        if diameter == 0 or diameter == '':
+            diameter = None
+        
+        # Reset status
+        n_images = len(images_with_counts)
+        n_levels = len(SENSITIVITY_LEVELS)
+        calibration_status = {
+            'running': True,
+            'current_step': 0,
+            'total_steps': n_images * n_levels,
+            'message': 'Starting calibration...',
+            'results': None,
+            'error': None,
+        }
+        
+        def run_calibration_thread():
+            global calibration_status
+            try:
+                from src.calibration_utils import run_calibration, save_calibration_result, find_optimal_level
+                
+                def progress_callback(step, total, msg, result):
+                    calibration_status['current_step'] = step
+                    calibration_status['total_steps'] = total
+                    calibration_status['message'] = msg
+                
+                results = run_calibration(
+                    images_with_counts,
+                    SENSITIVITY_LEVELS,
+                    model_type=model_type,
+                    use_gpu=use_gpu,
+                    diameter=diameter,
+                    callback=progress_callback,
+                )
+                
+                # Save results
+                output_dir = cfg.get('output_results_dir', './results')
+                save_calibration_result(results, output_dir)
+                
+                calibration_status['results'] = results
+                calibration_status['message'] = f"Done! Optimal: Level {results['optimal_level'] + 1} (MAE: {results['optimal_mae']:.1f})"
+                
+            except Exception as e:
+                calibration_status['error'] = str(e)
+                calibration_status['message'] = f"Error: {e}"
+                traceback.print_exc()
+            finally:
+                calibration_status['running'] = False
+        
+        # Start thread
+        calibration_thread = threading.Thread(target=run_calibration_thread, daemon=True)
+        calibration_thread.start()
+        
+        return jsonify({
+            'status': 'started',
+            'message': f'Calibration started with {n_images} images × {n_levels} levels',
+            'total_steps': n_images * n_levels,
+        })
+        
+    except Exception as e:
+        calibration_status['running'] = False
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/api/calibration/status', methods=['GET'])
+def calibration_get_status():
+    """Get current calibration status and results."""
+    return jsonify(calibration_status)
+
+
+@app.route('/api/calibration/stop', methods=['POST'])
+def calibration_stop():
+    """Stop running calibration (best effort - will complete current image)."""
+    global calibration_status
+    if calibration_status['running']:
+        calibration_status['message'] = 'Stopping...'
+        # Note: Thread will finish current image, then check status
+    return jsonify({'status': 'ok', 'message': 'Stop signal sent'})
+
+
+@app.route('/api/calibration/apply', methods=['POST'])
+def calibration_apply():
+    """Apply recommended sensitivity level to detection config."""
+    try:
+        data = request.json or {}
+        level_index = data.get('level')
+        
+        if level_index is None:
+            # Use optimal from last calibration
+            if calibration_status.get('results'):
+                level_index = calibration_status['results'].get('optimal_level', 5)
+            else:
+                return jsonify({'status': 'error', 'message': 'No level specified and no calibration results available'}), 400
+        
+        level_index = int(level_index)
+        if level_index < 0 or level_index >= len(SENSITIVITY_LEVELS):
+            return jsonify({'status': 'error', 'message': f'Invalid level index: {level_index}'}), 400
+        
+        level_params = SENSITIVITY_LEVELS[level_index]
+        
+        # Update detection config
+        cfg = load_det_config()
+        cfg['flow_threshold'] = level_params.get('flow', 0.4)
+        cfg['cellprob_threshold'] = level_params.get('cellprob', 0.0)
+        
+        # Update CPSAM config if present
+        cpsam = cfg.get('cpsam', {})
+        if cpsam:
+            adv = cpsam.setdefault('advanced_filtering', {})
+            adv['snr_min'] = level_params.get('snr', 2.0)
+            adv['snr_threshold'] = level_params.get('snr', 2.0)
+            adv['abs_floor_percentile'] = level_params.get('floor_pct', 75)
+            proc = cpsam.setdefault('processing', {})
+            proc['intensity_threshold'] = level_params.get('abs_int', 20)
+            filt = cpsam.setdefault('filters', {})
+            filt['intensity_threshold_factor'] = level_params.get('itf', 0.5)
+        
+        # Save config
+        save_det_config(cfg)
+        
+        return jsonify({
+            'status': 'success',
+            'message': f"Applied {level_params.get('label', f'Level {level_index + 1}')}",
+            'level': level_index,
+            'params': level_params,
+        })
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/api/calibration/history', methods=['GET'])
+def calibration_history():
+    """Get list of previous calibration results."""
+    try:
+        from src.calibration_utils import get_calibration_history
+        
+        cfg = load_det_config()
+        output_dir = cfg.get('output_results_dir', './results')
+        
+        history = get_calibration_history(output_dir, limit=10)
+        return jsonify({'history': history})
+        
+    except Exception as e:
+        return jsonify({'history': [], 'error': str(e)}), 500
+
+
+# ============ COLOCALIZATION CALIBRATION ENDPOINTS ============
+
+coloc_calibration_status = {
+    'running': False,
+    'current_step': 0,
+    'total_steps': 0,
+    'message': '',
+    'results': None,
+    'optimal_level': None,
+}
+coloc_calibration_thread = None
+
+
+@app.route('/api/coloc_calibration/levels', methods=['GET'])
+def coloc_calibration_levels():
+    """Get available colocalization calibration levels."""
+    try:
+        from src.calibration_utils import COLOC_CALIBRATION_LEVELS
+        return jsonify({'levels': COLOC_CALIBRATION_LEVELS})
+    except Exception as e:
+        return jsonify({'error': str(e), 'levels': []}), 500
+
+
+@app.route('/api/coloc_calibration/samples', methods=['GET'])
+def coloc_calibration_samples():
+    """List samples available for colocalization calibration (from detection results)."""
+    try:
+        cfg = load_det_config()
+        results_dir = cfg.get('output_results_dir', './results')
+        
+        if not results_dir or not os.path.exists(results_dir):
+            return jsonify({'error': 'Detection results directory not found. Run detection first.', 'samples': []})
+        
+        from src.calibration_utils import list_coloc_samples
+        samples = list_coloc_samples(results_dir, limit=50)
+        
+        return jsonify({'samples': samples, 'results_dir': results_dir})
+    except Exception as e:
+        return jsonify({'error': str(e), 'samples': []}), 500
+
+
+@app.route('/api/coloc_calibration/run', methods=['POST'])
+def coloc_calibration_run():
+    """Start colocalization calibration."""
+    global coloc_calibration_status, coloc_calibration_thread
+    
+    if coloc_calibration_status['running']:
+        return jsonify({'error': 'Calibration already running'}), 400
+    
+    data = request.json or {}
+    samples = data.get('samples', [])  # [{path, expected_count}]
+    channel_pair = data.get('channel_pair', [0, 1])
+    coexpr_mode = data.get('coexpr_mode', 'overlap')
+    
+    if not samples or len(samples) == 0:
+        return jsonify({'error': 'No samples provided'}), 400
+    
+    # Reset status
+    coloc_calibration_status = {
+        'running': True,
+        'current_step': 0,
+        'total_steps': len(samples) * 9,  # 9 levels
+        'message': 'Starting colocalization calibration...',
+        'results': None,
+        'optimal_level': None,
+        'stop': False,
+    }
+    
+    def run_calibration_thread():
+        global coloc_calibration_status
+        try:
+            from src.calibration_utils import run_coloc_calibration, save_coloc_calibration_result, COLOC_CALIBRATION_LEVELS
+            
+            def progress_callback(step, total, msg):
+                coloc_calibration_status['current_step'] = step
+                coloc_calibration_status['total_steps'] = total
+                coloc_calibration_status['message'] = msg
+            
+            results = run_coloc_calibration(
+                samples_with_counts=samples,
+                channel_pair=tuple(channel_pair),
+                levels=COLOC_CALIBRATION_LEVELS,
+                coexpr_mode=coexpr_mode,
+                callback=progress_callback,
+                stop_flag=coloc_calibration_status
+            )
+            
+            # Save results
+            cfg = load_det_config()
+            output_dir = cfg.get('output_results_dir', './results')
+            save_coloc_calibration_result(results, output_dir)
+            
+            coloc_calibration_status['results'] = results
+            coloc_calibration_status['optimal_level'] = results.get('optimal_level')
+            coloc_calibration_status['message'] = 'Calibration complete!'
+            
+        except Exception as e:
+            coloc_calibration_status['message'] = f'Error: {str(e)}'
+            traceback.print_exc()
+        finally:
+            coloc_calibration_status['running'] = False
+    
+    coloc_calibration_thread = threading.Thread(target=run_calibration_thread)
+    coloc_calibration_thread.start()
+    
+    return jsonify({'status': 'started', 'total_steps': coloc_calibration_status['total_steps']})
+
+
+@app.route('/api/coloc_calibration/status', methods=['GET'])
+def coloc_calibration_get_status():
+    """Get colocalization calibration status."""
+    return jsonify({
+        'running': coloc_calibration_status['running'],
+        'current_step': coloc_calibration_status['current_step'],
+        'total_steps': coloc_calibration_status['total_steps'],
+        'message': coloc_calibration_status['message'],
+        'results': coloc_calibration_status.get('results'),
+        'optimal_level': coloc_calibration_status.get('optimal_level'),
+    })
+
+
+@app.route('/api/coloc_calibration/stop', methods=['POST'])
+def coloc_calibration_stop():
+    """Stop colocalization calibration."""
+    global coloc_calibration_status
+    if coloc_calibration_status['running']:
+        coloc_calibration_status['stop'] = True
+        coloc_calibration_status['message'] = 'Stopping...'
+    return jsonify({'status': 'ok', 'message': 'Stop signal sent'})
+
+
+@app.route('/api/coloc_calibration/apply', methods=['POST'])
+def coloc_calibration_apply():
+    """Apply colocalization calibration level to co-expression config."""
+    try:
+        data = request.json or {}
+        level_index = data.get('level')
+        
+        if level_index is None:
+            if coloc_calibration_status.get('optimal_level'):
+                level_index = coloc_calibration_status['optimal_level'].get('level', 5)
+            else:
+                return jsonify({'error': 'No level specified and no calibration results available'}), 400
+        
+        from src.calibration_utils import COLOC_CALIBRATION_LEVELS
+        
+        level_data = next((l for l in COLOC_CALIBRATION_LEVELS if l['level'] == level_index), None)
+        if not level_data:
+            return jsonify({'error': f'Invalid level: {level_index}'}), 400
+        
+        # Update co-expression config
+        cfg = load_config()
+        cfg['centroid_max_distance'] = level_data['centroid_dist']
+        cfg['blend_overlap_fraction'] = level_data['overlap_pct'] / 100.0
+        cfg['centroid_overlap_fraction'] = level_data['overlap_pct'] / 100.0 * 0.5  # Half for centroid mode
+        save_config(cfg)
+        
+        return jsonify({
+            'status': 'success',
+            'message': f"Applied Level {level_index}: {level_data['label']}",
+            'level': level_index,
+            'label': level_data['label'],
+            'overlap_pct': level_data['overlap_pct'],
+            'centroid_dist': level_data['centroid_dist'],
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/coloc_calibration/history', methods=['GET'])
+def coloc_calibration_history():
+    """Get list of previous colocalization calibration results."""
+    try:
+        from src.calibration_utils import get_coloc_calibration_history
+        
+        cfg = load_det_config()
+        output_dir = cfg.get('output_results_dir', './results')
+        
+        history = get_coloc_calibration_history(output_dir, limit=10)
+        return jsonify({'history': history})
+        
+    except Exception as e:
+        return jsonify({'history': [], 'error': str(e)}), 500
 
 
 if __name__ == '__main__':

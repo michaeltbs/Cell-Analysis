@@ -9,16 +9,25 @@ DEFAULT_AI_CONFIG = {
 }
 
 SENSITIVITY_LEVELS = [
-    {"label": "Level 1 - Strict", "cellprob": 0.64, "flow": 0.80, "snr": 3.30, "floor_pct": 92, "abs_int": 35, "itf": 0.36},
-    {"label": "Level 2 - Semi-strict", "cellprob": 0.5511, "flow": 0.6978, "snr": 3.03, "floor_pct": 85.8, "abs_int": 31.89, "itf": 0.4889},
-    {"label": "Level 3 - Balanced", "cellprob": 0.4622, "flow": 0.5956, "snr": 2.77, "floor_pct": 79.6, "abs_int": 28.78, "itf": 0.6178},
-    {"label": "Level 4 - Balanced+", "cellprob": 0.3733, "flow": 0.4933, "snr": 2.50, "floor_pct": 73.3, "abs_int": 25.67, "itf": 0.7467},
-    {"label": "Level 5 - Default", "cellprob": 0.2844, "flow": 0.3911, "snr": 2.23, "floor_pct": 67.1, "abs_int": 22.56, "itf": 0.8756},
-    {"label": "Level 6 - Relaxed", "cellprob": 0.1956, "flow": 0.2889, "snr": 1.97, "floor_pct": 60.9, "abs_int": 19.44, "itf": 1.0044},
-    {"label": "Level 7 - Sensitive", "cellprob": 0.1067, "flow": 0.1867, "snr": 1.70, "floor_pct": 54.7, "abs_int": 16.33, "itf": 1.1333},
-    {"label": "Level 8 - High sensitivity", "cellprob": 0.0178, "flow": 0.0844, "snr": 1.43, "floor_pct": 48.4, "abs_int": 13.22, "itf": 1.2622},
-    {"label": "Level 9 - Very high sensitivity", "cellprob": -0.0711, "flow": -0.0178, "snr": 1.17, "floor_pct": 42.2, "abs_int": 10.11, "itf": 1.3911},
-    {"label": "Level 10 - Ultra sensitive", "cellprob": -0.16, "flow": -0.12, "snr": 0.90, "floor_pct": 36, "abs_int": 7, "itf": 1.52},
+    # Strenge Level (1-5): Für sehr helle, klar definierte Zellen
+    {"label": "Level 1 - Ultra Strict", "cellprob": 0.80, "flow": 0.95, "snr": 4.5, "floor_pct": 97, "abs_int": 45, "itf": 0.15, "int_mode": "global", "max_int_thr": 0.50},
+    {"label": "Level 2 - Very Strict", "cellprob": 0.72, "flow": 0.88, "snr": 4.0, "floor_pct": 95, "abs_int": 42, "itf": 0.22, "int_mode": "global", "max_int_thr": 0.45},
+    {"label": "Level 3 - Strict", "cellprob": 0.64, "flow": 0.80, "snr": 3.5, "floor_pct": 92, "abs_int": 38, "itf": 0.30, "int_mode": "global", "max_int_thr": 0.40},
+    {"label": "Level 4 - Semi-Strict", "cellprob": 0.55, "flow": 0.70, "snr": 3.2, "floor_pct": 88, "abs_int": 34, "itf": 0.40, "int_mode": "global", "max_int_thr": 0.35},
+    {"label": "Level 5 - Moderate-Strict", "cellprob": 0.48, "flow": 0.62, "snr": 2.9, "floor_pct": 84, "abs_int": 30, "itf": 0.50, "int_mode": "global", "max_int_thr": 0.30},
+    # Balanced Level (6-8): Standard-Einstellungen
+    {"label": "Level 6 - Balanced", "cellprob": 0.40, "flow": 0.52, "snr": 2.6, "floor_pct": 78, "abs_int": 26, "itf": 0.62, "int_mode": "global", "max_int_thr": 0.25},
+    {"label": "Level 7 - Balanced+", "cellprob": 0.32, "flow": 0.44, "snr": 2.4, "floor_pct": 72, "abs_int": 23, "itf": 0.75, "int_mode": "global", "max_int_thr": 0.20},
+    {"label": "Level 8 - Moderate", "cellprob": 0.24, "flow": 0.36, "snr": 2.1, "floor_pct": 66, "abs_int": 20, "itf": 0.88, "int_mode": "global", "max_int_thr": 0.16},
+    # Sensitive Level (9-12): Für schwächere Signale
+    {"label": "Level 9 - Medium-Sensitive", "cellprob": 0.16, "flow": 0.28, "snr": 1.9, "floor_pct": 60, "abs_int": 17, "itf": 1.00, "int_mode": "global", "max_int_thr": 0.12},
+    {"label": "Level 10 - Sensitive", "cellprob": 0.08, "flow": 0.20, "snr": 1.6, "floor_pct": 54, "abs_int": 14, "itf": 1.15, "int_mode": "global", "max_int_thr": 0.09},
+    {"label": "Level 11 - High Sensitivity", "cellprob": 0.00, "flow": 0.12, "snr": 1.4, "floor_pct": 48, "abs_int": 11, "itf": 1.28, "int_mode": "global", "max_int_thr": 0.06},
+    {"label": "Level 12 - Very High", "cellprob": -0.08, "flow": 0.04, "snr": 1.2, "floor_pct": 42, "abs_int": 9, "itf": 1.40, "int_mode": "global", "max_int_thr": 0.04},
+    # Ultra-Sensitive Level (13-15): Für sehr schwache Signale
+    {"label": "Level 13 - Ultra Sensitive", "cellprob": -0.16, "flow": -0.04, "snr": 1.0, "floor_pct": 36, "abs_int": 7, "itf": 1.55, "int_mode": "global", "max_int_thr": 0.03},
+    {"label": "Level 14 - Maximum", "cellprob": -0.24, "flow": -0.12, "snr": 0.8, "floor_pct": 30, "abs_int": 5, "itf": 1.70, "int_mode": "global", "max_int_thr": 0.02},
+    {"label": "Level 15 - Absolute Max", "cellprob": -0.32, "flow": -0.20, "snr": 0.5, "floor_pct": 24, "abs_int": 3, "itf": 1.85, "int_mode": "global", "max_int_thr": 0.01},
 ]
 
 AI_CONFIG_PATH = 'config_ai.yaml'

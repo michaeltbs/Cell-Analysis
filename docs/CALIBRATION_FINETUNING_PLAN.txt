@@ -1,0 +1,394 @@
+================================================================================
+                    OPTION B: CELLPOSE MODEL FINE-TUNING
+                         Detailed Implementation Plan
+================================================================================
+
+OVERVIEW
+--------
+This document describes the implementation plan for "Option B" - actual Cellpose
+model fine-tuning using user-provided manual annotations. Unlike Option A 
+(sensitivity calibration using expected cell counts), this approach creates a
+custom Cellpose model trained specifically on the user's data.
+
+PREREQUISITES
+-------------
+- Cellpose 2.0+ installed with training support
+- GPU recommended (CUDA/cuDNN) for faster training
+- 5-20 manually annotated images with masks
+- User familiarity with Cellpose GUI or ImageJ/FIJI for mask creation
+
+================================================================================
+PART 1: USER INTERFACE ADDITIONS
+================================================================================
+
+1.1 New Tab: "Model Training"
+-----------------------------
+Location: After "Calibration" tab in sidebar
+Icon: school (Material Symbols)
+
+Tab Sections:
+  a) Training Data Selection
+     - Input folder picker (existing pattern)
+     - List of images found
+     - Mask folder picker (parallel directory with _masks suffix)
+     - Validation of image-mask pairs
+     
+  b) Training Configuration
+     - Base Model: dropdown [cyto3, cyto2, cyto, nuclei, custom]
+     - Number of Epochs: slider 100-500 (default 100)
+     - Learning Rate: input 0.001-0.2 (default 0.1)
+     - Batch Size: dropdown [1, 2, 4, 8] (default 8)
+     - Weight Decay: input (default 0.0001)
+     - Channel Settings: same as detection (segmentation, optional nuclear)
+     
+  c) Training Progress
+     - Progress bar (epochs completed / total)
+     - Training log output (loss per epoch)
+     - Stop training button
+     - Estimated time remaining
+     
+  d) Model Management
+     - List of trained custom models
+     - Model selection dropdown for Detection tab integration
+     - Delete/export model buttons
+
+1.2 API Endpoints Required
+--------------------------
+POST /api/training/validate
+  - Input: { images_dir, masks_dir }
+  - Output: { valid: bool, pairs: [{image, mask}], errors: [] }
+
+POST /api/training/start
+  - Input: { images_dir, masks_dir, config: {...} }
+  - Output: { status: 'started', model_id: '...' }
+
+GET /api/training/status
+  - Output: { running, epoch, total_epochs, loss, message }
+
+POST /api/training/stop
+
+GET /api/training/models
+  - Output: { models: [{id, name, date, base_model, epochs}] }
+
+POST /api/training/select
+  - Input: { model_id }
+  - Output: Updates detection config to use custom model
+
+DELETE /api/training/models/<model_id>
+
+================================================================================
+PART 2: BACKEND IMPLEMENTATION
+================================================================================
+
+2.1 New Module: src/training_utils.py
+-------------------------------------
+
+```python
+import os
+import torch
+from pathlib import Path
+from datetime import datetime
+from cellpose import train, models, io
+
+MODELS_DIR = Path('models/custom')
+
+def validate_training_data(images_dir: str, masks_dir: str) -> dict:
+    """
+    Validate that images and masks are properly paired.
+    Returns list of valid pairs and any validation errors.
+    """
+    images = {}
+    masks = {}
+    
+    # Collect images
+    for f in Path(images_dir).glob('*'):
+        if f.suffix.lower() in ['.tif', '.tiff', '.png', '.jpg']:
+            images[f.stem] = f
+    
+    # Collect masks (expect _masks.tif or _cp_masks.png naming)
+    for f in Path(masks_dir).glob('*'):
+        if '_masks' in f.name or '_cp_masks' in f.name:
+            base_name = f.stem.replace('_masks', '').replace('_cp_masks', '')
+            masks[base_name] = f
+    
+    # Match pairs
+    pairs = []
+    errors = []
+    
+    for name, img_path in images.items():
+        if name in masks:
+            pairs.append({
+                'image': str(img_path),
+                'mask': str(masks[name])
+            })
+        else:
+            errors.append(f"Missing mask for: {img_path.name}")
+    
+    return {
+        'valid': len(pairs) > 0 and len(errors) == 0,
+        'pairs': pairs,
+        'errors': errors,
+        'total_images': len(images),
+        'matched_pairs': len(pairs)
+    }
+
+
+def start_training(
+    images_dir: str,
+    masks_dir: str,
+    base_model: str = 'cyto3',
+    n_epochs: int = 100,
+    learning_rate: float = 0.1,
+    batch_size: int = 8,
+    weight_decay: float = 0.0001,
+    channels: list = [0, 0],
+    callback = None
+) -> str:
+    """
+    Start Cellpose model fine-tuning.
+    Returns model_id for tracking.
+    """
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
+    
+    # Generate model ID
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    model_id = f"custom_{base_model}_{timestamp}"
+    model_path = MODELS_DIR / model_id
+    
+    # Collect training data
+    train_files = []
+    train_labels = []
+    
+    validation = validate_training_data(images_dir, masks_dir)
+    for pair in validation['pairs']:
+        train_files.append(pair['image'])
+        train_labels.append(pair['mask'])
+    
+    # Initialize model
+    model = models.CellposeModel(
+        gpu=torch.cuda.is_available(),
+        model_type=base_model
+    )
+    
+    # Train
+    model_path_result, train_losses, test_losses = train.train_seg(
+        model.net,
+        train_data=train_files,
+        train_labels=train_labels,
+        channels=channels,
+        save_path=str(model_path),
+        n_epochs=n_epochs,
+        learning_rate=learning_rate,
+        weight_decay=weight_decay,
+        batch_size=batch_size,
+        rescale=True
+    )
+    
+    # Save metadata
+    metadata = {
+        'model_id': model_id,
+        'base_model': base_model,
+        'n_epochs': n_epochs,
+        'learning_rate': learning_rate,
+        'timestamp': timestamp,
+        'training_images': len(train_files),
+        'final_loss': train_losses[-1] if train_losses else None,
+        'model_path': str(model_path_result)
+    }
+    
+    with open(model_path / 'metadata.json', 'w') as f:
+        json.dump(metadata, f, indent=2)
+    
+    return model_id
+
+
+def list_custom_models() -> list:
+    """List all custom trained models."""
+    models_list = []
+    
+    if not MODELS_DIR.exists():
+        return models_list
+    
+    for model_dir in MODELS_DIR.iterdir():
+        if model_dir.is_dir():
+            meta_path = model_dir / 'metadata.json'
+            if meta_path.exists():
+                with open(meta_path) as f:
+                    meta = json.load(f)
+                models_list.append(meta)
+    
+    return sorted(models_list, key=lambda x: x.get('timestamp', ''), reverse=True)
+
+
+def delete_model(model_id: str) -> bool:
+    """Delete a custom model."""
+    model_path = MODELS_DIR / model_id
+    if model_path.exists():
+        import shutil
+        shutil.rmtree(model_path)
+        return True
+    return False
+
+
+def get_model_path(model_id: str) -> str:
+    """Get the path to a trained model for use in detection."""
+    model_path = MODELS_DIR / model_id
+    # Find the actual model file (usually ends with epoch number)
+    for f in model_path.glob('*'):
+        if f.suffix == '' and 'cellpose' not in f.name.lower():
+            continue
+        if f.is_file() and not f.name.endswith('.json'):
+            return str(f)
+    return None
+```
+
+2.2 Mask Creation Helpers
+-------------------------
+Add utility to help users create masks:
+
+a) Integration with Cellpose GUI
+   - Button to launch Cellpose GUI for annotation
+   - Command: python -m cellpose --dir <images_dir>
+   
+b) Alternative: Semi-automatic mask generation
+   - Run detection with current settings
+   - Allow user to correct in Cellpose GUI
+   - Save corrections as training masks
+
+================================================================================
+PART 3: INTEGRATION WITH DETECTION
+================================================================================
+
+3.1 Detection Config Updates
+----------------------------
+Add to config_det_cpsam.yaml:
+
+```yaml
+model:
+  use_custom: false
+  custom_model_id: null
+  custom_model_path: null
+```
+
+3.2 UI Updates to Detection Tab
+-------------------------------
+Add "Model Selection" section:
+- Radio: [Standard Models, Custom Model]
+- If Custom: Dropdown of available trained models
+- Info display: training date, base model, epochs
+
+3.3 Backend Detection Integration
+---------------------------------
+Modify detection to load custom model when configured:
+
+```python
+def get_cellpose_model(config):
+    if config.get('model', {}).get('use_custom'):
+        model_id = config['model']['custom_model_id']
+        model_path = training_utils.get_model_path(model_id)
+        return models.CellposeModel(
+            gpu=use_gpu,
+            pretrained_model=model_path
+        )
+    else:
+        return models.Cellpose(
+            gpu=use_gpu,
+            model_type=config.get('model_type', 'cyto3')
+        )
+```
+
+================================================================================
+PART 4: MASK CREATION GUIDE (USER DOCUMENTATION)
+================================================================================
+
+4.1 Using Cellpose GUI
+----------------------
+1. Install Cellpose GUI: pip install cellpose[gui]
+2. Launch: python -m cellpose
+3. Open images from Input folder
+4. Use built-in segmentation or draw masks manually
+5. Save masks (creates _cp_masks.png files)
+6. Move masks to dedicated masks folder
+
+4.2 Using ImageJ/FIJI
+---------------------
+1. Open image in FIJI
+2. Use ROI tools to outline cells
+3. Run: Analyze > Tools > ROI Manager > More > Save masks
+4. Export as *_masks.tif
+
+4.3 Semi-Automatic Approach
+---------------------------
+1. Run detection with current settings (high sensitivity)
+2. Export overlay masks
+3. Open in Cellpose GUI or FIJI
+4. Correct errors (add missing, remove false positives)
+5. Save corrected masks for training
+
+================================================================================
+PART 5: IMPLEMENTATION TIMELINE
+================================================================================
+
+Phase 1 (Week 1-2): Backend
+- [ ] Create src/training_utils.py
+- [ ] Add API endpoints to app.py
+- [ ] Test training pipeline standalone
+
+Phase 2 (Week 2-3): Frontend
+- [ ] Add "Model Training" tab
+- [ ] Implement training data validation UI
+- [ ] Add progress monitoring
+
+Phase 3 (Week 3-4): Integration
+- [ ] Integrate custom models with detection
+- [ ] Update Detection tab UI
+- [ ] Test end-to-end workflow
+
+Phase 4 (Week 4): Documentation & Polish
+- [ ] Add user documentation
+- [ ] Add mask creation guide
+- [ ] Error handling and edge cases
+
+================================================================================
+PART 6: TECHNICAL CONSIDERATIONS
+================================================================================
+
+6.1 GPU Memory
+--------------
+- Training requires significant GPU memory
+- Add memory check before training starts
+- Provide fallback CPU training (slower but functional)
+
+6.2 Training Time
+-----------------
+- 100 epochs with 10 images: ~30 minutes (GPU)
+- Consider background process with email/notification
+
+6.3 Model Storage
+-----------------
+- Each model: ~30-50 MB
+- Consider model compression for storage efficiency
+- Max models limit (e.g., 10) with cleanup
+
+6.4 Validation Set
+------------------
+- Optionally split training data 80/20
+- Show validation loss alongside training loss
+- Early stopping if validation loss increases
+
+================================================================================
+APPENDIX: CELLPOSE TRAINING PARAMETERS REFERENCE
+================================================================================
+
+Parameter           Range           Default     Notes
+---------------------------------------------------------------------------
+n_epochs            50-500          100         More epochs = better fit
+learning_rate       0.001-0.5       0.1         Lower = slower but stable
+weight_decay        0-0.01          0.0001      L2 regularization
+batch_size          1-16            8           Limited by GPU memory
+rescale             True/False      True        Normalize cell sizes
+min_train_masks     1-50            5           Minimum masks per image
+
+================================================================================
+END OF DOCUMENT
+================================================================================

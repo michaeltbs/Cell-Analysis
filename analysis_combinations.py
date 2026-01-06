@@ -127,7 +127,7 @@ class ChannelCfg:
 @dataclass
 class OverlayParams:
     dpi: int = 300
-    line_width: int = 2
+    line_width: int = 4
     figsize: Sequence[int] = field(default_factory=lambda: (12, 12))
     colors_by_k: Dict[str, str] = field(default_factory=lambda: {"2": "red", "3": "magenta", "4": "cyan"})
     single_positive_color: str = "gray"
@@ -145,13 +145,15 @@ class CoexpressionParams:
     centroid_max_distance: float = 8.0
     blend_base_color: str = "#b9b9b9"
     blend_other_color: str = "#40c4ff"
-    blend_overlap_color: str = "#ff4080"
+    blend_overlap_color: str = "#ff0000"
     blend_overlap_fraction: float = 0.02
     blend_channel_colors: Dict[int, str] = field(default_factory=dict)
     centroid_overlap_fraction: float = 0.005
     # Dateiformate für Ausgabe
     blend_output_formats: List[str] = field(default_factory=lambda: ["png"])
     overlay_output_formats: List[str] = field(default_factory=lambda: ["png"])
+    # Figure output: nur co-expressing Zellen zeigen
+    show_only_coexpressing: bool = True
 
 @dataclass
 class CoexprSweepParams:
@@ -289,7 +291,7 @@ class Config:
         )
         coexpr.blend_overlap_color = _sanitize_color(
             coexpr_raw.get("blend_overlap_color", getattr(coexpr, "blend_overlap_color", None)),
-            "#ff4080"
+            "#ff0000"
         )
         try:
             overlap_fraction = float(coexpr_raw.get("blend_overlap_fraction", getattr(coexpr, "blend_overlap_fraction", 0.02)))
@@ -633,7 +635,10 @@ def _normalize_sample_key(key: str) -> str:
 def _sanitize_color(value: Optional[str], default: str) -> str:
     if not value:
         return default
-    val = str(value).strip()
+    val = str(value).strip().lower()
+    # Treat black (#000000) as "not set" and use default
+    if val in ('', '#000000', '#000', '000000', '000', 'black'):
+        return default
     return val or default
 
 def _color_to_rgb(color: str, default: Tuple[float, float, float]) -> np.ndarray:
@@ -934,6 +939,7 @@ def _run_coexpression_mode(
     enabled_channels = [ch for ch in cfg.channels if ch.enabled]
     if cfg.selected_combos:
         combos = [tuple(map(int, c)) for c in cfg.selected_combos]
+        print(f"[DEBUG] Using {len(combos)} selected combos: {combos}")
     else:
         from itertools import combinations
         combos = []
@@ -1009,7 +1015,8 @@ def _run_coexpression_mode(
         return
 
     total_rows = 0
-    for comb in combos:
+    for i, comb in enumerate(combos):
+        print(f"[DEBUG] Processing combo {i+1}/{len(combos)}: {comb}")
         k = len(comb)
         color_k = cfg.overlay_params.colors_by_k.get(str(k), "red")
         comb_sorted = tuple(sorted(comb))
@@ -1212,6 +1219,7 @@ def _run_coexpression_mode(
                     base_mask_index=base_mask_idx,
                     figure_type=cfg.overlay_params.figure_type,
                     even_layout=cfg.overlay_params.even_layout,
+                    show_only_coexpressing=cfg.coexpression.show_only_coexpressing,
                 )
 
         if rows:
@@ -1501,13 +1509,18 @@ def _save_composite_figure(
     out_path: Path,
     dpi: int,
     multi_color: str = "magenta",
-    line_width: int = 2,
+    line_width: int = 4,
     base_channel_index: Optional[int] = None,
     base_mask_index: int = 0,
     figure_type: str = "overlay",
     even_layout: str = "line",
+    show_only_coexpressing: bool = True,
 ) -> None:
-    """Create a composite figure using either overlays or raw masks."""
+    """Create a composite figure.
+    
+    If show_only_coexpressing=True: Shows channel images + pure co-expression mask (no background).
+    If show_only_coexpressing=False: Shows all channel panels plus co-expression overlay on background.
+    """
     if figure_type not in ("overlay", "mask"):
         figure_type = "overlay"
     total_masks = len(mask_list)
@@ -1533,11 +1546,70 @@ def _save_composite_figure(
     if base_arr.size == 0 or use_mask_panels:
         base_arr = _prepare_display(base_mask.astype(np.float32))
     target_shape = tuple(base_arr.shape[:2]) if base_arr.ndim >= 2 else target_shape
-    outline_thickness = _line_width_to_thickness(line_width)
+    
     co_mask_rs = _resize_bool(co_mask, target_shape)
-    colored = _apply_colored_outline(base_arr, co_mask_rs, multi_color, outline_thickness)
+    
+    # Create pure co-expression mask image (colored mask on black background)
+    # This shows ONLY the co-expressing cells as a colored filled region
+    coexpr_mask_img = np.zeros((*target_shape, 3), dtype=np.uint8)
+    try:
+        color_rgb = tuple(int(multi_color.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+    except Exception:
+        color_rgb = (255, 0, 0)  # Default red
+    coexpr_mask_img[co_mask_rs] = color_rgb
+    
+    # For legacy mode (show_only_coexpressing=False), create outline overlay
+    outline_thickness = max(3, _line_width_to_thickness(line_width) + 2)
+    colored_overlay = _apply_colored_outline(base_arr, co_mask_rs, multi_color, outline_thickness)
 
-    # Determine layout
+    if show_only_coexpressing:
+        # Show channel images + pure co-expression mask
+        total_panels = len(images) + 1
+        if even_layout == "grid" and total_panels >= 4:
+            rows = 2
+            cols = int(math.ceil(total_panels / 2))
+        else:
+            rows = 1
+            cols = total_panels
+        
+        effective_dpi = max(dpi, 300)
+        fig, axes = plt.subplots(rows, cols, figsize=(4 * cols, 4 * rows), dpi=effective_dpi)
+        axes_flat = np.atleast_1d(axes).flatten()
+        
+        # Show individual channel images
+        for panel_idx, (ax, (img, title, _)) in enumerate(zip(axes_flat[:len(images)], images)):
+            ax.set_title(title, fontsize=12, fontweight='bold')
+            ax.set_axis_off()
+            if use_mask_panels:
+                mask_disp = _prepare_display(normalized_masks[panel_idx].astype(np.float32))
+                ax.imshow(mask_disp, cmap="gray", interpolation="bilinear")
+                continue
+            if img is None:
+                ax.text(0.5, 0.5, "n/a", ha="center", va="center", color="red", fontsize=12)
+                continue
+            arr = _prepare_display(img)
+            if arr.ndim == 2:
+                ax.imshow(arr, cmap="gray", interpolation="bilinear")
+            else:
+                ax.imshow(arr, interpolation="bilinear")
+        
+        # Show pure co-expression mask (last panel)
+        last_ax = axes_flat[len(images)]
+        last_ax.set_title("Co-expressing", fontsize=12, fontweight='bold')
+        last_ax.set_axis_off()
+        last_ax.imshow(coexpr_mask_img, interpolation="bilinear")
+        
+        # Hide unused axes
+        for ax in axes_flat[len(images) + 1:]:
+            ax.set_axis_off()
+        
+        fig.tight_layout()
+        _ensure_dir(out_path.parent)
+        fig.savefig(out_path, dpi=effective_dpi, bbox_inches="tight")
+        plt.close(fig)
+        return
+
+    # Legacy mode: show all panels with overlay on background
     total_panels = len(images) + 1
     if even_layout == "grid" and total_panels >= 4:
         rows = 2
@@ -1567,14 +1639,13 @@ def _save_composite_figure(
     last_ax = axes_flat[len(images)]
     last_ax.set_title("Co-expression", fontsize=10)
     last_ax.set_axis_off()
-    last_ax.imshow(colored, interpolation="bilinear")
+    last_ax.imshow(colored_overlay, interpolation="bilinear")
 
     for ax in axes_flat[len(images) + 1 :]:
         ax.set_axis_off()
 
     fig.tight_layout()
     _ensure_dir(out_path.parent)
-    # Use higher DPI for better quality
     effective_dpi = max(dpi, 300)
     fig.savefig(out_path, dpi=effective_dpi, bbox_inches="tight")
     plt.close(fig)
@@ -1657,8 +1728,8 @@ def _save_overlay(
     has_fill = style_norm in ("filled", "mixed")
     has_contour = style_norm in ("contour", "mixed")
     
-    # Use thicker lines for better visibility (minimum 2, scale with config)
-    thickness = max(2, _line_width_to_thickness(lw) + 1)
+    # Use thicker lines for better visibility (minimum 3, scale with config)
+    thickness = max(3, _line_width_to_thickness(lw) + 2)
     
     # Apply fill if requested (semi-transparent)
     if has_fill and np.any(co_mask_rs):
@@ -1724,7 +1795,7 @@ def _save_multichannel_overlay(
     has_contour = style_norm in ("contour", "mixed")
     
     # Use thicker lines for better visibility
-    thickness = max(2, _line_width_to_thickness(lw) + 1)
+    thickness = max(3, _line_width_to_thickness(lw) + 2)
     
     # Resize co_mask
     co_mask_rs = _resize_bool(np.asarray(co_mask, dtype=bool), target_shape)
