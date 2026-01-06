@@ -84,7 +84,8 @@ CMD ["python", "app.py"]
 # For macOS with Apple Silicon (M1/M2/M3). Note: Docker on macOS cannot access
 # the GPU (Metal/MPS). For GPU acceleration, run the app natively without Docker.
 # This target provides ARM64-native CPU execution with MPS-ready PyTorch.
-FROM python:3.10-slim AS apple
+# Pin to bookworm to avoid Debian unstable (trixie) package name changes.
+FROM python:3.10-slim-bookworm AS apple
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -98,7 +99,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential gcc git curl ca-certificates \
     libglib2.0-0 libgl1 libsm6 libxext6 libxrender1 \
-    libjpeg-turbo8 libtiff5 libopenjp2-7 zlib1g \
+    libjpeg62-turbo libtiff6 libopenjp2-7 zlib1g \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/requirements.txt
