@@ -13,6 +13,9 @@ from pathlib import Path
 import torch
 import yaml
 
+# M3/M2 Max Optimierung: PyTorch Fallback für MPS aktivieren
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+
 from src.analysis import (
     calculate_animal_averages,
     calculate_condition_averages,
@@ -48,6 +51,12 @@ def _print_env() -> None:
     if cuda_ok:
         try:
             print(f"[env] device=NVIDIA {torch.cuda.get_device_name(0)}")
+        except Exception:
+            pass
+    elif mps_ok:
+        print("[env] device=Apple Silicon (MPS)")
+    else:
+        print("[env] device=CPU")
         except Exception:
             pass
     elif mps_ok:

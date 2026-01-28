@@ -1,4 +1,7 @@
 cellpose>=3.0.0
+torch
+torchvision
+torchaudio
 pandas==2.2.2         # letzte Pandas-Version für Py 3.8
 numpy==1.26.4
 scikit-image==0.24.0
