@@ -95,4 +95,5 @@ def handle_upload(
         "input_pos": str(pos_dir),
         "input_neg": str(neg_dir),
         "output_root": str(output_root),
+        "input_tiffs": str(input_tiffs),
     }
