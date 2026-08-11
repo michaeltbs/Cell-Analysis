@@ -161,7 +161,8 @@ def _load_cellpose_model(model_name: str, use_gpu: bool = False):
         raise RuntimeError("Cellpose is not installed. Please `pip install cellpose`.") from e
 
     name = (model_name or "cyto2").lower()
-    mtype = name if name in ("cyto3", "cyto2", "cyto", "nuclei") else "cyto2"
+    valid_models = {"cyto3", "cyto2", "cyto", "nuclei", "cpsam", "cpdino", "cpdino-vitb", "cpsam_v2"}
+    mtype = name if name in valid_models else "cyto2"
 
     # Determine GPU device
     gpu_device, gpu_available = _get_gpu_device()

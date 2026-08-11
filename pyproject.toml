@@ -18,10 +18,12 @@ description = "Cell segmentation and co-expression analysis for confocal microsc
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "cellpose==3.0.5",
+    "cellpose>=4.2.1",
     "czifile>=2019.7.2",
+    "fastapi>=0.110.0",
     "flask==3.0.3",
     "flask-cors==4.0.1",
+    "httpx>=0.27.0",
     "matplotlib==3.9.0",
     "numpy==1.26.4",
     "pandas==2.2.2",
@@ -36,6 +38,7 @@ dependencies = [
     "torch>=2.0.0",
     "torchvision>=0.15.0",
     "tqdm>=4.65.0",
+    "uvicorn>=0.27.0",
 ]
 
 [project.optional-dependencies]
