@@ -23,6 +23,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import numpy as np
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -286,6 +287,160 @@ def get_job(job_id: str) -> Dict[str, Any]:
 @app.get("/jobs")
 def list_jobs(limit: int = 50) -> List[Dict[str, Any]]:
     return manager.list_jobs(limit=limit)
+
+
+@app.post("/calibration/profile")
+async def calibration_profile(
+    files: List[UploadFile] = File(...),
+    channels: str = Form("0"),
+    test_mode: str = Form("true"),
+    model_name: str = Form("cyto2"),
+    use_gpu: str = Form("true"),
+) -> Dict[str, Any]:
+    """Upload 1-3 images and get an intensity profile + diagnosis of the detection."""
+    job = manager.create("calibration_profile")
+    try:
+        parsed_channels = [int(c.strip()) for c in channels.split(",") if c.strip().isdigit()]
+        ch = parsed_channels[0] if parsed_channels else 0
+        file_tuples: List[tuple[str, bytes]] = []
+        for f in files:
+            file_tuples.append(((f.filename or "upload.tif"), f.file.read()))
+        paths = handle_upload(file_tuples, job.id, parsed_channels or [0, 1, 2, 3])
+
+        def _run(_job):
+            from src.api.test_segment import threshold_segment
+            _job.log.append("Segmenting images...")
+            results = threshold_segment(paths["input_tiffs"], paths["output_root"])
+            profiles = []
+            for cond, rows in results.items():
+                for row in rows[:200]:
+                    profiles.append({
+                        "filename": row["filename"],
+                        "condition": row["condition"],
+                        "mean_intensity": row.get("mean_intensity", 0),
+                        "area": row.get("area", 0),
+                    })
+            # group by condition, compute histogram
+            conditions = {}
+            for p in profiles:
+                conditions.setdefault(p["condition"], {"cells": []})["cells"].append(p)
+            out = {}
+            for cond, data in conditions.items():
+                ints = np.array([c["mean_intensity"] for c in data["cells"]], dtype=np.float64) if data["cells"] else np.array([])
+                out[cond] = {
+                    "cell_count": len(data["cells"]),
+                    "mean_intensity": float(ints.mean()) if ints.size else 0.0,
+                    "min_intensity": float(ints.min()) if ints.size else 0.0,
+                    "max_intensity": float(ints.max()) if ints.size else 0.0,
+                    "p10": float(np.percentile(ints, 10)) if ints.size else 0.0,
+                    "p90": float(np.percentile(ints, 90)) if ints.size else 0.0,
+                    "cells": data["cells"][:50],
+                }
+            _job.log.append("Profile complete")
+            return {"profiles": out, "workspace": paths["workspace"]}
+
+        manager.submit(job, _run)
+        return {"success": True, "job_id": job.id, "status": job.status.value}
+    except Exception as e:
+        logger.error("Calibration profile failed: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/calibration/optimize")
+async def calibration_optimize(
+    files: List[UploadFile] = File(...),
+    expected_counts: str = Form(""),
+    channels: str = Form("0"),
+    model_name: str = Form("cyto2"),
+    use_gpu: str = Form("true"),
+    fast: str = Form("true"),
+) -> Dict[str, Any]:
+    """
+    Upload images + expected cell counts (comma separated) and sweep
+    detection params to find the best F1/MAE balance.
+    """
+    job = manager.create("calibration_optimize")
+    try:
+        parsed_channels = [int(c.strip()) for c in channels.split(",") if c.strip().isdigit()]
+        ch = parsed_channels[0] if parsed_channels else 0
+        counts = [int(c.strip()) for c in expected_counts.split(",") if c.strip().isdigit()]
+        file_tuples: List[tuple[str, bytes]] = []
+        for f in files:
+            file_tuples.append(((f.filename or "upload.tif"), f.file.read()))
+        if len(file_tuples) != len(counts):
+            raise HTTPException(status_code=400, detail="expected_counts must have one value per file")
+        paths = handle_upload(file_tuples, job.id, parsed_channels or [0, 1, 2, 3])
+
+        # build images_with_counts from uploaded files
+        images_with_counts = []
+        input_tiffs = Path(paths["input_tiffs"])
+        for (fname, _), count in zip(file_tuples, counts):
+            target = input_tiffs / "Input_pos" / fname
+            if not target.exists():
+                target = input_tiffs / "Input_neg" / fname
+            images_with_counts.append({"path": str(target), "expected": count})
+
+        def _run(_job):
+            from src.calibration.optimizer import run_optimization_sweep
+            _job.log.append("Sweeping parameters...")
+            result = run_optimization_sweep(
+                images_with_counts,
+                model_name=model_name,
+                use_gpu=use_gpu.lower() in ("true", "1", "yes"),
+                channel=ch,
+                fast=fast.lower() in ("true", "1", "yes"),
+            )
+            _job.log.append(f"Optimization done: best score={result['best'].get('score', 0):.3f}")
+            return result
+
+        manager.submit(job, _run)
+        return {"success": True, "job_id": job.id, "status": job.status.value}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Calibration optimize failed: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/calibration/train")
+async def calibration_train(
+    train_dir: str = Form(...),
+    test_dir: str = Form(""),
+    model_name: str = Form("cpsam"),
+    n_epochs: int = Form(100),
+    learning_rate: float = Form(1e-5),
+    use_gpu: str = Form("true"),
+    model_name_out: str = Form("cellpose_custom"),
+) -> Dict[str, Any]:
+    """Validate + start Cellpose fine-tuning on a local training directory."""
+    job = manager.create("calibration_train")
+
+    def _run(_job):
+        from src.calibration.train import validate_training_data, run_finetune
+        _job.log.append("Validating training data...")
+        validation = validate_training_data(train_dir)
+        if not validation["valid"]:
+            _job.log.append(f"Invalid training data: {validation['missing_masks'][:5]}")
+            raise ValueError(f"Invalid training data. Missing masks: {validation['missing_masks'][:5]}")
+        _job.log.append(f"{validation['n_pairs']} image/mask pairs, {validation['n_masks_total']} masks total")
+        _job.log.append(f"Starting fine-tune: {model_name} -> {model_name_out} ({n_epochs} epochs)")
+        result = run_finetune(
+            train_dir=train_dir,
+            test_dir=test_dir or None,
+            model_name=model_name,
+            n_epochs=n_epochs,
+            learning_rate=learning_rate,
+            use_gpu=use_gpu.lower() in ("true", "1", "yes"),
+            model_name_out=model_name_out,
+        )
+        if result.get("success"):
+            _job.log.append(f"Training complete -> {result['model_path']}")
+        else:
+            _job.log.append(f"Training failed: {result.get('error', result.get('stdout_tail', '')[-500:])}")
+        return result
+
+    manager.submit(job, _run)
+    return {"success": True, "job_id": job.id, "status": job.status.value}
 
 
 @app.get("/jobs/{job_id}/download")

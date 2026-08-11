@@ -53,6 +53,9 @@ tailwind.config = {
       <a href="#" data-tab="jobs" class="tab-link flex items-center gap-3 px-3 py-2 rounded-lg text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50 whitespace-nowrap">
         <span class="material-symbols-outlined">pending_actions</span><span class="text-sm font-medium">Jobs</span>
       </a>
+      <a href="#" data-tab="calibration" class="tab-link flex items-center gap-3 px-3 py-2 rounded-lg text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50 whitespace-nowrap">
+        <span class="material-symbols-outlined">tune</span><span class="text-sm font-medium">Kalibrierung</span>
+      </a>
       <a href="#" data-tab="api" class="tab-link flex items-center gap-3 px-3 py-2 rounded-lg text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50 whitespace-nowrap">
         <span class="material-symbols-outlined">code</span><span class="text-sm font-medium">API</span>
       </a>
@@ -155,6 +158,94 @@ tailwind.config = {
         <p id="jobs-empty" class="hidden p-6 text-center text-neutral-400 text-sm">Keine Jobs vorhanden</p>
       </div>
       <button id="refresh-jobs" class="mt-4 text-sm text-primary hover:underline">Aktualisieren</button>
+    </section>
+
+    <!-- Calibration tab -->
+    <section id="tab-calibration" class="tab-panel hidden">
+      <h2 class="text-2xl font-bold mb-1">Kalibrierung</h2>
+      <p class="text-neutral-500 dark:text-neutral-400 text-sm mb-6">Segmentierung auf Deine Bilder abstimmen — Profil analysieren, Parameter optimieren oder eigenes Modell trainieren</p>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Profile -->
+        <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
+          <h3 class="font-semibold mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-primary">monitor_heart</span> 1. Intensitäts-Profil</h3>
+          <p class="text-xs text-neutral-500 dark:text-neutral-400 mb-4">Zeigt die Intensitätsverteilung der erkannten Zellen — so siehst Du, wo schwache Zellen fälschlich gezählt oder helle übersehen werden.</p>
+          <label class="block border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg p-5 text-center cursor-pointer hover:border-primary transition-colors" for="profile-file">
+            <span class="material-symbols-outlined text-3xl text-neutral-400">image</span>
+            <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">1-3 repräsentative Bilder auswählen</p>
+          </label>
+          <input id="profile-file" type="file" multiple accept=".czi,.tif,.tiff" class="hidden">
+          <div id="profile-file-list" class="mt-2 flex flex-wrap gap-2"></div>
+          <button id="profile-btn" class="mt-4 w-full bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50">
+            Profil analysieren
+          </button>
+          <div id="profile-result" class="mt-4"></div>
+        </div>
+
+        <!-- Optimize -->
+        <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
+          <h3 class="font-semibold mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-primary">science</span> 2. Parameter-Optimierung</h3>
+          <p class="text-xs text-neutral-500 dark:text-neutral-400 mb-4">Du gibst die erwartete Zellzahl pro Bild ein — das System testet Parameter-Kombinationen und findet die beste Balance (F1 + MAE).</p>
+          <label class="block border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg p-5 text-center cursor-pointer hover:border-primary transition-colors" for="optimize-file">
+            <span class="material-symbols-outlined text-3xl text-neutral-400">rule</span>
+            <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">2-4 Bilder + erwartete Zellzahlen</p>
+          </label>
+          <input id="optimize-file" type="file" multiple accept=".czi,.tif,.tiff" class="hidden">
+          <div id="optimize-file-list" class="mt-2 flex flex-wrap gap-2"></div>
+          <div class="mt-3">
+            <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Erwartete Zellzahlen (kommagetrennt, eine pro Bild)</label>
+            <input id="expected-counts" type="text" placeholder="z.B. 150, 210" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm">
+          </div>
+          <div class="mt-3 flex items-center gap-4">
+            <label class="flex items-center gap-2 text-xs"><input id="optimize-fast" type="checkbox" checked class="rounded"> Schnell (~8 Kombis)</label>
+            <select id="optimize-model" class="ml-auto text-xs rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700">
+              <option value="cyto2">cyto2</option><option value="cyto3">cyto3</option><option value="cpsam">cpsam</option>
+            </select>
+          </div>
+          <button id="optimize-btn" class="mt-4 w-full bg-primary hover:bg-primary/90 text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50">
+            Optimierung starten
+          </button>
+          <div id="optimize-result" class="mt-4"></div>
+        </div>
+
+        <!-- Fine-tuning -->
+        <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6 lg:col-span-2">
+          <h3 class="font-semibold mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-primary">school</span> 3. Eigenes Modell trainieren (Fine-Tuning)</h3>
+          <p class="text-xs text-neutral-500 dark:text-neutral-400 mb-4">Die beste Lösung für dauerhaft schwierige Bilder: Mit annotierten Bildern (<code class="bg-neutral-100 dark:bg-neutral-800 px-1 rounded">bild_masks.tif</code>) ein eigenes Cellpose-Modell trainieren. Doku: <a href="https://cellpose.readthedocs.io/en/latest/train.html" target="_blank" class="text-primary underline">cellpose.readthedocs.io</a></p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Trainings-Ordner (auf dem Server/Mac)</label>
+              <input id="train-dir" type="text" placeholder="~/Desktop/Cell-Analysis/train_data" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm font-mono">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Test-Ordner (optional)</label>
+              <input id="test-dir" type="text" placeholder="" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm font-mono">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Basis-Modell</label>
+              <select id="train-model" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm">
+                <option value="cpsam">cpsam (empfohlen)</option><option value="cyto2">cyto2</option><option value="cyto3">cyto3</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Epochs</label>
+              <input id="train-epochs" type="number" value="100" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Learning Rate</label>
+              <input id="train-lr" type="text" value="0.00001" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Modellname</label>
+              <input id="train-name" type="text" value="cellpose_custom" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm">
+            </div>
+          </div>
+          <button id="train-btn" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50">
+            Training starten
+          </button>
+          <div id="train-result" class="mt-4"></div>
+        </div>
+      </div>
     </section>
 
     <!-- API tab -->
@@ -381,6 +472,180 @@ async function loadJobs() {
 }
 document.getElementById('refresh-jobs').addEventListener('click', loadJobs);
 loadJobs();
+
+// ---- Calibration ----
+let profileFiles = [];
+let optimizeFiles = [];
+
+function wireFileInput(inputId, listId, store) {
+  const input = document.getElementById(inputId);
+  const list = document.getElementById(listId);
+  input.addEventListener('change', () => {
+    store.length = 0;
+    store.push(...Array.from(input.files));
+    list.innerHTML = '';
+    store.forEach((f, i) => {
+      const chip = document.createElement('span');
+      chip.className = 'inline-flex items-center gap-1 text-xs bg-neutral-100 dark:bg-neutral-800 rounded-full px-3 py-1';
+      chip.textContent = f.name;
+      list.appendChild(chip);
+    });
+  });
+}
+wireFileInput('profile-file', 'profile-file-list', profileFiles);
+wireFileInput('optimize-file', 'optimize-file-list', optimizeFiles);
+
+function showResult(elId, html) {
+  const el = document.getElementById(elId);
+  el.innerHTML = html;
+}
+
+function pollJob(jobId, onDone) {
+  const t = setInterval(async () => {
+    try {
+      const res = await fetch(`${API}/jobs/${jobId}`);
+      const job = await res.json();
+      if (job.status === 'success' || job.status === 'failed') {
+        clearInterval(t);
+        onDone(job);
+      }
+    } catch (e) {}
+  }, 2500);
+}
+
+// Profile
+document.getElementById('profile-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('profile-btn');
+  if (!profileFiles.length) { showResult('profile-result', '<p class="text-sm text-red-500">Bitte Bilder auswählen.</p>'); return; }
+  btn.disabled = true;
+  showResult('profile-result', '<p class="text-sm text-neutral-500">Analysiere...</p>');
+  const fd = new FormData();
+  profileFiles.forEach(f => fd.append('files', f));
+  fd.append('channels', '0');
+  fd.append('test_mode', 'true');
+  try {
+    const res = await fetch(`${API}/calibration/profile`, { method: 'POST', body: fd });
+    const data = await res.json();
+    pollJob(data.job_id, (job) => {
+      btn.disabled = false;
+      if (job.status === 'failed') {
+        showResult('profile-result', `<p class="text-sm text-red-500 whitespace-pre-wrap">${job.error || 'Fehler'}</p>`);
+        return;
+      }
+      const profs = job.result.profiles || {};
+      let html = '<div class="space-y-3">';
+      for (const [cond, p] of Object.entries(profs)) {
+        html += `<div class="bg-neutral-100 dark:bg-neutral-950 rounded-lg p-3">
+          <div class="flex justify-between items-center"><span class="text-sm font-semibold">${cond}</span>
+          <span class="text-xs text-neutral-500">${p.cell_count} Zellen</span></div>
+          <div class="mt-2 h-2 w-full bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
+            <div class="h-full bg-primary" style="width:100%"></div>
+          </div>
+          <div class="mt-2 grid grid-cols-3 gap-2 text-center text-xs">
+            <div class="bg-white dark:bg-neutral-900 rounded p-2"><div class="text-neutral-400">Min</div><div class="font-semibold">${Math.round(p.min_intensity)}</div></div>
+            <div class="bg-white dark:bg-neutral-900 rounded p-2"><div class="text-neutral-400">Mean</div><div class="font-semibold">${Math.round(p.mean_intensity)}</div></div>
+            <div class="bg-white dark:bg-neutral-900 rounded p-2"><div class="text-neutral-400">Max</div><div class="font-semibold">${Math.round(p.max_intensity)}</div></div>
+          </div>
+          <p class="mt-2 text-xs text-neutral-500">p10 = ${Math.round(p.p10)} · p90 = ${Math.round(p.p90)} — Zellen im unteren Bereich sind Kandidaten für False Positives, im oberen für übersehene helle Zellen.</p>
+        </div>`;
+      }
+      html += '</div>';
+      showResult('profile-result', html);
+    });
+  } catch (e) {
+    btn.disabled = false;
+    showResult('profile-result', `<p class="text-sm text-red-500">${e.message}</p>`);
+  }
+});
+
+// Optimize
+document.getElementById('optimize-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('optimize-btn');
+  const counts = document.getElementById('expected-counts').value.split(',').map(s => s.trim()).filter(Boolean);
+  if (!optimizeFiles.length || !counts.length) {
+    showResult('optimize-result', '<p class="text-sm text-red-500">Bitte Bilder und erwartete Zellzahlen angeben.</p>');
+    return;
+  }
+  if (optimizeFiles.length !== counts.length) {
+    showResult('optimize-result', '<p class="text-sm text-red-500">Anzahl Bilder muss der Anzahl Zellzahlen entsprechen.</p>');
+    return;
+  }
+  btn.disabled = true;
+  showResult('optimize-result', '<p class="text-sm text-neutral-500">Optimierung läuft — das kann je nach Modell mehrere Minuten dauern...</p>');
+  const fd = new FormData();
+  optimizeFiles.forEach(f => fd.append('files', f));
+  fd.append('expected_counts', counts.join(','));
+  fd.append('channels', '0');
+  fd.append('model_name', document.getElementById('optimize-model').value);
+  fd.append('use_gpu', 'true');
+  fd.append('fast', document.getElementById('optimize-fast').checked ? 'true' : 'false');
+  try {
+    const res = await fetch(`${API}/calibration/optimize`, { method: 'POST', body: fd });
+    const data = await res.json();
+    pollJob(data.job_id, (job) => {
+      btn.disabled = false;
+      if (job.status === 'failed') {
+        showResult('optimize-result', `<p class="text-sm text-red-500 whitespace-pre-wrap">${job.error || 'Fehler'}</p>`);
+        return;
+      }
+      const b = job.result.best || {};
+      const params = b.params || {};
+      const html = `<div class="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3">
+        <p class="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Beste Parameter (Score ${(b.score || 0).toFixed(3)}, F1 ${(b.f1 || 0).toFixed(2)}, MAE ${(b.mae || 0).toFixed(1)})</p>
+        <pre class="mt-2 text-xs font-mono whitespace-pre-wrap">${JSON.stringify(params, null, 2)}</pre>
+        <p class="mt-2 text-xs text-neutral-500">TP ${b.tp} · FP ${b.fp} · FN ${b.fn} (erwartet ${b.expected_total}, gefunden ${b.actual_total})</p>
+      </div>`;
+      showResult('optimize-result', html);
+    });
+  } catch (e) {
+    btn.disabled = false;
+    showResult('optimize-result', `<p class="text-sm text-red-500">${e.message}</p>`);
+  }
+});
+
+// Train
+document.getElementById('train-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('train-btn');
+  const trainDir = document.getElementById('train-dir').value.trim();
+  if (!trainDir) { showResult('train-result', '<p class="text-sm text-red-500">Trainings-Ordner angeben.</p>'); return; }
+  btn.disabled = true;
+  showResult('train-result', '<p class="text-sm text-neutral-500">Training startet — je nach Datenmenge 30 Min bis mehrere Stunden...</p>');
+  const fd = new FormData();
+  fd.append('train_dir', trainDir);
+  fd.append('test_dir', document.getElementById('test-dir').value.trim());
+  fd.append('model_name', document.getElementById('train-model').value);
+  fd.append('n_epochs', document.getElementById('train-epochs').value);
+  fd.append('learning_rate', document.getElementById('train-lr').value);
+  fd.append('use_gpu', 'true');
+  fd.append('model_name_out', document.getElementById('train-name').value.trim() || 'cellpose_custom');
+  try {
+    const res = await fetch(`${API}/calibration/train`, { method: 'POST', body: fd });
+    const data = await res.json();
+    pollJob(data.job_id, (job) => {
+      btn.disabled = false;
+      if (job.status === 'failed') {
+        showResult('train-result', `<p class="text-sm text-red-500 whitespace-pre-wrap">${job.error || 'Fehler'}</p>`);
+        return;
+      }
+      const r = job.result || {};
+      if (r.success) {
+        showResult('train-result', `<div class="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3">
+          <p class="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Training erfolgreich!</p>
+          <p class="mt-1 text-xs font-mono">Modell: ${r.model_path}</p>
+          <p class="mt-1 text-xs text-neutral-500">Dauer: ${Math.round(r.duration_s / 60)} Min · ${r.validation.n_pairs} Bildpaare, ${r.validation.n_masks_total} Masken</p>
+        </div>`);
+      } else {
+        showResult('train-result', `<div class="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+          <p class="text-sm font-semibold text-red-500">Training fehlgeschlagen</p>
+          <pre class="mt-2 text-xs whitespace-pre-wrap">${(r.error || r.stdout_tail || '').slice(-800)}</pre>
+        </div>`);
+      }
+    });
+  } catch (e) {
+    btn.disabled = false;
+    showResult('train-result', `<p class="text-sm text-red-500">${e.message}</p>`);
+  }
+});
 </script>
 </body>
 </html>
