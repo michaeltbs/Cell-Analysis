@@ -16,7 +16,6 @@ Endpoints:
 """
 from __future__ import annotations
 
-import json
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -25,8 +24,10 @@ from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 
 from src.api.pipeline_service import run_detection, run_coexpression, run_full_pipeline
-from src.api.jobs import manager, JobStatus
+from src.api.jobs import manager
 from src.api.upload_service import handle_upload
+from src.config.naming import NamingConfig, apply_naming_to_csv_rows
+from src.validation.expression import expression_percentage, receptor_distance_map
 import yaml
 
 app = FastAPI(title="Cell Analysis API", version="0.1.0")
@@ -106,7 +107,12 @@ def full_pipeline(req: FullPipelineRequest) -> PipelineResponse:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def _build_det_cfg(paths: Dict[str, str], model_name: str = "cyto2", use_gpu: bool = True) -> str:
+def _build_det_cfg(
+    paths: Dict[str, str],
+    naming: NamingConfig,
+    model_name: str = "cyto2",
+    use_gpu: bool = True,
+) -> str:
     workspace = Path(paths["workspace"])
     cfg = {
         "paths": {
@@ -144,15 +150,19 @@ def _build_det_cfg(paths: Dict[str, str], model_name: str = "cyto2", use_gpu: bo
     return str(p)
 
 
-def _build_coexpr_cfg(paths: Dict[str, str]) -> str:
+def _build_coexpr_cfg(paths: Dict[str, str], naming: NamingConfig) -> str:
     workspace = Path(paths["workspace"])
     cfg = {
         "input_dir": paths["output_root"],
         "output_dir": str(Path(paths["output_root"]) / "Coex"),
         "channel_config": [
-            {"index": 0, "name": "Channel_0", "enabled": True, "color": "#ff0000"},
-            {"index": 1, "name": "Channel_1", "enabled": True, "color": "#00ff00"},
-            {"index": 2, "name": "Channel_2", "enabled": True, "color": "#0000ff"},
+            {
+                "index": idx,
+                "name": naming.channel_name(idx),
+                "enabled": True,
+                "color": color,
+            }
+            for idx, color in [(0, "#ff0000"), (1, "#00ff00"), (2, "#0000ff")]
         ],
         "coexpr_mode": "overlap",
         "overlap_threshold": 30,
@@ -175,27 +185,39 @@ def upload(
     channels: str = Form("0,1,2,3"),
     model_name: str = Form("cyto2"),
     use_gpu: str = Form("true"),
+    channel_names: str = Form(""),
 ) -> Dict[str, Any]:
     job = manager.create("upload+full_pipeline")
     try:
         parsed_channels = [int(c.strip()) for c in channels.split(",") if c.strip().isdigit()]
         if not parsed_channels:
             parsed_channels = [0, 1, 2, 3]
+
+        naming = NamingConfig()
+        if channel_names.strip():
+            names = {i: n.strip() for i, n in enumerate(channel_names.split(",")) if n.strip()}
+            naming.channel_names.update(names)
+
         file_tuples = []
         for f in files:
             content = f.file.read()
             file_tuples.append((f.filename, content))
 
         paths = handle_upload(file_tuples, job.id, parsed_channels)
-        det_cfg = _build_det_cfg(paths, model_name=model_name, use_gpu=use_gpu.lower() in ("true", "1", "yes"))
-        coexpr_cfg = _build_coexpr_cfg(paths)
+        det_cfg = _build_det_cfg(paths, naming, model_name=model_name, use_gpu=use_gpu.lower() in ("true", "1", "yes"))
+        coexpr_cfg = _build_coexpr_cfg(paths, naming)
 
         def _run(_job):
             _job.log.append("Running detection...")
             det_result = run_detection(det_cfg, save_masks=False, create_overlays=False)
             _job.log.append("Running co-expression...")
             coexpr_result = run_coexpression(coexpr_cfg)
-            return {"detection": det_result, "coexpression": coexpr_result, "workspace": paths["workspace"]}
+            return {
+                "detection": det_result,
+                "coexpression": coexpr_result,
+                "workspace": paths["workspace"],
+                "naming": naming.channel_names,
+            }
 
         manager.submit(job, _run)
         return {"success": True, "job_id": job.id, "status": job.status.value}

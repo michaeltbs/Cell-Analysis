@@ -9,6 +9,8 @@ Bachelorarbeit-Projekt: Segmentierung von PomC / Glp1r / Gal Kanälen.
 2. **Zell-Detection** (`src/batch_segment.py`, Cellpose/CPSAM)
 3. **Co-Expression-Analyse** (`src/coexpression.py`)
 4. **Statistik & Export** (`src/analysis.py`, `src/anova_analysis.py`)
+5. **Validierung** (`src/validation/metrics.py`, `src/validation/expression.py`)
+6. **Benennung** (`src/config/naming.py`)
 
 ## Schnelleinstieg
 
@@ -36,12 +38,18 @@ python3 -m uvicorn src.api.fastapi_app:app --host 0.0.0.0 --port 8001
 - `POST /pipeline/detection`
 - `POST /pipeline/coexpression`
 - `POST /pipeline/full`
+- `POST /jobs/upload` — Dateien hochladen + Pipeline als Job starten
+- `GET  /jobs/{job_id}` — Job-Status abfragen
+- `GET  /jobs` — Jobs auflisten
 
-Beispiel:
+Beispiel Upload:
 ```bash
-curl -X POST http://localhost:8001/pipeline/detection \
-  -H "Content-Type: application/json" \
-  -d '{"config_path": "config_det_cpsam.yaml", "test_mode": true, "test_samples": 2}'
+curl -X POST http://localhost:8001/jobs/upload \
+  -F "files=@sample.czi" \
+  -F "channels=0,1,2,3" \
+  -F "model_name=cyto2" \
+  -F "use_gpu=true" \
+  -F "channel_names=PomC,DREADD,Fos,Gal"
 ```
 
 ### Flask (legacy Web-UI)
@@ -59,19 +67,28 @@ Cell-Analysis/
 ├── src/
 │   ├── api/                 # Headless API-Layer
 │   │   ├── pipeline_service.py
-│   │   └── fastapi_app.py
+│   │   ├── fastapi_app.py
+│   │   ├── jobs.py          # async jobs
+│   │   └── upload_service.py
 │   ├── batch_segment.py     # Zellsegmentierung
 │   ├── coexpression.py      # Co-Expression
 │   ├── czi_converter.py     # CZI → TIFF
 │   ├── analysis.py          # Statistik
 │   ├── validation/          # Validierungsmetriken
+│   │   ├── metrics.py
+│   │   └── expression.py    # expression % + distance-map
+│   ├── config/
+│   │   └── naming.py        # universelle Benennung
 │   └── web/                 # Flask Web-UI (Blueprints)
 ├── tests/                   # Tests + Fixtures
 ├── config.yaml              # Detection-Config (Beispiel)
 ├── config_analysis.yaml     # Co-Expression-Config
 ├── config_czi.yaml          # CZI-Config
 ├── config_det_cpsam.yaml    # CPSAM-Config
-└── pyproject.toml           # Dependencies
+├── Dockerfile               # HF GPU Space
+├── README_HF_SPACE.md       # HF Space Metadata
+├── pyproject.toml           # Dependencies
+└── ROADMAP.md               # Geplante Features
 ```
 
 ## Konfiguration
@@ -91,12 +108,6 @@ Passe sie an dein System an oder überschreibe per API-Request.
 pytest tests/ -v
 ```
 
-- `test_validation_metrics.py` — IoU/Precision/Recall/F1
-- `test_pipeline_service.py` — End-to-End über API-Layer
-- `test_fastapi_app.py` — FastAPI-Endpoints
-- `test_web_app.py` — Flask-Blueprints
-- `test_pipeline_integration.py` — Legacy-CLI-Integration
-
 ## Validierung
 
 `src/validation/metrics.py` bietet:
@@ -104,6 +115,21 @@ pytest tests/ -v
 - `pixel_level_metrics(pred, gt)`
 - `instance_detection_metrics(pred_labels, gt_labels, iou_threshold=0.5)`
 - `evaluate_ground_truth_csv(pred_csv, gt_csv)`
+
+`src/validation/expression.py` bietet:
+- `expression_percentage(mask, intensity_image=None)`
+- `expression_percentage_per_instance(labels, intensity_images)`
+- `receptor_distance_map(receptor_mask, cell_mask)`
+
+## Hugging Face GPU Space
+
+```bash
+# Space mit diesem Repo verbinden
+git remote add hf https://huggingface.co/spaces/DEIN_USERNAME/cell-analysis
+git push hf app3-refactor:main
+```
+
+In den Space-Settings auf GPU (T4 small) upgraden.
 
 ## Docker
 

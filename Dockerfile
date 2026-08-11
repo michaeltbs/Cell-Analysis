@@ -3,7 +3,7 @@ FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
 
 WORKDIR /app
 
-# System dependencies for Python + image processing + Cellpose
+# System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
     python3-dev \
@@ -15,26 +15,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip
+# Upgrade pip and install build tools
 RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# Install cellpose and python deps (without torch, will be installed with CUDA next)
+# Copy project metadata
 COPY pyproject.toml ./
-RUN python3 -m pip install --no-cache-dir -e ".[dev]" --no-deps \
-    || true
 
-# Install CUDA-enabled PyTorch (CUDA 12.1 matches the base image)
+# Install project dependencies + CUDA-enabled PyTorch in one layer
+# This avoids dependency conflicts between torch CPU and CUDA wheels.
 RUN python3 -m pip install --no-cache-dir \
-    torch torchvision --index-url https://download.pytorch.org/whl/cu121
-
-# Re-install project deps now that torch is present
-RUN python3 -m pip install --no-cache-dir -e ".[dev]"
+    -e ".[dev]" \
+    --extra-index-url https://download.pytorch.org/whl/cu121 \
+    torch torchvision
 
 # Copy application code
 COPY . .
 
-# HF Spaces expects the app to listen on 7860 by default, but we expose 8000
+# HF Spaces default port is 7860; we use 8000 consistently
 EXPOSE 8000
 
+# Non-root user for security
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
 # Run FastAPI app
-CMD ["python3", "-m", "uvicorn", "src.api.fastapi_app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python3", "-m", "uvicorn", "src.api.fastapi_app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

@@ -17,6 +17,7 @@ Liste von Wünschen aus dem Labor, priorisiert nach Aufwand.
 - [ ] Distance-Map als Overlay/Heatmap exportieren
 - [ ] Naming-Config in UI / API-Requests erlauben
 - [ ] Batch-Upload mehrerer Bilder auf einmal
+- [ ] Download-Links für Job-Ergebnisse
 
 ## 🟡 Mittel (3–7 Tage)
 
@@ -24,6 +25,7 @@ Liste von Wünschen aus dem Labor, priorisiert nach Aufwand.
 - [ ] Umgang mit TIFF-Z-Stacks (mehrere Ebenen laden)
 - [ ] Asynchrone Jobs mit Redis/Queue für HF Spaces (statt in-memory)
 - [ ] Bessere Fehlermeldungen + Logging im UI
+- [ ] HF Space authentifizierter Upload/Download
 
 ## 🔴 Schwer (1–4 Wochen)
 
@@ -33,7 +35,7 @@ Liste von Wünschen aus dem Labor, priorisiert nach Aufwand.
 
 ## Geplante nächste Schritte
 
-1. Upload + Jobs finalisieren und auf HF Space deployen.
+1. Upload + Jobs auf HF Space deployen und testen.
 2. Expression-Metriken in den API-Output integrieren.
 3. Naming-Config in FastAPI-Upload-Endpoint einbauen.
 4. Distance-Map als PNG/CSV ausgeben.
