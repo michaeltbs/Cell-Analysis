@@ -17,11 +17,17 @@ import tifffile
 from src.batch_segment import _load_cellpose_model, _extract_channel, _preprocess_image, _apply_filters
 
 
-def _read_gray(path: Path, channel: int = 0) -> np.ndarray:
-    """Read image and extract requested channel as float32."""
+def _read_gray(path: Path, channel: int = 0, resize_max: int | None = None) -> np.ndarray:
+    """Read image and extract requested channel as float32. Optionally downscale."""
     from src.batch_segment import _read_image
     img = _read_image(path)
-    return _extract_channel(img, channel).astype(np.float32)
+    gray = _extract_channel(img, channel).astype(np.float32)
+    if resize_max and max(gray.shape) > resize_max:
+        from skimage import transform
+        h, w = gray.shape
+        scale = resize_max / max(h, w)
+        gray = transform.resize(gray, (int(h * scale), int(w * scale)), preserve_range=True, anti_aliasing=True).astype(np.float32)
+    return gray
 
 
 def _count_cells(
@@ -74,6 +80,7 @@ def run_optimization_sweep(
     base_cfg: Optional[Dict[str, Any]] = None,
     params_grid: Optional[Dict[str, List[Any]]] = None,
     fast: bool = False,
+    resize_max: int = 512,
     callback: Optional[Callable[[int, int, str, Dict], None]] = None,
 ) -> Dict[str, Any]:
     """
@@ -120,8 +127,8 @@ def run_optimization_sweep(
     keys = list(grid.keys())
     value_lists = [grid[k] for k in keys]
     combos = list(itertools.product(*value_lists))
-    # Skip combos with None diameter duplicates? Keep them simple.
 
+    # Load model ONCE and reuse for all combos (huge speedup on CPU/MPS)
     model = _load_cellpose_model(model_name, use_gpu=use_gpu)
 
     results = []
@@ -137,7 +144,7 @@ def run_optimization_sweep(
         for img_info in images_with_counts:
             expected = int(img_info.get("expected", 0))
             try:
-                gray = _read_gray(Path(img_info["path"]), channel)
+                gray = _read_gray(Path(img_info["path"]), channel, resize_max=resize_max)
                 actual = _count_cells(gray, model, params, base_cfg)
             except Exception:
                 actual = 0

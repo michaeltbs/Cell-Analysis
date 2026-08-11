@@ -10,6 +10,8 @@ Liste von Wünschen aus dem Labor, priorisiert nach Aufwand.
 - [x] Prozentsatz der Expression (Pixel + per Zelle)
 - [x] Universelle Benennung für Kanäle/Bedingungen/Regionen
 - [x] Distance-Map für Rezeptoren
+- [x] Kalibrierungsmodus: Intensitäts-Profil + Parameter-Optimierung (F1/MAE)
+- [x] Cellpose Fine-Tuning Wrapper (eigenes Modell trainieren)
 
 ## 🟢 Leicht (1–3 Tage)
 

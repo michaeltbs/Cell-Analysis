@@ -41,6 +41,9 @@ python3 -m uvicorn src.api.fastapi_app:app --host 0.0.0.0 --port 8001
 - `POST /jobs/upload` — Dateien hochladen + Pipeline als Job starten
 - `GET  /jobs/{job_id}` — Job-Status abfragen
 - `GET  /jobs` — Jobs auflisten
+- `POST /calibration/profile` — Intensitäts-Profil der erkannten Zellen
+- `POST /calibration/optimize` — Parameter-Sweep gegen erwartete Zellzahlen
+- `POST /calibration/train` — Cellpose Fine-Tuning starten
 
 Beispiel Upload:
 ```bash
