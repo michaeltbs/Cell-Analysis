@@ -13,21 +13,23 @@ Endpoints:
     POST /jobs/upload             -> upload files and enqueue full pipeline
     GET  /jobs/{job_id}           -> get job status/result
     GET  /jobs                    -> list recent jobs
+    GET  /jobs/{job_id}/download  -> download a result file from job workspace
 """
 from __future__ import annotations
 
+import mimetypes
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from src.api.pipeline_service import run_detection, run_coexpression, run_full_pipeline
 from src.api.jobs import manager
 from src.api.upload_service import handle_upload
-from src.config.naming import NamingConfig, apply_naming_to_csv_rows
-from src.validation.expression import expression_percentage, receptor_distance_map
+from src.config.naming import NamingConfig
 import yaml
 
 app = FastAPI(title="Cell Analysis API", version="0.1.0")
@@ -99,7 +101,7 @@ def full_pipeline(req: FullPipelineRequest) -> PipelineResponse:
     try:
         result = run_full_pipeline(
             det_cfg_path=req.det_config_path,
-            coexpr_cfg_path=req.coexpr_config_path,
+            coexpr_cfg_path=req.coexpr_cfg_path,
             save_masks=req.save_masks,
         )
         return PipelineResponse(success=True, result=result)
@@ -112,6 +114,7 @@ def _build_det_cfg(
     naming: NamingConfig,
     model_name: str = "cyto2",
     use_gpu: bool = True,
+    resize_max: int = 2048,
 ) -> str:
     workspace = Path(paths["workspace"])
     cfg = {
@@ -130,7 +133,7 @@ def _build_det_cfg(
             "split_regions": False,
             "channel": 0,
             "batch_size": 1,
-            "resize_max": 2048,
+            "resize_max": resize_max,
         },
         "filters": {
             "min_area": 10,
@@ -186,6 +189,7 @@ def upload(
     model_name: str = Form("cyto2"),
     use_gpu: str = Form("true"),
     channel_names: str = Form(""),
+    resize_max: int = Form(2048),
 ) -> Dict[str, Any]:
     job = manager.create("upload+full_pipeline")
     try:
@@ -204,7 +208,13 @@ def upload(
             file_tuples.append((f.filename, content))
 
         paths = handle_upload(file_tuples, job.id, parsed_channels)
-        det_cfg = _build_det_cfg(paths, naming, model_name=model_name, use_gpu=use_gpu.lower() in ("true", "1", "yes"))
+        det_cfg = _build_det_cfg(
+            paths,
+            naming,
+            model_name=model_name,
+            use_gpu=use_gpu.lower() in ("true", "1", "yes"),
+            resize_max=resize_max,
+        )
         coexpr_cfg = _build_coexpr_cfg(paths, naming)
 
         def _run(_job):
@@ -236,6 +246,26 @@ def get_job(job_id: str) -> Dict[str, Any]:
 @app.get("/jobs")
 def list_jobs(limit: int = 50) -> List[Dict[str, Any]]:
     return manager.list_jobs(limit=limit)
+
+
+@app.get("/jobs/{job_id}/download")
+def download(job_id: str, file: str) -> FileResponse:
+    job = manager.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if not job.result or "workspace" not in (job.result or {}):
+        raise HTTPException(status_code=400, detail="Job has no workspace yet or not finished")
+
+    workspace = Path(job.result["workspace"])
+    target = (workspace / file).resolve()
+    # security: prevent escaping workspace
+    if not str(target).startswith(str(workspace.resolve())):
+        raise HTTPException(status_code=400, detail="Invalid file path")
+    if not target.exists():
+        raise HTTPException(status_code=404, detail=f"File {file} not found")
+
+    media_type, _ = mimetypes.guess_type(str(target))
+    return FileResponse(target, media_type=media_type, filename=target.name)
 
 
 if __name__ == "__main__":
