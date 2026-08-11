@@ -17,22 +17,36 @@ Endpoints:
 """
 from __future__ import annotations
 
+import logging
 import mimetypes
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
+from src.api.logging_setup import get_logger
 from src.api.pipeline_service import run_detection, run_coexpression, run_full_pipeline
 from src.api.jobs import manager
 from src.api.upload_service import handle_upload
+from src.api.config_models import DetectionConfig, CoexprConfig
 from src.config.naming import NamingConfig
 import yaml
 
+logger = get_logger(__name__)
+
 app = FastAPI(title="Cell Analysis API", version="0.1.0")
+
+# Allow dashboard served from anywhere (HF Spaces, file://, localhost)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class DetectionRequest(BaseModel):
@@ -70,9 +84,21 @@ def version() -> Dict[str, str]:
     return {"version": "0.1.0", "backend": "fastapi"}
 
 
+@app.get("/")
+def index() -> FileResponse:
+    """Serve the dashboard UI."""
+    dashboard = Path(__file__).resolve().parents[2] / "dashboard" / "index.html"
+    if dashboard.exists():
+        return FileResponse(dashboard, media_type="text/html")
+    return FileResponse(Path(__file__).resolve().parents[2] / "README.md", media_type="text/markdown")
+
+
 @app.post("/pipeline/detection", response_model=PipelineResponse)
 def detection(req: DetectionRequest) -> PipelineResponse:
     try:
+        # Validate config before running
+        cfg_dict = yaml.safe_load(Path(req.config_path).read_text(encoding="utf-8")) or {}
+        DetectionConfig.from_dict(cfg_dict)
         result = run_detection(
             cfg_path=req.config_path,
             output_root=req.output_root,
@@ -82,17 +108,23 @@ def detection(req: DetectionRequest) -> PipelineResponse:
             test_samples=req.test_samples,
             test_seed=req.test_seed,
         )
+        logger.info("Detection finished: %s", result.get("master_csv"))
         return PipelineResponse(success=True, result=result)
     except Exception as e:
+        logger.error("Detection failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/pipeline/coexpression", response_model=PipelineResponse)
 def coexpression(req: CoexpressionRequest) -> PipelineResponse:
     try:
+        cfg_dict = yaml.safe_load(Path(req.config_path).read_text(encoding="utf-8")) or {}
+        CoexprConfig.from_dict(cfg_dict)
         result = run_coexpression(req.config_path)
+        logger.info("Co-expression finished: %s", result.get("output_dir"))
         return PipelineResponse(success=True, result=result)
     except Exception as e:
+        logger.error("Co-expression failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -101,11 +133,13 @@ def full_pipeline(req: FullPipelineRequest) -> PipelineResponse:
     try:
         result = run_full_pipeline(
             det_cfg_path=req.det_config_path,
-            coexpr_cfg_path=req.coexpr_cfg_path,
+            coexpr_cfg_path=req.coexpr_config_path,
             save_masks=req.save_masks,
         )
+        logger.info("Full pipeline finished")
         return PipelineResponse(success=True, result=result)
     except Exception as e:
+        logger.error("Full pipeline failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

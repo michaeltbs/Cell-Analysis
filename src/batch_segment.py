@@ -150,10 +150,14 @@ def _get_gpu_device():
     return None, False
 
 
+_MODEL_CACHE: Dict[Tuple[str, bool], Any] = {}
+
+
 def _load_cellpose_model(model_name: str, use_gpu: bool = False):
     """Return a Cellpose model that works on v4+, with fallback for older versions.
-    
+
     Supports CUDA (NVIDIA), MPS (Apple Silicon), and CPU backends.
+    Models are cached per (model_type, gpu) pair to avoid reloading on every batch.
     """
     try:
         from cellpose import models as _models
@@ -166,16 +170,22 @@ def _load_cellpose_model(model_name: str, use_gpu: bool = False):
 
     # Determine GPU device
     gpu_device, gpu_available = _get_gpu_device()
-    
+
     if use_gpu and not gpu_available:
         print("[WARN] GPU requested but no GPU backend available. Using CPU.")
         use_gpu = False
+
+    cache_key = (mtype, bool(use_gpu))
+    if cache_key in _MODEL_CACHE:
+        cached = _MODEL_CACHE[cache_key]
+        print(f"[INFO] Reusing cached Cellpose model ({mtype}, gpu={use_gpu}).")
+        return cached
 
     # prefer v4 API
     try:
         # Cellpose 3.x+ accepts device parameter
         model_kwargs = {'gpu': bool(use_gpu), 'model_type': mtype}
-        
+
         # Set device for MPS support (Cellpose 3.x+)
         if use_gpu and gpu_device:
             try:
@@ -188,15 +198,16 @@ def _load_cellpose_model(model_name: str, use_gpu: bool = False):
                     print("[INFO] CellposeModel using NVIDIA CUDA GPU acceleration.")
             except Exception:
                 pass  # Fall back to default device handling
-        
+
         model = _models.CellposeModel(**model_kwargs)
-        
+
         if use_gpu and not getattr(model, "gpu", False):
             print("[WARN] CellposeModel requested GPU but fell back to CPU. Check GPU visibility.")
         elif use_gpu and gpu_device:
             pass  # Already printed device info above
         elif use_gpu:
             print("[INFO] CellposeModel running with GPU acceleration.")
+        _MODEL_CACHE[cache_key] = model
         return model
     except (AttributeError, TypeError):
         # fallback for older versions (no device parameter)
@@ -205,6 +216,7 @@ def _load_cellpose_model(model_name: str, use_gpu: bool = False):
             print("[WARN] Cellpose GPU fallback is not active; running on CPU.")
         elif use_gpu:
             print("[INFO] Cellpose fallback running with GPU acceleration.")
+        _MODEL_CACHE[cache_key] = model
         return model
 
 # -----------------------------
@@ -1286,21 +1298,13 @@ def _segment_dir(
                     print(f"[WARN] {img_path.name}: diameter {diameter:.1f}px is below optimal but cannot upscale further")
             
             gray_proc = _preprocess_image(gray_raw, proc_img)
-            
-            # Check if we should use robust background normalization (SNR mode)
-            adv_cfg_img = cfg_scaled.get("advanced_filtering", {}) or {}
-            intensity_mode = str(adv_cfg_img.get("intensity_mode", "max") or "max").lower()
-            use_robust_norm = intensity_mode == "snr" or bool(adv_cfg_img.get("use_robust_normalization", False))
-            
-            snr_map = None
-            background_img = None
-            
+
             # Check normalization mode
             adv_cfg_img = cfg_scaled.get("advanced_filtering", {}) or {}
             intensity_mode = str(adv_cfg_img.get("intensity_mode", "global") or "global").lower()
             use_robust_norm = intensity_mode == "snr" or bool(adv_cfg_img.get("use_robust_normalization", False))
             use_global_norm = intensity_mode == "global"
-            
+
             snr_map = None
             background_img = None
             global_stats = None

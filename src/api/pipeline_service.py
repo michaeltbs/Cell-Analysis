@@ -25,7 +25,7 @@ from src.analysis import (
     calculate_condition_averages,
     create_summary_report,
 )
-from src.anova_analysis import run_anova_analysis
+from src.anova_analysis import run_anova_analysis, run_mixed_effects_analysis
 
 
 def _write_temp_cfg(cfg: dict) -> Path:
@@ -124,6 +124,11 @@ def run_detection(
                 run_anova_analysis(str(master_csv), str(out_root))
             except Exception as e:
                 print(f"[warn] ANOVA analysis failed: {e}")
+        if cfg.get("analysis", {}).get("enable_mixed_effects", False):
+            try:
+                run_mixed_effects_analysis(str(master_csv), str(out_root))
+            except Exception as e:
+                print(f"[warn] Mixed-effects analysis failed: {e}")
 
     return {
         "master_csv": str(master_csv),
@@ -134,15 +139,33 @@ def run_detection(
     }
 
 
-def run_coexpression(cfg_path: Path | str) -> Dict[str, str]:
-    """Run co-expression analysis from a YAML config."""
+def run_coexpression(cfg_path: Path | str, force: bool = False) -> Dict[str, Any]:
+    """Run co-expression analysis from a YAML config.
+
+    If the master summary CSV already exists and is newer than all input
+    files, the run is skipped (cached) unless force=True.
+    """
     cfg_path = Path(cfg_path).resolve()
+    cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
+    output_dir = cfg.get("output_dir", cfg.get("paths", {}).get("output_dir", "./coexpr_out"))
+    output_dir = Path(output_dir).resolve()
+
+    summary = output_dir / "coexpr_sweep_summary.csv"
+    if not force and summary.exists():
+        input_dir = Path(cfg.get("input_dir", output_dir))
+        newest_input = 0.0
+        if input_dir.exists():
+            for p in input_dir.rglob("*"):
+                if p.is_file() and p.suffix.lower() in (".tif", ".tiff", ".png"):
+                    newest_input = max(newest_input, p.stat().st_mtime)
+        if newest_input <= summary.stat().st_mtime:
+            print(f"[CACHE] Co-expression up-to-date, skipping ({summary})")
+            return {"output_dir": str(output_dir), "cached": True}
+
     rc = coexpression_main(["--config", str(cfg_path)])
     if rc != 0:
         raise RuntimeError(f"Co-expression analysis failed with exit code {rc}")
-    cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
-    output_dir = cfg.get("output_dir", cfg.get("paths", {}).get("output_dir", "./coexpr_out"))
-    return {"output_dir": str(Path(output_dir).resolve())}
+    return {"output_dir": str(output_dir), "cached": False}
 
 
 def run_full_pipeline(

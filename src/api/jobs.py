@@ -4,14 +4,12 @@ Suitable for HF Spaces where request timeouts are short.
 """
 from __future__ import annotations
 
-import json
 import threading
 import time
 import traceback
 import uuid
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 
@@ -49,17 +47,31 @@ class Job:
 
 
 class JobManager:
-    def __init__(self, max_workers: int = 2):
+    def __init__(self, max_workers: int = 2, max_jobs: int = 200):
         self._jobs: Dict[str, Job] = {}
         self._lock = threading.Lock()
         self._max_workers = max_workers
+        self._max_jobs = max_jobs
         self._semaphore = threading.Semaphore(max_workers)
 
     def create(self, task: str) -> Job:
         job = Job(id=str(uuid.uuid4()), task=task)
         with self._lock:
             self._jobs[job.id] = job
+            self._prune_locked()
         return job
+
+    def _prune_locked(self) -> None:
+        """Drop oldest finished jobs when over capacity to bound memory."""
+        if len(self._jobs) <= self._max_jobs:
+            return
+        finished = sorted(
+            (j for j in self._jobs.values() if j.status in (JobStatus.SUCCESS, JobStatus.FAILED)),
+            key=lambda j: j.finished_at or 0,
+        )
+        overflow = len(self._jobs) - self._max_jobs
+        for j in finished[:overflow]:
+            self._jobs.pop(j.id, None)
 
     def get(self, job_id: str) -> Optional[Job]:
         with self._lock:

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cell Analysis — Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        primary: "#3f84f3",
+        "background-light": "#f5f7f8",
+        "background-dark": "#101722",
+        success: "#4CAF50",
+      },
+      fontFamily: { display: ["Inter", "sans-serif"] },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+    },
+  },
+};
+</script>
+<style>
+.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-neutral-800 dark:text-neutral-200 min-h-screen">
+<div class="flex min-h-screen">
+  <!-- Sidebar: responsive (mobile: top bar) -->
+  <aside id="sidebar" class="w-full md:w-64 md:min-h-screen bg-white/60 dark:bg-background-dark/60 border-b md:border-b-0 md:border-r border-neutral-200 dark:border-neutral-800 p-4 md:sticky md:top-0">
+    <div class="flex items-center justify-between md:block">
+      <div class="flex items-center gap-3">
+        <div class="bg-primary rounded-full size-10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-white">biotech</span>
+        </div>
+        <div>
+          <h1 class="text-base font-medium leading-tight">Cell Analysis</h1>
+          <p class="text-neutral-500 dark:text-neutral-400 text-sm">Pipeline Suite</p>
+        </div>
+      </div>
+      <button id="theme-toggle" class="md:hidden p-2 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50" aria-label="Theme">🌙</button>
+    </div>
+    <nav class="flex flex-row md:flex-col gap-1 mt-4 overflow-x-auto">
+      <a href="#" data-tab="upload" class="tab-link flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-300 whitespace-nowrap">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">upload</span><span class="text-sm font-medium">Upload & Analyse</span>
+      </a>
+      <a href="#" data-tab="jobs" class="tab-link flex items-center gap-3 px-3 py-2 rounded-lg text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50 whitespace-nowrap">
+        <span class="material-symbols-outlined">pending_actions</span><span class="text-sm font-medium">Jobs</span>
+      </a>
+      <a href="#" data-tab="api" class="tab-link flex items-center gap-3 px-3 py-2 rounded-lg text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50 whitespace-nowrap">
+        <span class="material-symbols-outlined">code</span><span class="text-sm font-medium">API</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 p-4 md:p-8">
+    <!-- Upload tab -->
+    <section id="tab-upload" class="tab-panel">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-2xl font-bold">Upload & Analyse</h2>
+          <p class="text-neutral-500 dark:text-neutral-400 text-sm">CZI/TIFF hochladen, Pipeline starten, Ergebnisse herunterladen</p>
+        </div>
+        <button id="theme-toggle-desktop" class="hidden md:block p-2 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50" aria-label="Theme">🌙</button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Upload form -->
+        <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
+          <h3 class="font-semibold mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-primary">upload_file</span> Dateien</h3>
+          <label class="block border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors" for="file-input">
+            <span class="material-symbols-outlined text-4xl text-neutral-400">add_photo_alternate</span>
+            <p class="mt-2 text-sm text-neutral-500 dark:text-neutral-400">Klicken zum Auswählen</p>
+            <p class="text-xs text-neutral-400">CZI, TIFF, TIF — mehrere Dateien möglich</p>
+          </label>
+          <input id="file-input" type="file" multiple accept=".czi,.tif,.tiff" class="hidden">
+          <div id="file-list" class="mt-3 flex flex-wrap gap-2"></div>
+
+          <h3 class="font-semibold mt-6 mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-primary">tune</span> Parameter</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Modell</label>
+              <select id="model" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm">
+                <option value="cyto2">cyto2 (Standard)</option>
+                <option value="cyto3">cyto3</option>
+                <option value="nuclei">nuclei</option>
+                <option value="cpsam">cpsam (Cellpose-SAM)</option>
+                <option value="cpdino">cpdino</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Kanäle</label>
+              <input id="channels" type="text" value="0,1,2,3" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Kanalnamen (kommagetrennt)</label>
+              <input id="channel-names" type="text" placeholder="PomC,DREADD,Fos,Gal" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Max. Bildgröße (px)</label>
+              <input id="resize" type="number" value="2048" min="256" max="8192" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm">
+            </div>
+            <div class="flex items-center gap-4 sm:col-span-2">
+              <label class="flex items-center gap-2 text-sm"><input id="use-gpu" type="checkbox" checked class="rounded"> GPU nutzen</label>
+              <label class="flex items-center gap-2 text-sm"><input id="test-mode" type="checkbox" class="rounded"> Test-Modus (schnell)</label>
+            </div>
+          </div>
+
+          <button id="upload-btn" class="mt-6 w-full bg-primary hover:bg-primary/90 text-white font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+            <span class="material-symbols-outlined">rocket_launch</span> Pipeline starten
+          </button>
+          <p id="upload-error" class="hidden mt-3 text-sm text-red-500 bg-red-500/10 border border-red-500/30 rounded-lg p-3"></p>
+        </div>
+
+        <!-- Live progress -->
+        <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
+          <h3 class="font-semibold mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-primary">monitor_heart</span> Live-Status</h3>
+          <div id="no-job" class="text-center py-16 text-neutral-400">
+            <span class="material-symbols-outlined text-5xl">hourglass_empty</span>
+            <p class="mt-2 text-sm">Noch kein Job gestartet</p>
+          </div>
+          <div id="job-status" class="hidden">
+            <div class="flex items-center justify-between mb-2">
+              <span id="job-id-label" class="text-xs font-mono text-neutral-500 break-all"></span>
+              <span id="job-state" class="text-xs font-bold px-2 py-1 rounded-full"></span>
+            </div>
+            <div class="h-2 w-full bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
+              <div id="job-progress" class="h-full bg-primary transition-all duration-500 rounded-full" style="width:0%"></div>
+            </div>
+            <div id="job-log" class="mt-4 text-xs font-mono bg-neutral-100 dark:bg-neutral-950 rounded-lg p-3 h-48 overflow-y-auto space-y-1"></div>
+            <div id="job-results" class="mt-4"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Jobs tab -->
+    <section id="tab-jobs" class="tab-panel hidden">
+      <h2 class="text-2xl font-bold mb-1">Jobs</h2>
+      <p class="text-neutral-500 dark:text-neutral-400 text-sm mb-6">Alle aktuellen und vergangenen Aufträge</p>
+      <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-neutral-50 dark:bg-neutral-800/50 text-left text-neutral-500 dark:text-neutral-400">
+            <tr><th class="px-4 py-3 font-medium">ID</th><th class="px-4 py-3 font-medium">Task</th><th class="px-4 py-3 font-medium">Status</th><th class="px-4 py-3 font-medium">Erstellt</th></tr>
+          </thead>
+          <tbody id="jobs-table" class="divide-y divide-neutral-100 dark:divide-neutral-800"></tbody>
+        </table>
+        <p id="jobs-empty" class="hidden p-6 text-center text-neutral-400 text-sm">Keine Jobs vorhanden</p>
+      </div>
+      <button id="refresh-jobs" class="mt-4 text-sm text-primary hover:underline">Aktualisieren</button>
+    </section>
+
+    <!-- API tab -->
+    <section id="tab-api" class="tab-panel hidden">
+      <h2 class="text-2xl font-bold mb-1">API</h2>
+      <p class="text-neutral-500 dark:text-neutral-400 text-sm mb-6">Direktzugriff auf das Backend</p>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
+          <h3 class="font-semibold mb-3">Endpoints</h3>
+          <ul class="space-y-2 text-sm font-mono">
+            <li><span class="text-emerald-500 font-bold">GET</span> <code class="text-neutral-600 dark:text-neutral-300">/health</code></li>
+            <li><span class="text-emerald-500 font-bold">GET</span> <code class="text-neutral-600 dark:text-neutral-300">/version</code></li>
+            <li><span class="text-amber-500 font-bold">POST</span> <code class="text-neutral-600 dark:text-neutral-300">/jobs/upload</code></li>
+            <li><span class="text-emerald-500 font-bold">GET</span> <code class="text-neutral-600 dark:text-neutral-300">/jobs/{id}</code></li>
+            <li><span class="text-emerald-500 font-bold">GET</span> <code class="text-neutral-600 dark:text-neutral-300">/jobs/{id}/download?file=...</code></li>
+          </ul>
+        </div>
+        <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
+          <h3 class="font-semibold mb-3">Beispiel Upload</h3>
+          <pre class="text-xs font-mono bg-neutral-100 dark:bg-neutral-950 rounded-lg p-4 overflow-x-auto text-neutral-600 dark:text-neutral-300"><code>curl -X POST http://localhost:8001/jobs/upload \
+  -F "files=@sample.czi" \
+  -F "channels=0,1,2,3" \
+  -F "model_name=cyto2" \
+  -F "use_gpu=true" \
+  -F "channel_names=PomC,DREADD,Fos,Gal"</code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const API = (location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'http://localhost:8001' : location.origin;
+
+let selectedFiles = [];
+let pollTimer = null;
+let activeJobId = null;
+
+// Tabs
+document.querySelectorAll('.tab-link').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.tab-link').forEach(l => {
+      l.classList.remove('bg-primary/10','text-primary','dark:bg-primary/20','dark:text-primary-300');
+      l.classList.add('text-neutral-600','dark:text-neutral-400');
+    });
+    link.classList.add('bg-primary/10','text-primary','dark:bg-primary/20','dark:text-primary-300');
+    link.classList.remove('text-neutral-600','dark:text-neutral-400');
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+    document.getElementById('tab-' + link.dataset.tab).classList.remove('hidden');
+  });
+});
+
+// Theme
+function toggleTheme() {
+  const root = document.documentElement;
+  root.classList.toggle('dark');
+  localStorage.setItem('theme', root.classList.contains('dark') ? 'dark' : 'light');
+}
+document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+document.getElementById('theme-toggle-desktop').addEventListener('click', toggleTheme);
+if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+
+// File selection
+const fileInput = document.getElementById('file-input');
+fileInput.addEventListener('change', () => {
+  selectedFiles = Array.from(fileInput.files);
+  renderFileList();
+});
+function renderFileList() {
+  const list = document.getElementById('file-list');
+  list.innerHTML = '';
+  selectedFiles.forEach((f, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'inline-flex items-center gap-1 text-xs bg-neutral-100 dark:bg-neutral-800 rounded-full px-3 py-1';
+    chip.innerHTML = `${f.name} <button class="text-red-400 hover:text-red-500" data-i="${i}">✕</button>`;
+    chip.querySelector('button').addEventListener('click', () => {
+      selectedFiles.splice(i, 1);
+      renderFileList();
+    });
+    list.appendChild(chip);
+  });
+}
+
+// Upload
+document.getElementById('upload-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('upload-btn');
+  const errBox = document.getElementById('upload-error');
+  errBox.classList.add('hidden');
+  if (!selectedFiles.length) {
+    errBox.textContent = 'Bitte mindestens eine Datei auswählen.';
+    errBox.classList.remove('hidden');
+    return;
+  }
+  btn.disabled = true;
+  const fd = new FormData();
+  selectedFiles.forEach(f => fd.append('files', f));
+  fd.append('channels', document.getElementById('channels').value);
+  fd.append('model_name', document.getElementById('model').value);
+  fd.append('channel_names', document.getElementById('channel-names').value);
+  fd.append('resize_max', document.getElementById('resize').value);
+  fd.append('use_gpu', document.getElementById('use-gpu').checked ? 'true' : 'false');
+  fd.append('test_mode', document.getElementById('test-mode').checked ? 'true' : 'false');
+  try {
+    const res = await fetch(`${API}/jobs/upload`, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Upload fehlgeschlagen');
+    startPolling(data.job_id);
+    document.querySelector('[data-tab="upload"]').classList.add('bg-primary/10');
+  } catch (e) {
+    errBox.textContent = e.message;
+    errBox.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// Polling
+function startPolling(jobId) {
+  activeJobId = jobId;
+  document.getElementById('no-job').classList.add('hidden');
+  document.getElementById('job-status').classList.remove('hidden');
+  document.getElementById('job-id-label').textContent = jobId;
+  document.getElementById('job-log').innerHTML = '';
+  document.getElementById('job-results').innerHTML = '';
+  setJobState('pending', 5);
+  pollTimer = setInterval(async () => {
+    try {
+      const res = await fetch(`${API}/jobs/${jobId}`);
+      const job = await res.json();
+      if (job.log && job.log.length) {
+        const logEl = document.getElementById('job-log');
+        job.log.forEach(line => {
+          if (!logEl.querySelector(`[data-line="${line}"]`)) {
+            const div = document.createElement('div');
+            div.dataset.line = line;
+            div.textContent = '> ' + line;
+            logEl.appendChild(div);
+          }
+        });
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+      const stages = { pending: 5, running: 45, success: 100, failed: 100 };
+      setJobState(job.status, stages[job.status] || 5);
+      if (job.status === 'success') {
+        clearInterval(pollTimer);
+        renderResults(job);
+        loadJobs();
+      } else if (job.status === 'failed') {
+        clearInterval(pollTimer);
+        const err = document.createElement('div');
+        err.className = 'text-xs text-red-500 bg-red-500/10 border border-red-500/30 rounded-lg p-3 mt-3 whitespace-pre-wrap';
+        err.textContent = job.error || 'Unbekannter Fehler';
+        document.getElementById('job-results').appendChild(err);
+      }
+    } catch (e) {
+      // keep polling
+    }
+  }, 2000);
+}
+
+function setJobState(status, pct) {
+  const el = document.getElementById('job-state');
+  document.getElementById('job-progress').style.width = pct + '%';
+  const map = {
+    pending: ['pending', 'bg-neutral-500 text-white'],
+    running: ['running', 'bg-primary text-white'],
+    success: ['success', 'bg-emerald-500 text-white'],
+    failed: ['failed', 'bg-red-500 text-white'],
+  };
+  const [label, cls] = map[status] || ['?', 'bg-neutral-500 text-white'];
+  el.textContent = label;
+  el.className = 'text-xs font-bold px-2 py-1 rounded-full ' + cls;
+}
+
+function renderResults(job) {
+  const box = document.getElementById('job-results');
+  box.innerHTML = '';
+  const w = job.result && job.result.workspace;
+  const title = document.createElement('h4');
+  title.className = 'font-semibold text-sm mb-2';
+  title.textContent = 'Ergebnisse';
+  box.appendChild(title);
+  const files = [];
+  if (job.result && job.result.detection) {
+    files.push({ name: 'Detection CSV (Input_pos)', file: 'Input_pos/All_Counts_Master.csv' });
+  }
+  if (job.result && job.result.coexpression) {
+    files.push({ name: 'Co-Expression Summary', file: 'results/Coex/coexpr_sweep_summary.csv' });
+  }
+  if (!files.length) files.push({ name: 'Workspace öffnen', file: '' });
+  files.forEach(f => {
+    const a = document.createElement('a');
+    a.className = 'flex items-center gap-2 text-sm text-primary hover:underline py-1';
+    a.innerHTML = `<span class="material-symbols-outlined text-base">download</span> ${f.name}`;
+    if (f.file) a.href = `${API}/jobs/${activeJobId}/download?file=${encodeURIComponent(f.file)}`;
+    box.appendChild(a);
+  });
+}
+
+// Jobs list
+async function loadJobs() {
+  try {
+    const res = await fetch(`${API}/jobs?limit=10`);
+    const jobs = await res.json();
+    const tbody = document.getElementById('jobs-table');
+    tbody.innerHTML = '';
+    document.getElementById('jobs-empty').classList.toggle('hidden', jobs.length > 0);
+    jobs.forEach(j => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="px-4 py-3 font-mono text-xs text-neutral-500">${j.id.slice(0,8)}</td>
+        <td class="px-4 py-3">${j.task}</td>
+        <td class="px-4 py-3"><span class="text-xs font-bold px-2 py-1 rounded-full ${
+          j.status === 'success' ? 'bg-emerald-500/10 text-emerald-500' :
+          j.status === 'failed' ? 'bg-red-500/10 text-red-500' :
+          j.status === 'running' ? 'bg-primary/10 text-primary' : 'bg-neutral-500/10 text-neutral-500'
+        }">${j.status}</span></td>
+        <td class="px-4 py-3 text-xs text-neutral-500">${new Date(j.created_at * 1000).toLocaleTimeString()}</td>`;
+      tbody.appendChild(tr);
+    });
+  } catch (e) {}
+}
+document.getElementById('refresh-jobs').addEventListener('click', loadJobs);
+loadJobs();
+</script>
+</body>
+</html>
