@@ -1456,6 +1456,8 @@ def _glob_channel_files(base: Path, ch: ChannelCfg, use_masks: bool, fallback_ov
             f"ch{ch.index}/overlays/**/*_overlay.png",
             f"ch{ch.index}/overlays/**/*.png",
             f"ch{ch.index}/**/*_overlay.png",
+            f"**/*ch{ch.index}*_overlay.png",
+            f"**/*_overlay.png",
         ]
         for pat in overlay_patterns:
             files = list(base.glob(pat))

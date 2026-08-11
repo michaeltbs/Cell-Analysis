@@ -29,8 +29,8 @@ combos_enabled:
 - 2
 - 3
 dataset_name: ''
-input_dir: /app/results/final/Glp1r
-output_dir: /app/results/final/Glp1r/Coex
+input_dir: ./results/final
+output_dir: ./results/final/Coex
 overlap_threshold: 30
 overlay_formats:
 - png

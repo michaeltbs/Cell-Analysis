@@ -1,0 +1,8 @@
+base_url: "http://host.docker.internal:8090/api"
+api_key: ""                       # OpenWebUI API-Key per Env-Var OPENWEBUI_API_KEY setzen
+model_id: "docker_model_runner.ai/granite-4.0-h-tiny:latest"
+model_digest: "c7b6e5774260"
+quantization: "MOSTLY_Q4_K_M"
+model_size: "6.94B"
+temperature: 0.2
+max_tokens: 800

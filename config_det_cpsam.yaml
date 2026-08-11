@@ -60,9 +60,9 @@ overlays:
   line_width: 1
   overlay_mode: contours
 paths:
-  input_neg: /app/data/Input/Glp1r_adult_aged_Tiff_uncut/Input_neg
-  input_pos: /app/data/Input/Glp1r_adult_aged_Tiff_uncut/Input_pos
-  output_root: /app/results/final/Glp1r
+  input_neg: ./data/processed_tiffs/Input_neg
+  input_pos: ./data/processed_tiffs/Input_pos
+  output_root: ./results/final
 preprocessing:
   clahe: true
   clahe_clip_limit: 0.03

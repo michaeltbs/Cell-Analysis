@@ -1,0 +1,45 @@
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+pythonpath = ["."]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cell-analysis"
+version = "0.1.0"
+description = "Cell segmentation and co-expression analysis for confocal microscopy"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "cellpose==3.0.5",
+    "czifile>=2019.7.2",
+    "flask==3.0.3",
+    "flask-cors==4.0.1",
+    "matplotlib==3.9.0",
+    "numpy==1.26.4",
+    "pandas==2.2.2",
+    "Pillow==10.3.0",
+    "pyyaml>=6.0",
+    "requests>=2.31.0",
+    "scikit-image==0.24.0",
+    "scipy==1.13.1",
+    "seaborn>=0.13.2",
+    "statsmodels>=0.14.0",
+    "tifffile==2024.8.30",
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "tqdm>=4.65.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "black", "ruff"]
+
+[project.scripts]
+cell-analysis = "run_pipeline:main"

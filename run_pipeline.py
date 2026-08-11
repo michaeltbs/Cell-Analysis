@@ -57,12 +57,6 @@ def _print_env() -> None:
         print("[env] device=Apple Silicon (MPS)")
     else:
         print("[env] device=CPU")
-        except Exception:
-            pass
-    elif mps_ok:
-        print("[env] device=Apple Silicon (MPS)")
-    else:
-        print("[env] device=CPU")
 
 
 def _load_cfg(path: Path) -> dict:

@@ -1,3 +1,5 @@
+# Beispiel-Konfiguration für CZI → TIFF Konvertierung.
+# Passe input_root/output_base an Dein System an oder setze sie per Env-Var / UI.
 channel_colors:
 - '#ff0000'
 - '#00ff00'
@@ -11,8 +13,8 @@ channels:
 - 3
 dtype: uint16
 imagej_hyperstack: true
-input_root: /app/data/Input/abc
-output_base: /app/data/Input/Glp1r_adult_aged_Tiff_uncut
+input_root: ./data/input_czi
+output_base: ./data/processed_tiffs
 overwrite: true
 per_channel_normalize: true
 rgb_channels: 0,1,2

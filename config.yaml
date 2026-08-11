@@ -72,13 +72,13 @@ det_channel_selection:
 det_script_path: ''
 flow_threshold: 0.4
 image_aware_scaling: true
-input_tiffs_dir: /app/data/Input/Glp1r_adult_aged_Tiff_uncut
+input_tiffs_dir: ./data/processed_tiffs
 microscope:
   current_magnification: 10
   reference_magnification: 10
 model_type: cpsam
-output_results_dir: /app/results/final/Glp1r
-ref_mag: 10
+output_results_dir: ./results/final
+def_mag: 10
 resize_max: 2048
 save_overlay: false
 testing:
