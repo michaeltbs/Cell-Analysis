@@ -190,6 +190,7 @@ def upload(
     use_gpu: str = Form("true"),
     channel_names: str = Form(""),
     resize_max: int = Form(2048),
+    test_mode: str = Form("false"),
 ) -> Dict[str, Any]:
     job = manager.create("upload+full_pipeline")
     try:
@@ -208,18 +209,23 @@ def upload(
             file_tuples.append((f.filename, content))
 
         paths = handle_upload(file_tuples, job.id, parsed_channels)
-        det_cfg = _build_det_cfg(
-            paths,
-            naming,
-            model_name=model_name,
-            use_gpu=use_gpu.lower() in ("true", "1", "yes"),
-            resize_max=resize_max,
-        )
         coexpr_cfg = _build_coexpr_cfg(paths, naming)
+        test_enabled = test_mode.lower() in ("true", "1", "yes")
 
         def _run(_job):
             _job.log.append("Running detection...")
-            det_result = run_detection(det_cfg, save_masks=False, create_overlays=False)
+            if test_enabled:
+                from src.api.test_segment import threshold_segment
+                det_result = threshold_segment(paths["input_tiffs"], paths["output_root"])
+            else:
+                det_cfg = _build_det_cfg(
+                    paths,
+                    naming,
+                    model_name=model_name,
+                    use_gpu=use_gpu.lower() in ("true", "1", "yes"),
+                    resize_max=resize_max,
+                )
+                det_result = run_detection(det_cfg, save_masks=False, create_overlays=False)
             _job.log.append("Running co-expression...")
             coexpr_result = run_coexpression(coexpr_cfg)
             return {
