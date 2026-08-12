@@ -44,6 +44,8 @@ def _count_cells(
             diameter=params.get("diameter"),
             flow_threshold=float(params.get("flow", 0.4)),
             cellprob_threshold=float(params.get("cellprob", 0.0)),
+            niter=params.get("niter"),
+            min_size=int(params.get("min_size", 15)),
         )
     except Exception:
         return 0
@@ -106,6 +108,8 @@ def run_optimization_sweep(
         default_grid: Dict[str, List[Any]] = {
             "cellprob": [0.0, 1.0],
             "flow": [0.4],
+            "niter": [None],
+            "min_size": [15],
             "max_intensity_threshold": [0.05, 0.15],
             "min_local_contrast": [1.0, 1.2],
             "min_area": [10],
@@ -114,7 +118,9 @@ def run_optimization_sweep(
     else:
         default_grid: Dict[str, List[Any]] = {
             "cellprob": [-1.0, 0.0, 1.0],
-            "flow": [0.4],
+            "flow": [0.4, 0.6],
+            "niter": [None, 1000],
+            "min_size": [10, 15, 30],
             "max_intensity_threshold": [0.05, 0.1, 0.2],
             "min_local_contrast": [1.0, 1.2],
             "min_area": [5, 15, 30],

@@ -165,7 +165,7 @@ def _load_cellpose_model(model_name: str, use_gpu: bool = False):
         raise RuntimeError("Cellpose is not installed. Please `pip install cellpose`.") from e
 
     name = (model_name or "cyto2").lower()
-    valid_models = {"cyto3", "cyto2", "cyto", "nuclei", "cpsam", "cpdino", "cpdino-vitb", "cpsam_v2"}
+    valid_models = {"cyto3", "cyto2", "cyto", "nuclei", "cpsam", "cpsam_v2", "cpdino", "cpdino-vitb"}
     mtype = name if name in valid_models else "cyto2"
 
     # Determine GPU device
@@ -646,6 +646,10 @@ def _apply_filters(
     max_circ = float(filters_cfg.get("max_circularity") or 0.0)
     max_hole = filters_cfg.get("max_hole_ratio")
     max_hole = float(max_hole) if max_hole is not None else None
+    # max_size_fraction: drop masks larger than this fraction of the image
+    # (Cellpose 4 default is 0.4 — removes merged/oversized ROIs)
+    max_size_fraction = float(filters_cfg.get("max_size_fraction") or 0.0)
+    image_pixels = float(max(image_shape[0], 1) * max(image_shape[1], 1))
     intensity_factor = float(filters_cfg.get("intensity_threshold_factor") or 1.0)
     intensity_factor = max(intensity_factor, 1e-3)
 
@@ -704,7 +708,7 @@ def _apply_filters(
     
     # Track filter reasons for debugging
     filter_reasons: Dict[str, int] = {
-        "min_area": 0, "max_area": 0, "circularity": 0, "hole_ratio": 0,
+        "min_area": 0, "max_area": 0, "max_size_fraction": 0, "circularity": 0, "hole_ratio": 0,
         "edge": 0, "intensity": 0, "intensity_max": 0, "intensity_mean": 0, 
         "low_contrast": 0, "bg_floor": 0, "snr": 0
     }
@@ -720,6 +724,9 @@ def _apply_filters(
         if keep and max_area and area > max_area:
             keep = False
             filter_reason = "max_area"
+        if keep and max_size_fraction > 0.0 and image_pixels > 0 and area > image_pixels * max_size_fraction:
+            keep = False
+            filter_reason = "max_size_fraction"
 
         perimeter = float(region.perimeter or 0.0)
         # Skip circularity check if disabled (min_circ=0 and max_circ=1 means disabled)
@@ -1336,12 +1343,15 @@ def _segment_dir(
                 gray_norm = _normalize_image(gray_proc)
 
             if masks_arr is None:
+                # batch_size from config (default 8 per Cellpose docs), applied per-image here
+                batch_size = int(cp_img.get("batch_size", 8) or 8)
                 masks_arr, _, _ = model.eval(
                     gray_norm,
                     channels=cp_channels,
                     diameter=diameter,
                     flow_threshold=flow_thr,
                     cellprob_threshold=cell_thr,
+                    batch_size=batch_size,
                 )
                 masks_arr = masks_arr.astype(np.uint16, copy=False)
 

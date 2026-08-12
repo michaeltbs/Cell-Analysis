@@ -18,13 +18,15 @@ class CellposeConfig(BaseModel):
     save_masks: bool = True
     split_regions: bool = False
     channel: int = 0
-    batch_size: int = 1
+    batch_size: int = 8
     resize_max: int = 2048
+    min_size: int = 15
+    max_size_fraction: float = 0.4
 
     @field_validator("model_name")
     @classmethod
     def _valid_model(cls, v: str) -> str:
-        allowed = {"cyto3", "cyto2", "cyto", "nuclei", "cpsam", "cpdino", "cpdino-vitb", "cpsam_v2"}
+        allowed = {"cyto3", "cyto2", "cyto", "nuclei", "cpsam", "cpsam_v2", "cpdino", "cpdino-vitb"}
         return v if v in allowed else "cyto2"
 
 
