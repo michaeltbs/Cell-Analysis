@@ -219,3 +219,5 @@ results_parallel/
 *.png
 results/
 *.zip
+# Hermes planning artifacts (local only)
+.hermes/
