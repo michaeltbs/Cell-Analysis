@@ -8,16 +8,24 @@ import tempfile
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+import numpy as np
+import tifffile
 import yaml
 
-from src.czi_converter import CziConfig, run_czi_conversion
+from src.czi_converter import (
+    CziConfig,
+    run_czi_conversion,
+    load_microscopy_to_CZYX,
+    collapse_z_max,
+    SUPPORTED_MICROSCOPY_EXTS,
+)
 
 
 def handle_upload(
     files: List[Tuple[str, bytes]],
     job_id: str,
     channels: List[int] | None = None,
-    target_size: int = 2048,
+    target_size: int | None = 2048,
 ) -> Dict[str, str]:
     """
     Save uploaded files, convert CZI if needed, and return input/output paths.
@@ -46,13 +54,17 @@ def handle_upload(
 
     czi_files: List[Path] = []
     tiff_files: List[Tuple[str, Path]] = []
+    other_microscopy: List[Path] = []
 
     for filename, content in files:
         p = input_raw / filename
         p.write_bytes(content)
         suffix = p.suffix.lower()
+        lower_name = p.name.lower()
         if suffix in (".czi",):
             czi_files.append(p)
+        elif lower_name.endswith((".nd2", ".lif", ".ome.tif", ".ome.tiff")):
+            other_microscopy.append(p)
         elif suffix in (".tif", ".tiff"):
             # separate pos/neg by filename if present
             if "neg" in filename.lower():
@@ -89,6 +101,50 @@ def handle_upload(
                 "save_rgb_preview": cfg.save_rgb_preview,
             }, f)
         run_czi_conversion(str(cfg_path))
+
+    # convert ND2 / LIF / OME-TIFF: load -> (C,Z,Y,X) -> max-project -> write stack
+    for p in other_microscopy:
+        try:
+            czxy = load_microscopy_to_CZYX(str(p))
+            cyx = collapse_z_max(czxy)
+            # subset channels
+            if channels:
+                keep = [c for c in channels if 0 <= c < cyx.shape[0]]
+                if keep:
+                    cyx = cyx[keep]
+            # resize if requested
+            if target_size and target_size > 0:
+                from skimage.transform import resize
+
+                h, w = cyx.shape[1:]
+                scale = target_size / max(h, w)
+                if scale != 1.0:
+                    new_h, new_w = int(round(h * scale)), int(round(w * scale))
+                    cyx = np.stack(
+                        [resize(cyx[i], (new_h, new_w), preserve_range=True, anti_aliasing=True)
+                         for i in range(cyx.shape[0])],
+                        axis=0,
+                    )
+            # write as CYX stack TIFF into the pos/neg dir based on filename
+            target_dir = neg_dir if "neg" in p.name.lower() else pos_dir
+            # stem handling: .ome.tif/.ome.tiff are double extensions
+            stem = p.name
+            for ext in (".ome.tif", ".ome.tiff"):
+                if stem.lower().endswith(ext):
+                    stem = stem[: -len(ext)]
+                    break
+            else:
+                stem = p.stem
+            out_name = stem + "_stack.tif"
+            tifffile.imwrite(
+                target_dir / out_name,
+                np.ascontiguousarray(cyx),
+                photometric="minisblack",
+                metadata={"axes": "CYX"},
+            )
+            tiff_files.append((out_name, target_dir / out_name))
+        except Exception as e:
+            print(f"[WARN] Conversion failed for {p.name}: {e}")
 
     return {
         "workspace": str(workspace),
