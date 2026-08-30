@@ -145,6 +145,27 @@ def full_pipeline(req: FullPipelineRequest) -> PipelineResponse:
         raise HTTPException(status_code=500, detail=str(e))
 
 
+def _parse_kv_form(raw: str) -> Dict[str, str]:
+    """Parse 'key=value,key2=value2' form strings into a dict.
+
+    Whitespace is trimmed. Entries without '=' get positional string keys
+    ('0', '1', ...) — same convention as channel_names.
+    """
+    out: Dict[str, str] = {}
+    if not raw or not raw.strip():
+        return out
+    for i, part in enumerate(raw.split(",")):
+        part = part.strip()
+        if not part:
+            continue
+        if "=" in part:
+            k, _, v = part.partition("=")
+            out[k.strip()] = v.strip()
+        else:
+            out[str(i)] = part
+    return out
+
+
 def _build_det_cfg(
     paths: Dict[str, str],
     naming: NamingConfig,
@@ -225,6 +246,8 @@ def upload(
     model_name: str = Form("cyto2"),
     use_gpu: str = Form("true"),
     channel_names: str = Form(""),
+    condition_names: str = Form(""),
+    region_names: str = Form(""),
     resize_max: int = Form(2048),
     receptor_channel: int = Form(2),
     test_mode: str = Form("false"),
@@ -239,6 +262,8 @@ def upload(
         if channel_names.strip():
             names = {i: n.strip() for i, n in enumerate(channel_names.split(",")) if n.strip()}
             naming.channel_names.update(names)
+        naming.condition_names.update(_parse_kv_form(condition_names))
+        naming.region_names.update(_parse_kv_form(region_names))
 
         file_tuples = []
         for f in files:
@@ -278,7 +303,11 @@ def upload(
                 "expression": expr_result,
                 "distance_maps": dist_result,
                 "workspace": paths["workspace"],
-                "naming": naming.channel_names,
+                "naming": {
+                    "channel_names": naming.channel_names,
+                    "condition_names": naming.condition_names,
+                    "region_names": naming.region_names,
+                },
             }
 
         manager.submit(job, _run)

@@ -121,6 +121,7 @@ def test_upload_job_exports_expression_and_distance_maps():
             data={
                 "test_mode": "true",
                 "channel_names": "PomC,Glp1r,Gal",
+                "condition_names": "pos=KO,neg=WT",
                 "channels": "0,1,2",
             },
         )
@@ -144,6 +145,21 @@ def test_upload_job_exports_expression_and_distance_maps():
         df = pd.read_csv(result["expression"]["pos_csv"])
         assert len(df) > 0
         assert "PomC_percent_positive" in df.columns
+
+        # naming: condition labels flow into the CSVs
+        assert result["naming"]["condition_names"] == {"pos": "KO", "neg": "WT"}
+        assert set(df["condition_label"].unique()) == {"KO"}
+
+
+def test_parse_kv_form():
+    from src.api.fastapi_app import _parse_kv_form
+
+    assert _parse_kv_form("pos=KO,neg=WT") == {"pos": "KO", "neg": "WT"}
+    assert _parse_kv_form("") == {}
+    # whitespace tolerant
+    assert _parse_kv_form(" pos = KO , neg = WT ") == {"pos": "KO", "neg": "WT"}
+    # keys without '=' get positional numbering
+    assert _parse_kv_form("ARC,VMH") == {"0": "ARC", "1": "VMH"}
 
 
 if __name__ == "__main__":
