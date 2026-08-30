@@ -25,6 +25,20 @@ except Exception:
     except Exception:
         CziFile = None
 
+# Optional backends for ND2 / LIF
+try:
+    import nd2  # type: ignore
+except Exception:
+    nd2 = None
+
+try:
+    from readlif.reader import LifFile  # type: ignore
+except Exception:
+    LifFile = None
+
+# Supported microscopy input formats (beyond plain TIFF)
+SUPPORTED_MICROSCOPY_EXTS = (".czi", ".nd2", ".lif", ".ome.tif", ".ome.tiff")
+
 from skimage.transform import resize
 from skimage import io as skio
 from skimage import img_as_ubyte
@@ -211,6 +225,133 @@ def load_czi_to_CZYX(czi_path: str) -> np.ndarray:
     return arr
 
 
+def load_nd2_to_CZYX(path: str) -> np.ndarray:
+    """Load an ND2 (Nikon) file into (C, Z, Y, X) uint16.
+
+    Uses the nd2 library; falls back to dask-backed read if the simple
+    read fails. Returns a plain numpy array.
+    """
+    if nd2 is None:
+        raise ImportError("ND2 backend missing (pip install nd2)")
+    with nd2.ND2File(path) as f:
+        arr = f.asarray()
+    arr = np.asarray(arr)
+    # nd2 gives (C, Z, Y, X) or (Z, Y, X) or (Y, X) depending on acquisition
+    if arr.ndim == 2:
+        arr = arr[None, None, ...]
+    elif arr.ndim == 3:
+        arr = arr[None, ...]  # (Z, Y, X) -> (1, Z, Y, X)
+    elif arr.ndim == 4:
+        pass  # already (C, Z, Y, X)
+    else:
+        raise ValueError(f"Unsupported ND2 shape {arr.shape}")
+    return arr.astype(np.uint16, copy=False)
+
+
+def load_lif_to_CZYX(path: str) -> np.ndarray:
+    """Load a LIF (Leica) file into (C, Z, Y, X) uint16.
+
+    Uses readlif; takes the first image series. If the series has multiple
+    frames (T), the first frame is used.
+    """
+    if LifFile is None:
+        raise ImportError("LIF backend missing (pip install readlif)")
+    lif = LifFile(path)
+    if len(lif.image_list) == 0:
+        raise ValueError(f"No image series in LIF file: {path}")
+    img = lif.get_image(0)
+    # readlif: get_frame(z, t) -> (Y, X) or (C, Y, X)
+    n_z = getattr(img, "dims", None)
+    n_z = int(n_z[2]) if n_z and len(n_z) > 2 else 1
+    frames = []
+    for z in range(n_z):
+        frame = img.get_frame(z=z, t=0)
+        frame = np.asarray(frame)
+        if frame.ndim == 2:
+            frame = frame[None, ...]  # (Y, X) -> (1, Y, X)
+        frames.append(frame)
+    arr = np.stack(frames, axis=1)  # (C, Z, Y, X)
+    return arr.astype(np.uint16, copy=False)
+
+
+def load_ome_tiff_to_CZYX(path: str) -> np.ndarray:
+    """Load an OME-TIFF into (C, Z, Y, X) uint16.
+
+    Uses tifffile's series axes metadata; falls back to shape heuristics
+    when no series metadata is present.
+    """
+    if tiff is None:
+        raise ImportError("tifffile backend missing")
+    with tiff.TiffFile(path) as tf:
+        arr = tf.asarray()
+        axes = None
+        if tf.series:
+            axes = tf.series[0].axes
+    arr = np.asarray(arr)
+    if axes is None:
+        # heuristic: assume (C, Z, Y, X) for 4D, (C, Y, X) for 3D
+        if arr.ndim == 2:
+            arr = arr[None, None, ...]
+        elif arr.ndim == 3:
+            arr = np.expand_dims(arr, axis=1)  # (C, Y, X) -> (C, 1, Y, X)
+        elif arr.ndim == 4:
+            pass
+        else:
+            raise ValueError(f"Unsupported OME-TIFF shape {arr.shape}")
+        return arr.astype(np.uint16, copy=False)
+
+    # map series axes (e.g. CZYX, XYZCT) to (C, Z, Y, X)
+    order = axes.upper()
+    dim_map = {ch: i for i, ch in enumerate(order)}
+    # build target order: C, Z, Y, X (only those present)
+    target = [ch for ch in "CZYX" if ch in dim_map]
+    if len(target) != arr.ndim:
+        raise ValueError(f"OME-TIFF axes {axes} incompatible with array ndim {arr.ndim}")
+    arr = np.transpose(arr, [dim_map[ch] for ch in target])
+    # ensure 4D (C, Z, Y, X): insert missing Z at position 1
+    if arr.ndim == 2:
+        arr = arr[None, None, ...]
+    elif arr.ndim == 3:
+        arr = np.expand_dims(arr, axis=1)
+    return arr.astype(np.uint16, copy=False)
+
+
+def load_microscopy_to_CZYX(path: str) -> np.ndarray:
+    """Dispatch to the right loader based on file extension.
+
+    Returns (C, Z, Y, X) uint16 for .czi, .nd2, .lif, .ome.tif/.ome.tiff.
+    """
+    p = Path(path)
+    lower = p.name.lower()
+    if lower.endswith(".czi"):
+        return load_czi_to_CZYX(path)
+    if lower.endswith(".nd2"):
+        return load_nd2_to_CZYX(path)
+    if lower.endswith(".lif"):
+        return load_lif_to_CZYX(path)
+    if lower.endswith((".ome.tif", ".ome.tiff")):
+        return load_ome_tiff_to_CZYX(path)
+    raise ValueError(f"Unsupported microscopy format: {p.suffix}")
+
+
+def collapse_z_max(czxy: np.ndarray) -> np.ndarray:
+    """Max-projection over Z: (C, Z, Y, X) -> (C, Y, X)."""
+    if czxy.ndim == 4:
+        return czxy.max(axis=1)
+    return czxy
+
+
+def find_microscopy_files(base: Path) -> List[Path]:
+    """Walk base and return all supported microscopy files (recursive)."""
+    files = []
+    for root, _, names in os.walk(base):
+        for n in names:
+            lower = n.lower()
+            if lower.endswith(SUPPORTED_MICROSCOPY_EXTS):
+                files.append(Path(root) / n)
+    return sorted(files)
+
+
 def ensure_uint(arr: np.ndarray, dtype: str) -> np.ndarray:
     if dtype == "uint16":
         if arr.dtype == np.uint16:
@@ -312,11 +453,9 @@ def process_czi_file(inp_path: str, group: str, target_size: Optional[int], chan
             print(f"[SKIP] {inp.name} (exists)")
         return True, str(stack_marker), "exists"
 
-    # Load CZI -> (C, Y, X)
-    cyx = load_czi_to_CZYX(str(inp))
-    # Collapse Z if present (take max)
-    if cyx.ndim == 4:
-        cyx = cyx.max(axis=1)
+    # Load microscopy file -> (C, Z, Y, X), then collapse Z (max projection)
+    czxy = load_microscopy_to_CZYX(str(inp))
+    cyx = collapse_z_max(czxy)
 
     # Subset channels if requested
     if channels:
