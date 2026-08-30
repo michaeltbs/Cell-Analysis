@@ -225,34 +225,72 @@ def load_czi_to_CZYX(czi_path: str) -> np.ndarray:
     return arr
 
 
+def _to_uint16(arr: np.ndarray) -> np.ndarray:
+    """Safely convert to uint16 without truncating float data.
+
+    Integer data passes through; float data (e.g. deconvolved) is scaled
+    to the full 16-bit range instead of being truncated.
+    """
+    if arr.dtype == np.uint16:
+        return arr
+    if arr.dtype == np.uint8:
+        return (arr.astype(np.float32) / 255.0 * 65535.0 + 0.5).astype(np.uint16)
+    if np.issubdtype(arr.dtype, np.integer):
+        return _to_uint16(arr)
+    # float data: scale to 0..65535
+    m = float(arr.max()) if arr.size else 0.0
+    if m <= 0:
+        return np.zeros(arr.shape, dtype=np.uint16)
+    return np.clip(arr.astype(np.float32) / m * 65535.0, 0, 65535).astype(np.uint16)
+
+
 def load_nd2_to_CZYX(path: str) -> np.ndarray:
     """Load an ND2 (Nikon) file into (C, Z, Y, X) uint16.
 
-    Uses the nd2 library; falls back to dask-backed read if the simple
-    read fails. Returns a plain numpy array.
+    Uses the nd2 library's axis metadata (sizes dict) to reorder to CZYX;
+    falls back to shape heuristics when metadata is missing.
     """
     if nd2 is None:
         raise ImportError("ND2 backend missing (pip install nd2)")
     with nd2.ND2File(path) as f:
         arr = f.asarray()
+        sizes = dict(f.sizes) if f.sizes else {}
     arr = np.asarray(arr)
-    # nd2 gives (C, Z, Y, X) or (Z, Y, X) or (Y, X) depending on acquisition
+
+    if sizes:
+        # map axis names to positions; keep only C/Z/Y/X (drop T, drop extra)
+        axis_names = list(sizes.keys())
+        dim_map = {ch: i for i, ch in enumerate(axis_names)}
+        target = [ch for ch in "CZYX" if ch in dim_map]
+        if len(target) != arr.ndim:
+            raise ValueError(f"ND2 axes {axis_names} incompatible with array ndim {arr.ndim}")
+        arr = np.transpose(arr, [dim_map[ch] for ch in target])
+    else:
+        # heuristic fallback: smallest axis is C, next smallest is Z
+        if arr.ndim == 2:
+            arr = arr[None, None, ...]
+        elif arr.ndim == 3:
+            arr = arr[None, ...]  # (Z, Y, X) -> (1, Z, Y, X)
+        elif arr.ndim == 4:
+            axis_sizes = [(i, s) for i, s in enumerate(arr.shape)]
+            c_axis = min(axis_sizes, key=lambda kv: kv[1])[0]
+            arr = np.moveaxis(arr, c_axis, 0)
+        else:
+            raise ValueError(f"Unsupported ND2 shape {arr.shape}")
+
+    # ensure 4D (C, Z, Y, X)
     if arr.ndim == 2:
         arr = arr[None, None, ...]
     elif arr.ndim == 3:
-        arr = arr[None, ...]  # (Z, Y, X) -> (1, Z, Y, X)
-    elif arr.ndim == 4:
-        pass  # already (C, Z, Y, X)
-    else:
-        raise ValueError(f"Unsupported ND2 shape {arr.shape}")
-    return arr.astype(np.uint16, copy=False)
+        arr = np.expand_dims(arr, axis=1)  # (C, Y, X) -> (C, 1, Y, X)
+    return _to_uint16(arr)
 
 
 def load_lif_to_CZYX(path: str) -> np.ndarray:
     """Load a LIF (Leica) file into (C, Z, Y, X) uint16.
 
-    Uses readlif; takes the first image series. If the series has multiple
-    frames (T), the first frame is used.
+    Uses readlif; takes the first image series. dims is (T, Z, C) per
+    readlif. If the series has multiple frames (T), the first frame is used.
     """
     if LifFile is None:
         raise ImportError("LIF backend missing (pip install readlif)")
@@ -260,18 +298,25 @@ def load_lif_to_CZYX(path: str) -> np.ndarray:
     if len(lif.image_list) == 0:
         raise ValueError(f"No image series in LIF file: {path}")
     img = lif.get_image(0)
-    # readlif: get_frame(z, t) -> (Y, X) or (C, Y, X)
-    n_z = getattr(img, "dims", None)
-    n_z = int(n_z[2]) if n_z and len(n_z) > 2 else 1
+    dims = getattr(img, "dims", None)
+    # readlif dims order: (T, Z, C)
+    n_t = int(dims[0]) if dims and len(dims) > 0 else 1
+    n_z = int(dims[1]) if dims and len(dims) > 1 else 1
+    n_c = int(dims[2]) if dims and len(dims) > 2 else 1
+    if n_z < 1:
+        n_z = 1
     frames = []
     for z in range(n_z):
         frame = img.get_frame(z=z, t=0)
         frame = np.asarray(frame)
         if frame.ndim == 2:
             frame = frame[None, ...]  # (Y, X) -> (1, Y, X)
+        elif frame.ndim == 3 and frame.shape[0] != n_c:
+            # channel axis not first: move it
+            frame = np.moveaxis(frame, -1, 0)
         frames.append(frame)
     arr = np.stack(frames, axis=1)  # (C, Z, Y, X)
-    return arr.astype(np.uint16, copy=False)
+    return _to_uint16(arr)
 
 
 def load_ome_tiff_to_CZYX(path: str) -> np.ndarray:
@@ -298,22 +343,32 @@ def load_ome_tiff_to_CZYX(path: str) -> np.ndarray:
             pass
         else:
             raise ValueError(f"Unsupported OME-TIFF shape {arr.shape}")
-        return arr.astype(np.uint16, copy=False)
+        return _to_uint16(arr)
 
-    # map series axes (e.g. CZYX, XYZCT) to (C, Z, Y, X)
+    # map series axes (e.g. CZYX, XYZCT, TZCYX) to (C, Z, Y, X)
     order = axes.upper()
     dim_map = {ch: i for i, ch in enumerate(order)}
+    had_c = "C" in dim_map
+    # drop T (take first frame) and any extra axes
+    if "T" in dim_map:
+        arr = np.take(arr, 0, axis=dim_map["T"])
+        # rebuild dim_map after dropping T
+        order = order.replace("T", "")
+        dim_map = {ch: i for i, ch in enumerate(order)}
     # build target order: C, Z, Y, X (only those present)
     target = [ch for ch in "CZYX" if ch in dim_map]
     if len(target) != arr.ndim:
         raise ValueError(f"OME-TIFF axes {axes} incompatible with array ndim {arr.ndim}")
     arr = np.transpose(arr, [dim_map[ch] for ch in target])
-    # ensure 4D (C, Z, Y, X): insert missing Z at position 1
+    # ensure 4D (C, Z, Y, X): insert missing axes
     if arr.ndim == 2:
         arr = arr[None, None, ...]
     elif arr.ndim == 3:
-        arr = np.expand_dims(arr, axis=1)
-    return arr.astype(np.uint16, copy=False)
+        if had_c:
+            arr = np.expand_dims(arr, axis=1)  # (C, Y, X) -> (C, 1, Y, X)
+        else:
+            arr = arr[None, ...]  # (Z, Y, X) -> (1, Z, Y, X)
+    return _to_uint16(arr)
 
 
 def load_microscopy_to_CZYX(path: str) -> np.ndarray:

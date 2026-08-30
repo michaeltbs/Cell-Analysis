@@ -289,7 +289,7 @@ def upload(
             content = f.file.read()
             file_tuples.append((f.filename, content))
 
-        paths = handle_upload(file_tuples, job.id, parsed_channels)
+        paths = handle_upload(file_tuples, job.id, parsed_channels, target_size=resize_max)
         coexpr_cfg = _build_coexpr_cfg(paths, naming)
         test_enabled = test_mode.lower() in ("true", "1", "yes")
 

@@ -174,7 +174,7 @@ class JobManager:
     def _append_log(self, job: Job, message: str) -> None:
         with self._lock:
             job.log.append(message)
-        self._redis_save(job)
+            self._redis_save(job)
 
     def _set_status(self, job: Job, status: JobStatus) -> None:
         with self._lock:
@@ -183,17 +183,17 @@ class JobManager:
                 job.started_at = time.time()
             if status in (JobStatus.SUCCESS, JobStatus.FAILED):
                 job.finished_at = time.time()
-        self._redis_save(job)
+            self._redis_save(job)
 
     def _set_result(self, job: Job, result: Dict[str, Any]) -> None:
         with self._lock:
             job.result = result
-        self._redis_save(job)
+            self._redis_save(job)
 
     def _set_error(self, job: Job, error: str) -> None:
         with self._lock:
             job.error = error
-        self._redis_save(job)
+            self._redis_save(job)
 
     def submit(self, job: Job, fn: Callable[[Job], Dict[str, Any]]) -> None:
         def _run():

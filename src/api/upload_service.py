@@ -57,7 +57,9 @@ def handle_upload(
     other_microscopy: List[Path] = []
 
     for filename, content in files:
-        p = input_raw / filename
+        # sanitize: strip path components, keep only the basename
+        safe_name = Path(filename or "upload").name
+        p = input_raw / safe_name
         p.write_bytes(content)
         suffix = p.suffix.lower()
         lower_name = p.name.lower()
@@ -67,12 +69,12 @@ def handle_upload(
             other_microscopy.append(p)
         elif suffix in (".tif", ".tiff"):
             # separate pos/neg by filename if present
-            if "neg" in filename.lower():
-                target = neg_dir / filename
+            if "neg" in safe_name.lower():
+                target = neg_dir / safe_name
             else:
-                target = pos_dir / filename
+                target = pos_dir / safe_name
             shutil.copy2(p, target)
-            tiff_files.append((filename, target))
+            tiff_files.append((safe_name, target))
 
     # convert CZI files
     if czi_files:
@@ -144,7 +146,8 @@ def handle_upload(
             )
             tiff_files.append((out_name, target_dir / out_name))
         except Exception as e:
-            print(f"[WARN] Conversion failed for {p.name}: {e}")
+            # surface conversion errors instead of silently dropping the file
+            raise RuntimeError(f"Conversion failed for {p.name}: {e}") from e
 
     return {
         "workspace": str(workspace),

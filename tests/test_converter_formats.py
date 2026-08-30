@@ -135,3 +135,103 @@ def test_find_microscopy_files_discovers_all_formats(tmp_path):
     files = find_microscopy_files(tmp_path)
     names = {p.name for p in files}
     assert names == {"a.czi", "b.nd2", "c.lif", "d.ome.tif", "e.ome.tiff"}
+
+
+# ---------------------------------------------------------------------------
+# Kritik-Regressionen: ND2-Achsen, LIF-Kanäle, OME-ZYX/T>1, Silent-Failure
+# ---------------------------------------------------------------------------
+
+
+def test_nd2_axes_metadata_reorders_zcyx(tmp_path):
+    """ND2 with sizes {'Z':3,'C':2,'Y':8,'X':8} must load as (C,Z,Y,X)."""
+    import src.czi_converter as cc
+
+    fake = np.zeros((3, 2, 8, 8), dtype=np.uint16)  # (Z, C, Y, X)
+    fake[1, 0, 2, 2] = 100  # Z=1, C=0
+    fake[2, 1, 5, 5] = 200  # Z=2, C=1
+
+    class FakeND2:
+        def __init__(self, path):
+            self.sizes = {"Z": 3, "C": 2, "Y": 8, "X": 8}
+
+        def asarray(self):
+            return fake
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    orig = cc.nd2
+    cc.nd2 = type("M", (), {"ND2File": FakeND2})
+    try:
+        out = cc.load_nd2_to_CZYX(str(tmp_path / "x.nd2"))
+    finally:
+        cc.nd2 = orig
+
+    assert out.shape == (2, 3, 8, 8)
+    assert out[0, 1, 2, 2] == 100
+    assert out[1, 2, 5, 5] == 200
+
+
+def test_lif_dims_tzc_uses_correct_z_and_channels(tmp_path):
+    """readlif dims is (T, Z, C); Z must come from index 1, channels from
+    the frame's first axis."""
+    import src.czi_converter as cc
+
+    frames = {
+        (0, 0): np.zeros((2, 8, 8), dtype=np.uint16),  # (C, Y, X)
+        (1, 0): np.zeros((2, 8, 8), dtype=np.uint16),
+    }
+    frames[(0, 0)][0, 2, 2] = 50
+    frames[(1, 0)][1, 5, 5] = 90
+
+    class FakeImg:
+        dims = (1, 2, 2)  # T=1, Z=2, C=2
+
+        def get_frame(self, z=0, t=0):
+            return frames[(z, t)]
+
+    class FakeLif:
+        image_list = [FakeImg()]
+
+        def get_image(self, i):
+            return self.image_list[i]
+
+    orig = cc.LifFile
+    cc.LifFile = lambda p: FakeLif()
+    try:
+        out = cc.load_lif_to_CZYX(str(tmp_path / "x.lif"))
+    finally:
+        cc.LifFile = orig
+
+    assert out.shape == (2, 2, 8, 8)  # (C, Z, Y, X)
+    assert out[0, 0, 2, 2] == 50
+    assert out[1, 1, 5, 5] == 90
+
+
+def test_ome_tiff_zyx_without_channels(tmp_path):
+    """A (Z, Y, X) OME-TIFF (no C axis) must load as (1, Z, Y, X)."""
+    data = np.zeros((5, 16, 16), dtype=np.uint16)
+    data[3, 4:8, 4:8] = 100
+    p = tmp_path / "zyx.ome.tif"
+    tifffile.imwrite(p, data, photometric="minisblack", metadata={"axes": "ZYX"})
+
+    out = load_ome_tiff_to_CZYX(str(p))
+    assert out.shape == (1, 5, 16, 16)
+    assert out[0, 3, 4, 4] == 100
+
+
+def test_ome_tiff_tzc_yx_takes_first_frame(tmp_path):
+    """(T, Z, C, Y, X) with T=2 must take the first frame."""
+    data = np.zeros((2, 2, 2, 8, 8), dtype=np.uint16)
+    data[0, 1, 0, 2, 2] = 100  # first frame, Z=1, C=0
+    data[1, 0, 0, 6, 6] = 200  # second frame (must be dropped)
+    p = tmp_path / "tzcyx.ome.tif"
+    tifffile.imwrite(p, data, photometric="minisblack", metadata={"axes": "TZCYX"})
+
+    out = load_ome_tiff_to_CZYX(str(p))
+    assert out.shape == (2, 2, 8, 8)
+    assert out[0, 1, 2, 2] == 100
+    assert out[0, 0, 6, 6] == 0  # second frame dropped
