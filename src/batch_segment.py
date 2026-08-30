@@ -225,9 +225,17 @@ def _load_cellpose_model(model_name: str, use_gpu: bool = False):
 def _read_image(path: Path) -> np.ndarray:
     img = tiff.imread(str(path))
     if img.ndim <= 3:
-        return np.squeeze(img)
+        squeezed = np.squeeze(img)
+        # True Z-stack: first axis has more planes than a channel axis allows
+        # (channels are <= 8, see _resolve_channel_selection). Collapse via
+        # max projection so downstream channel detection sees (Y, X) or (C, Y, X).
+        if squeezed.ndim == 3 and squeezed.shape[0] > 8:
+            return squeezed.max(axis=0)
+        return squeezed
     squeezed = np.squeeze(img)
     if squeezed.ndim <= 3:
+        if squeezed.ndim == 3 and squeezed.shape[0] > 8:
+            return squeezed.max(axis=0)
         return squeezed
     while squeezed.ndim > 3:
         squeezed = squeezed[0]
