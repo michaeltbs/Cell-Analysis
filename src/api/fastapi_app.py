@@ -33,6 +33,7 @@ from src.api.logging_setup import get_logger
 from src.api.pipeline_service import run_detection, run_coexpression, run_full_pipeline
 from src.api.jobs import manager
 from src.api.upload_service import handle_upload
+from src.api.metrics_service import export_expression_csvs, export_distance_maps
 from src.api.config_models import DetectionConfig, CoexprConfig
 from src.config.naming import NamingConfig
 import yaml
@@ -225,6 +226,7 @@ def upload(
     use_gpu: str = Form("true"),
     channel_names: str = Form(""),
     resize_max: int = Form(2048),
+    receptor_channel: int = Form(2),
     test_mode: str = Form("false"),
 ) -> Dict[str, Any]:
     job = manager.create("upload+full_pipeline")
@@ -260,12 +262,21 @@ def upload(
                     use_gpu=use_gpu.lower() in ("true", "1", "yes"),
                     resize_max=resize_max,
                 )
-                det_result = run_detection(det_cfg, save_masks=False, create_overlays=False)
+                det_result = run_detection(det_cfg, save_masks=True, create_overlays=False)
             _job.log.append("Running co-expression...")
             coexpr_result = run_coexpression(coexpr_cfg)
+
+            _job.log.append("Exporting expression metrics...")
+            expr_result = export_expression_csvs(paths["input_tiffs"], paths["output_root"], naming)
+            _job.log.append("Exporting distance maps...")
+            dist_result = export_distance_maps(
+                paths["input_tiffs"], paths["output_root"], naming, receptor_channel=receptor_channel
+            )
             return {
                 "detection": det_result,
                 "coexpression": coexpr_result,
+                "expression": expr_result,
+                "distance_maps": dist_result,
                 "workspace": paths["workspace"],
                 "naming": naming.channel_names,
             }

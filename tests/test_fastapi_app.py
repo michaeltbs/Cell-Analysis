@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fastapi.testclient import TestClient
+import tifffile
 import yaml
 
 from src.api.fastapi_app import app
@@ -79,6 +80,70 @@ def test_full_pipeline_endpoint():
         data = r.json()
         assert data["success"]
         assert Path(data["result"]["master_csv"]).exists()
+
+
+def _wait_for_job(client, job_id: str, timeout: float = 45.0) -> dict:
+    import time
+
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        j = client.get(f"/jobs/{job_id}").json()
+        if j["status"] in ("success", "failed"):
+            return j
+        time.sleep(0.3)
+    raise TimeoutError(f"job {job_id} did not finish within {timeout}s")
+
+
+def _synthetic_tif_bytes(tmp_path: Path, stem: str = "sample", n_channels: int = 3) -> bytes:
+    """Small (n_channels, 64, 64) TIFF with a bright blob in each channel."""
+    import io
+
+    from tests.fixtures.synthetic_cells import create_synthetic_stack
+
+    stack, _ = create_synthetic_stack(
+        shape=(64, 64), n_cells=5, n_channels=n_channels, seed=777, output_path=None
+    )
+    buf = io.BytesIO()
+    tifffile.imwrite(buf, stack, imagej=True)
+    return buf.getvalue()
+
+
+def test_upload_job_exports_expression_and_distance_maps():
+    """Upload in test_mode runs the pipeline and must write expression CSVs
+    + distance-map stats + heatmaps into the job workspace."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        tif_bytes = _synthetic_tif_bytes(tmp_path)
+
+        r = client.post(
+            "/jobs/upload",
+            files=[("files", ("sample.tif", tif_bytes, "image/tiff"))],
+            data={
+                "test_mode": "true",
+                "channel_names": "PomC,Glp1r,Gal",
+                "channels": "0,1,2",
+            },
+        )
+        assert r.status_code == 200, r.text
+        job_id = r.json()["job_id"]
+        assert job_id
+
+        job = _wait_for_job(client, job_id, timeout=60.0)
+        assert job["status"] == "success", job.get("error")
+        result = job["result"]
+
+        assert result["expression"]["pos_csv"], "expression pos_csv missing"
+        assert Path(result["expression"]["pos_csv"]).exists()
+        assert result["distance_maps"]["stats_csv"], "distance stats csv missing"
+        assert Path(result["distance_maps"]["stats_csv"]).exists()
+        assert result["distance_maps"]["heatmaps"], "no heatmaps produced"
+
+        # CSV content sanity
+        import pandas as pd
+
+        df = pd.read_csv(result["expression"]["pos_csv"])
+        assert len(df) > 0
+        assert "PomC_percent_positive" in df.columns
 
 
 if __name__ == "__main__":
