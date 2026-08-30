@@ -17,7 +17,6 @@ from typing import Any, Dict, List
 import numpy as np
 import pandas as pd
 import tifffile
-from scipy.spatial import distance
 from skimage.measure import regionprops
 
 from src.config.naming import NamingConfig
@@ -187,3 +186,103 @@ def export_expression_csvs(
         "neg_csv": per_condition.get("neg", ""),
         "all_csv": str(all_csv) if all_csv.exists() else "",
     }
+
+
+def export_distance_maps(
+    input_tiffs: Path | str,
+    output_root: Path | str,
+    naming: NamingConfig | None = None,
+    receptor_channel: int = 2,
+) -> Dict[str, Any]:
+    """Compute receptor-to-cell distance statistics per image + heatmap PNGs.
+
+    Receptor mask = pixels above Otsu threshold in the receptor channel
+    (restricted to non-background signal). Cell mask = union of labels.
+    Returns dict with 'stats_csv' and 'heatmaps' (list of PNG paths).
+    """
+    input_tiffs = Path(input_tiffs)
+    output_root = Path(output_root)
+    naming = naming or NamingConfig()
+
+    stats_rows: List[Dict[str, Any]] = []
+    heatmaps: List[str] = []
+    maps_dir = output_root / "distance_maps"
+    maps_dir.mkdir(parents=True, exist_ok=True)
+
+    for condition, stem, mask_path in _iter_masks(output_root):
+        try:
+            labels = tifffile.imread(str(mask_path))
+            if labels.ndim == 3:
+                labels = labels[0]
+            labels = labels.astype(np.int64)
+        except Exception:
+            continue
+        if labels.size == 0 or int(labels.max()) == 0:
+            continue
+
+        orig = _find_original(input_tiffs, condition, stem)
+        if orig is None:
+            continue
+        img = tifffile.imread(str(orig))
+        if img.ndim == 2:
+            continue
+
+        ch_indices = _channel_indices(img)
+        if receptor_channel not in ch_indices:
+            continue
+        ch_axis = next(
+            (ax for ax in range(img.ndim) if img.shape[ax] == len(ch_indices)),
+            ch_indices[0],
+        )
+        receptor_plane = np.take(img, receptor_channel, axis=ch_axis).astype(np.float32)
+        if receptor_plane.shape[:2] != labels.shape[:2]:
+            receptor_plane = _resize_to(receptor_plane, labels.shape[:2])
+
+        # receptor mask: Otsu threshold over the receptor channel
+        from skimage.filters import threshold_otsu
+
+        receptor_mask = np.zeros(labels.shape[:2], dtype=bool)
+        if receptor_plane.max() > receptor_plane.min():
+            thr = threshold_otsu(receptor_plane)
+            receptor_mask = receptor_plane > thr
+            # restrict to positive signal: at least 10 px, otherwise ignore channel
+            if receptor_mask.sum() < 10:
+                receptor_mask = np.zeros_like(receptor_mask)
+
+        cell_mask = labels > 0
+        stat = receptor_distance_map(receptor_mask, cell_mask)
+
+        stats_rows.append(
+            {
+                "filename": stem,
+                "condition": condition,
+                "condition_label": naming.condition_name(condition),
+                "receptor_channel": receptor_channel,
+                "receptor_channel_label": naming.channel_name(receptor_channel),
+                "receptor_pixels": int(receptor_mask.sum()),
+                "mean_distance": float(stat["mean_distance"]),
+                "median_distance": float(stat["median_distance"]),
+                "std_distance": float(stat["std_distance"]),
+                "max_distance": float(stat["max_distance"]),
+            }
+        )
+
+        if receptor_mask.sum() > 0:
+            from matplotlib import pyplot as plt
+
+            fig, ax = plt.subplots(figsize=(6, 6))
+            dm = stat["distance_map"]
+            im = ax.imshow(dm, cmap="viridis")
+            ax.set_title(f"{stem} — {naming.channel_name(receptor_channel)} distance")
+            ax.axis("off")
+            plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+            png_path = maps_dir / f"{stem}_distance_map.png"
+            fig.savefig(png_path, dpi=150, bbox_inches="tight")
+            plt.close(fig)
+            heatmaps.append(str(png_path))
+
+    stats_csv = output_root / "distance_maps_stats.csv"
+    if stats_rows:
+        pd.DataFrame(stats_rows).to_csv(stats_csv, index=False)
+
+    return {"stats_csv": str(stats_csv) if stats_csv.exists() else "", "heatmaps": heatmaps}

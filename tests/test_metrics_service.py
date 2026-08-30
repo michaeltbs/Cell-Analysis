@@ -15,13 +15,15 @@ import tifffile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.api.metrics_service import export_expression_csvs  # export_distance_maps added in Task 3
+from src.api.metrics_service import export_expression_csvs, export_distance_maps
 from src.config.naming import NamingConfig
 
 HERE = Path(__file__).resolve().parent
 
 
-def _make_condition(cond_dir: Path, stem: str, out_root: Path, n_cells: int = 2) -> None:
+def _make_condition(
+    cond_dir: Path, stem: str, out_root: Path, n_cells: int = 2, receptor_signal: bool = False
+) -> None:
     """Create one input image (under cond_dir) + its label mask (under out_root).
 
     Mirrors the upload pipeline where masks are written by segmentation into
@@ -30,7 +32,7 @@ def _make_condition(cond_dir: Path, stem: str, out_root: Path, n_cells: int = 2)
     Image: (3, 32, 32) uint16.
     - channel 0: cells at full intensity (100), background 0
     - channel 1: half of each cell's pixels at 100, half at 0 -> 50% positive
-    - channel 2: all zeros (no expression)
+    - channel 2: all zeros, unless receptor_signal -> spot outside the cells
     Mask: labeled uint16, one box per cell, values 1..n_cells.
     """
     img = np.zeros((3, 32, 32), dtype=np.uint16)
@@ -46,6 +48,10 @@ def _make_condition(cond_dir: Path, stem: str, out_root: Path, n_cells: int = 2)
         img[1, y0 + 2 : y1, x0:x1] = 0
         labels[y0:y1, x0:x1] = i + 1
 
+    if receptor_signal:
+        # receptor spot clearly outside all cell boxes (cells end at x<=18)
+        img[2, 20:24, 24:28] = 100
+
     cond_dir.mkdir(parents=True, exist_ok=True)
     tifffile.imwrite(cond_dir / f"{stem}.tiff", img)
     mask_dir = out_root / cond_dir.name / "ALL"
@@ -57,8 +63,8 @@ def _job_output(tmp_path: Path) -> Path:
     """Build the input/out structure like the upload pipeline: returns out_root."""
     input_root = tmp_path / "input_tiffs"
     out_root = tmp_path / "results"
-    _make_condition(input_root / "Input_pos", "M001_1", out_root, n_cells=2)
-    _make_condition(input_root / "Input_neg", "M002_1", out_root, n_cells=1)
+    _make_condition(input_root / "Input_pos", "M001_1", out_root, n_cells=2, receptor_signal=True)
+    _make_condition(input_root / "Input_neg", "M002_1", out_root, n_cells=1, receptor_signal=True)
     return out_root
 
 
@@ -124,3 +130,43 @@ def test_export_expression_csvs_handles_scale_mismatch(tmp_path):
     df = pd.read_csv(Path(result["pos_csv"]))
     assert len(df) == 1
     assert df["area"].iloc[0] == 64
+
+
+# ---------------------------------------------------------------------------
+# Task 3: distance-map export (stats CSV + heatmap PNG)
+# ---------------------------------------------------------------------------
+
+
+def test_export_distance_maps_writes_stats_and_heatmap(tmp_path):
+    out_root = _job_output(tmp_path)
+    input_root = tmp_path / "input_tiffs"
+    naming = NamingConfig()
+    naming.channel_names = {0: "PomC", 1: "Glp1r", 2: "Gal"}
+
+    result = export_distance_maps(input_root, out_root, naming, receptor_channel=2)
+
+    stats = Path(result["stats_csv"])
+    assert stats.exists()
+    df = pd.read_csv(stats)
+    assert {"filename", "condition", "mean_distance", "median_distance", "max_distance"} <= set(df.columns)
+    assert len(df) == 2  # 1 pos + 1 neg image
+
+    heatmaps = result["heatmaps"]
+    assert len(heatmaps) > 0
+    for png in heatmaps:
+        assert Path(png).exists() and Path(png).stat().st_size > 0
+
+
+def test_export_distance_maps_reports_empty_receptor(tmp_path):
+    """No receptor signal in any image: stats row with all-zero distances,
+    no crash."""
+    input_root = tmp_path / "input_tiffs"
+    out_root = tmp_path / "results"
+    # receptor channel (2) all zeros; cells only in channel 0
+    _make_condition(input_root / "Input_pos", "M001_1", out_root, n_cells=1)
+
+    result = export_distance_maps(input_root, out_root, NamingConfig(), receptor_channel=2)
+
+    df = pd.read_csv(Path(result["stats_csv"]))
+    assert len(df) == 1
+    assert df["mean_distance"].iloc[0] == 0.0
