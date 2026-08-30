@@ -22,12 +22,19 @@ HERE = Path(__file__).resolve().parent
 
 
 def _make_condition(
-    cond_dir: Path, stem: str, out_root: Path, n_cells: int = 2, receptor_signal: bool = False
+    input_root: Path,
+    out_root: Path,
+    cond: str = "pos",
+    stem: str = "M001_1",
+    n_cells: int = 2,
+    receptor_signal: bool = False,
+    region: str = "ALL",
 ) -> None:
-    """Create one input image (under cond_dir) + its label mask (under out_root).
+    """Create one input image + its label mask, mirroring the upload layout.
 
-    Mirrors the upload pipeline where masks are written by segmentation into
-    <output_root>/Input_<condition>/<region>/ as <stem>_mask.tif.
+    Input:  <input_root>/Input_<cond>[/region]/<stem>.tiff
+    Mask:   <out_root>/Input_<cond>/<region>/<stem>_mask.tif
+    (batch_segment layout; test-mode threshold_segment writes region='ALL').
 
     Image: (3, 32, 32) uint16.
     - channel 0: cells at full intensity (100), background 0
@@ -52,9 +59,13 @@ def _make_condition(
         # receptor spot clearly outside all cell boxes (cells end at x<=18)
         img[2, 20:24, 24:28] = 100
 
+    cond_dir = input_root / f"Input_{cond}"
+    if region:
+        cond_dir = cond_dir / region
     cond_dir.mkdir(parents=True, exist_ok=True)
     tifffile.imwrite(cond_dir / f"{stem}.tiff", img)
-    mask_dir = out_root / cond_dir.name / "ALL"
+
+    mask_dir = out_root / f"Input_{cond}" / (region or "")
     mask_dir.mkdir(parents=True, exist_ok=True)
     tifffile.imwrite(mask_dir / f"{stem}_mask.tif", labels)
 
@@ -63,8 +74,8 @@ def _job_output(tmp_path: Path) -> Path:
     """Build the input/out structure like the upload pipeline: returns out_root."""
     input_root = tmp_path / "input_tiffs"
     out_root = tmp_path / "results"
-    _make_condition(input_root / "Input_pos", "M001_1", out_root, n_cells=2, receptor_signal=True)
-    _make_condition(input_root / "Input_neg", "M002_1", out_root, n_cells=1, receptor_signal=True)
+    _make_condition(input_root, out_root, cond="pos", stem="M001_1", n_cells=2, receptor_signal=True)
+    _make_condition(input_root, out_root, cond="neg", stem="M002_1", n_cells=1, receptor_signal=True)
     return out_root
 
 
@@ -163,10 +174,58 @@ def test_export_distance_maps_reports_empty_receptor(tmp_path):
     input_root = tmp_path / "input_tiffs"
     out_root = tmp_path / "results"
     # receptor channel (2) all zeros; cells only in channel 0
-    _make_condition(input_root / "Input_pos", "M001_1", out_root, n_cells=1)
+    _make_condition(input_root, out_root, cond="pos", stem="M001_1", n_cells=1)
 
     result = export_distance_maps(input_root, out_root, NamingConfig(), receptor_channel=2)
 
     df = pd.read_csv(Path(result["stats_csv"]))
     assert len(df) == 1
     assert df["mean_distance"].iloc[0] == 0.0
+
+
+# ---------------------------------------------------------------------------
+# Kritik-Regressionen: Regionen-Lookup (Bug 1), Kanal-Achse (Bug 2)
+# ---------------------------------------------------------------------------
+
+
+def test_export_expression_csvs_region_nested_inputs(tmp_path):
+    """Inputs nested under region dirs (Input_pos/ARC/...) must NOT be skipped
+    and must carry the region column (Bug 1 regression)."""
+    input_root = tmp_path / "input_tiffs"
+    out_root = tmp_path / "results"
+    _make_condition(input_root, out_root, cond="pos", stem="M010_1",
+                    n_cells=2, region="ARC")
+    _make_condition(input_root, out_root, cond="pos", stem="M011_1",
+                    n_cells=2, region="VMH")
+
+    result = export_expression_csvs(input_root, out_root, NamingConfig())
+
+    df = pd.read_csv(Path(result["pos_csv"]))
+    # both regions present, nothing skipped
+    assert len(df) == 4
+    assert set(df["region"].unique()) == {"ARC", "VMH"}
+
+
+def test_threshold_segment_channel_first_and_channel_last(tmp_path):
+    """threshold_segment must produce (Y,X) masks for BOTH layouts:
+    channel-first (C,Y,X) and channel-last (Y,X,C) (Bug 2 regression)."""
+    from src.api.test_segment import threshold_segment
+
+    input_root = tmp_path / "input_tiffs"
+    out_root = tmp_path / "results"
+
+    img_cx = np.zeros((3, 32, 32), dtype=np.uint16)
+    img_cx[0, 8:16, 8:16] = 100
+    img_yxc = np.transpose(img_cx, (1, 2, 0))
+
+    pos = input_root / "Input_pos"
+    pos.mkdir(parents=True)
+    tifffile.imwrite(pos / "cf.tiff", img_cx)   # channel-first
+    tifffile.imwrite(pos / "cl.tiff", img_yxc)  # channel-last
+
+    threshold_segment(str(input_root), str(out_root))
+
+    for stem in ("cf", "cl"):
+        mask = tifffile.imread(out_root / "Input_pos" / "ALL" / f"{stem}_mask.tif")
+        assert mask.shape == (32, 32), f"{stem}: expected (32,32), got {mask.shape}"
+        assert mask.max() > 0, f"{stem}: no cells detected"

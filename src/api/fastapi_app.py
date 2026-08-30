@@ -491,10 +491,12 @@ def download(job_id: str, file: str) -> FileResponse:
     if not job.result or "workspace" not in (job.result or {}):
         raise HTTPException(status_code=400, detail="Job has no workspace yet or not finished")
 
-    workspace = Path(job.result["workspace"])
+    workspace = Path(job.result["workspace"]).resolve()
     target = (workspace / file).resolve()
-    # security: prevent escaping workspace
-    if not str(target).startswith(str(workspace.resolve())):
+    # security: prevent escaping the workspace (incl. prefix siblings)
+    try:
+        target.relative_to(workspace)
+    except ValueError:
         raise HTTPException(status_code=400, detail="Invalid file path")
     if not target.exists():
         raise HTTPException(status_code=404, detail=f"File {file} not found")

@@ -151,6 +151,30 @@ def test_upload_job_exports_expression_and_distance_maps():
         assert set(df["condition_label"].unique()) == {"KO"}
 
 
+def test_upload_job_download_blocks_traversal():
+    """Download must block path traversal (../) and paths resolving outside
+    the job workspace (Bug 3 regression + security baseline)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tif_bytes = _synthetic_tif_bytes(Path(tmp))
+
+        r = client.post(
+            "/jobs/upload",
+            files=[("files", ("a.tif", tif_bytes, "image/tiff"))],
+            data={"test_mode": "true"},
+        )
+        job_id = r.json()["job_id"]
+        j = _wait_for_job(client, job_id, timeout=60.0)
+        assert j["status"] == "success"
+
+        for evil in ("../etc/passwd", "../../etc/passwd", "results/../../etc/passwd", "/etc/passwd", "..%2F..%2Fetc%2Fpasswd"):
+            resp = client.get(f"/jobs/{job_id}/download", params={"file": evil})
+            assert resp.status_code in (400, 404), f"file={evil}: expected 400/404, got {resp.status_code}"
+
+        # legit file still downloadable
+        ok = client.get(f"/jobs/{job_id}/download", params={"file": "results/expression_all.csv"})
+        assert ok.status_code == 200
+
+
 def test_parse_kv_form():
     from src.api.fastapi_app import _parse_kv_form
 

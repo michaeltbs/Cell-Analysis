@@ -24,7 +24,11 @@ from src.validation.expression import receptor_distance_map
 
 
 def _iter_masks(output_root: Path):
-    """Yield (condition, stem, mask_path) for every *_mask.tif under output_root."""
+    """Yield (condition, region, stem, mask_path) for every *_mask.tif under output_root.
+
+    Mask layout from batch_segment: <output_root>/Input_<cond>/<region>/<stem>_mask.tif
+    (single-region case: region == one subdir, e.g. 'ALL').
+    """
     for mask_path in sorted(output_root.rglob("*_mask.tif")):
         rel = mask_path.relative_to(output_root)
         if len(rel.parts) < 2:
@@ -33,16 +37,31 @@ def _iter_masks(output_root: Path):
         if condition.startswith("Input_"):
             condition = condition[len("Input_") :]
         stem = mask_path.name[: -len("_mask.tif")]
-        yield condition, stem, mask_path
+        # region = the part right after the condition dir, if present
+        region = rel.parts[1] if len(rel.parts) >= 3 else ""
+        yield condition, region, stem, mask_path
 
 
-def _find_original(input_tiffs: Path, condition: str, stem: str) -> Path | None:
+def _find_original(input_tiffs: Path, condition: str, stem: str, region: str = "") -> Path | None:
+    """Locate the original TIFF for a mask, searching recursively.
+
+    Inputs may be flat (<cond>/<stem>.tiff) or region-nested
+    (<cond>/<region>/<stem>.tiff). Prefer the region-specific file when given,
+    then fall back to any match under the condition dir.
+    """
     cond_dir = input_tiffs / f"Input_{condition}"
     if not cond_dir.exists():
         return None
-    for ext in (".tiff", ".tif"):
-        p = cond_dir / f"{stem}{ext}"
-        if p.exists():
+
+    def _match(p: Path) -> bool:
+        return p.stem == stem and p.suffix.lower() in (".tiff", ".tif")
+
+    if region:
+        for p in sorted((cond_dir / region).glob("*")) if (cond_dir / region).is_dir() else []:
+            if _match(p):
+                return p
+    for p in sorted(cond_dir.rglob("*")):
+        if p.is_file() and _match(p):
             return p
     return None
 
@@ -90,9 +109,9 @@ def export_expression_csvs(
     output_root = Path(output_root)
     naming = naming or NamingConfig()
 
-    per_condition: Dict[str, str] = {}
+    per_condition_rows: Dict[str, List[Dict[str, Any]]] = {}
 
-    for condition, stem, mask_path in _iter_masks(output_root):
+    for condition, region, stem, mask_path in _iter_masks(output_root):
         try:
             labels = tifffile.imread(str(mask_path))
             if labels.ndim == 3:
@@ -101,7 +120,7 @@ def export_expression_csvs(
         except Exception:
             continue
 
-        orig = _find_original(input_tiffs, condition, stem)
+        orig = _find_original(input_tiffs, condition, stem, region)
         if orig is None:
             continue
         img = tifffile.imread(str(orig))
@@ -160,6 +179,7 @@ def export_expression_csvs(
         for row in rows:
             row["condition"] = condition
             row["condition_label"] = naming.condition_name(condition)
+            row["region"] = region
             row["filename"] = stem
             # rename channel columns to configured names
             for idx in ch_indices:
@@ -171,6 +191,10 @@ def export_expression_csvs(
 
         if not rows:
             continue
+        per_condition_rows.setdefault(condition, []).extend(rows)
+
+    per_condition: Dict[str, str] = {}
+    for condition, rows in per_condition_rows.items():
         df = pd.DataFrame(rows)
         cond_csv = output_root / f"expression_percentages_{condition}.csv"
         df.to_csv(cond_csv, index=False)
@@ -209,7 +233,7 @@ def export_distance_maps(
     maps_dir = output_root / "distance_maps"
     maps_dir.mkdir(parents=True, exist_ok=True)
 
-    for condition, stem, mask_path in _iter_masks(output_root):
+    for condition, region, stem, mask_path in _iter_masks(output_root):
         try:
             labels = tifffile.imread(str(mask_path))
             if labels.ndim == 3:
@@ -220,7 +244,7 @@ def export_distance_maps(
         if labels.size == 0 or int(labels.max()) == 0:
             continue
 
-        orig = _find_original(input_tiffs, condition, stem)
+        orig = _find_original(input_tiffs, condition, stem, region)
         if orig is None:
             continue
         img = tifffile.imread(str(orig))
@@ -257,6 +281,7 @@ def export_distance_maps(
                 "filename": stem,
                 "condition": condition,
                 "condition_label": naming.condition_name(condition),
+                "region": region,
                 "receptor_channel": receptor_channel,
                 "receptor_channel_label": naming.channel_name(receptor_channel),
                 "receptor_pixels": int(receptor_mask.sum()),

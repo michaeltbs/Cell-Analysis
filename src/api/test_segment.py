@@ -11,6 +11,19 @@ import tifffile
 from skimage.measure import label, regionprops
 
 
+def _channel_axis(img: np.ndarray) -> int:
+    """Detect the channel axis for 3D stacks, robust to (C,Y,X) and (Y,X,C).
+
+    Channel axis = axis with size <= 8 (same heuristic as batch_segment).
+    Raises for true 3D data (Z-stack with many planes).
+    """
+    shape = img.shape
+    for ax, size in enumerate(shape):
+        if size <= 8:
+            return ax
+    raise ValueError(f"Multi-channel detection requires an axis with size<=8, got shape {shape}")
+
+
 def threshold_segment(
     input_dir: str,
     output_root: str,
@@ -35,15 +48,23 @@ def threshold_segment(
         rows = []
         for tiff_path in sorted(cond_dir.glob("*.tiff")) + sorted(cond_dir.glob("*.tif")):
             img = tifffile.imread(str(tiff_path))
-            if img.ndim == 3:
-                # assume channel last
-                img = img[..., 0]
-            img = img.astype(np.float32)
-            if img.max() > 0:
-                img_norm = img / img.max()
+            if img.ndim == 2:
+                gray = img.astype(np.float32)
+            elif img.ndim == 3:
+                try:
+                    ax = _channel_axis(img)
+                except ValueError:
+                    # true 3D (Z-stack): analyse the middle plane
+                    gray = img[img.shape[0] // 2].astype(np.float32)
+                else:
+                    gray = np.take(img, 0, axis=ax).astype(np.float32)
             else:
-                img_norm = img
-            mask = (img_norm > threshold).astype(np.uint8)
+                raise ValueError(f"Unsupported image ndim={img.ndim} for {tiff_path}")
+            if gray.max() > 0:
+                gray_norm = gray / gray.max()
+            else:
+                gray_norm = gray
+            mask = (gray_norm > threshold).astype(np.uint8)
             labels = np.asarray(label(mask, connectivity=1))
             props = regionprops(labels)
             for p in props:
@@ -57,7 +78,7 @@ def threshold_segment(
                     "area": int(p.area),
                     "centroid_y": float(p.centroid[0]),
                     "centroid_x": float(p.centroid[1]),
-                    "mean_intensity": float(np.mean(img[p.coords[:, 0], p.coords[:, 1]])),
+                    "mean_intensity": float(np.mean(gray[p.coords[:, 0], p.coords[:, 1]])),
                 })
             # persist labels (uint16) next to downstream mask layout
             if labels.max() > 0:
