@@ -40,6 +40,21 @@ import yaml
 
 logger = get_logger(__name__)
 
+# Optional Redis-backed job persistence (REDIS_URL set -> jobs survive restarts)
+import os
+
+_redis_url = os.environ.get("REDIS_URL", "")
+if _redis_url:
+    try:
+        import redis as _redis
+
+        _rc = _redis.from_url(_redis_url, decode_responses=False)
+        _rc.ping()
+        manager._redis = _rc
+        logger.info("Job queue backed by Redis: %s", _redis_url.split("@")[-1])
+    except Exception as e:
+        logger.warning("Redis unavailable (%s) — falling back to in-memory job queue", e)
+
 app = FastAPI(title="Cell Analysis API", version="0.1.0")
 
 # Allow dashboard served from anywhere (HF Spaces, file://, localhost)
