@@ -108,6 +108,23 @@ tailwind.config = {
               <input id="channel-names" type="text" placeholder="PomC,DREADD,Fos,Gal" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm">
             </div>
             <div>
+              <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Bedingungsnamen (key=value, kommagetrennt)</label>
+              <input id="condition-names" type="text" placeholder="pos=KO,neg=WT" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Regionennamen (key=value, kommagetrennt)</label>
+              <input id="region-names" type="text" placeholder="arc=Arcuate,vmh=VMH" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Rezeptor-Kanal (Distance-Map)</label>
+              <select id="receptor-channel" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm">
+                <option value="0">Kanal 0 (PomC)</option>
+                <option value="1">Kanal 1 (Glp1r)</option>
+                <option value="2" selected>Kanal 2 (Gal)</option>
+                <option value="3">Kanal 3 (Fos)</option>
+              </select>
+            </div>
+            <div>
               <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Max. Bildgröße (px)</label>
               <input id="resize" type="number" value="2048" min="256" max="8192" class="mt-1 w-full rounded-lg border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700 text-sm">
             </div>
@@ -349,6 +366,9 @@ document.getElementById('upload-btn').addEventListener('click', async () => {
   fd.append('channels', document.getElementById('channels').value);
   fd.append('model_name', document.getElementById('model').value);
   fd.append('channel_names', document.getElementById('channel-names').value);
+  fd.append('condition_names', document.getElementById('condition-names').value);
+  fd.append('region_names', document.getElementById('region-names').value);
+  fd.append('receptor_channel', document.getElementById('receptor-channel').value);
   fd.append('resize_max', document.getElementById('resize').value);
   fd.append('use_gpu', document.getElementById('use-gpu').checked ? 'true' : 'false');
   fd.append('test_mode', document.getElementById('test-mode').checked ? 'true' : 'false');
@@ -433,11 +453,26 @@ function renderResults(job) {
   title.textContent = 'Ergebnisse';
   box.appendChild(title);
   const files = [];
+  const rel = p => { if (!p || !w) return ''; return p.startsWith(w + '/') ? p.slice(w.length + 1) : p; };
+  const addLink = (name, relPath) => {
+    files.push({ name, file: relPath });
+  };
   if (job.result && job.result.detection) {
-    files.push({ name: 'Detection CSV (Input_pos)', file: 'Input_pos/All_Counts_Master.csv' });
+    addLink('Detection CSV (Input_pos)', 'Input_pos/All_Counts_Master.csv');
   }
   if (job.result && job.result.coexpression) {
-    files.push({ name: 'Co-Expression Summary', file: 'results/Coex/coexpr_sweep_summary.csv' });
+    addLink('Co-Expression Summary', 'results/Coex/coexpr_sweep_summary.csv');
+  }
+  if (job.result && job.result.expression) {
+    addLink('Expression pro Zelle (pos)', rel(job.result.expression.pos_csv));
+    if (job.result.expression.neg_csv) addLink('Expression pro Zelle (neg)', rel(job.result.expression.neg_csv));
+    addLink('Expression kombiniert (all)', rel(job.result.expression.all_csv));
+  }
+  if (job.result && job.result.distance_maps) {
+    addLink('Distance-Map Statistik (CSV)', rel(job.result.distance_maps.stats_csv));
+    (job.result.distance_maps.heatmaps || []).forEach(h => {
+      addLink('Distance-Map Heatmap: ' + h.split('/').pop(), rel(h));
+    });
   }
   if (!files.length) files.push({ name: 'Workspace öffnen', file: '' });
   files.forEach(f => {
