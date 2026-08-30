@@ -46,6 +46,9 @@ tailwind.config = {
       </div>
       <button id="theme-toggle" class="md:hidden p-2 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50" aria-label="Theme">🌙</button>
     </div>
+    <div class="mt-4 px-1">
+      <span id="queue-badge" class="inline-block text-[11px] font-medium px-2 py-1 rounded-full bg-neutral-200/50 dark:bg-neutral-800/50 text-neutral-500 dark:text-neutral-400">Queue: …</span>
+    </div>
     <nav class="flex flex-row md:flex-col gap-1 mt-4 overflow-x-auto">
       <a href="#" data-tab="upload" class="tab-link flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-300 whitespace-nowrap">
         <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">upload</span><span class="text-sm font-medium">Upload & Analyse</span>
@@ -81,9 +84,9 @@ tailwind.config = {
           <label class="block border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors" for="file-input">
             <span class="material-symbols-outlined text-4xl text-neutral-400">add_photo_alternate</span>
             <p class="mt-2 text-sm text-neutral-500 dark:text-neutral-400">Klicken zum Auswählen</p>
-            <p class="text-xs text-neutral-400">CZI, TIFF, TIF — mehrere Dateien möglich</p>
+            <p class="text-xs text-neutral-400">CZI, ND2, LIF, OME-TIFF, TIFF, TIF — mehrere Dateien möglich</p>
           </label>
-          <input id="file-input" type="file" multiple accept=".czi,.tif,.tiff" class="hidden">
+          <input id="file-input" type="file" multiple accept=".czi,.nd2,.lif,.ome.tif,.ome.tiff,.tif,.tiff" class="hidden">
           <div id="file-list" class="mt-3 flex flex-wrap gap-2"></div>
 
           <h3 class="font-semibold mt-6 mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-primary">tune</span> Parameter</h3>
@@ -192,7 +195,7 @@ tailwind.config = {
             <span class="material-symbols-outlined text-3xl text-neutral-400">image</span>
             <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">1-3 repräsentative Bilder auswählen</p>
           </label>
-          <input id="profile-file" type="file" multiple accept=".czi,.tif,.tiff" class="hidden">
+          <input id="profile-file" type="file" multiple accept=".czi,.nd2,.lif,.ome.tif,.ome.tiff,.tif,.tiff" class="hidden">
           <div id="profile-file-list" class="mt-2 flex flex-wrap gap-2"></div>
           <button id="profile-btn" class="mt-4 w-full bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50">
             Profil analysieren
@@ -208,7 +211,7 @@ tailwind.config = {
             <span class="material-symbols-outlined text-3xl text-neutral-400">rule</span>
             <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">2-4 Bilder + erwartete Zellzahlen</p>
           </label>
-          <input id="optimize-file" type="file" multiple accept=".czi,.tif,.tiff" class="hidden">
+          <input id="optimize-file" type="file" multiple accept=".czi,.nd2,.lif,.ome.tif,.ome.tiff,.tif,.tiff" class="hidden">
           <div id="optimize-file-list" class="mt-2 flex flex-wrap gap-2"></div>
           <div class="mt-3">
             <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Erwartete Zellzahlen (kommagetrennt, eine pro Bild)</label>
@@ -303,6 +306,18 @@ const API = (location.protocol === 'file:' || location.hostname === 'localhost' 
 let selectedFiles = [];
 let pollTimer = null;
 let activeJobId = null;
+
+// Backend info (job queue backend, formats)
+fetch(`${API}/version`).then(r => r.json()).then(v => {
+  const badge = document.getElementById('queue-badge');
+  if (badge) {
+    badge.textContent = v.job_queue === 'redis' ? 'Queue: Redis' : 'Queue: in-memory';
+    badge.classList.toggle('bg-emerald-500/10', v.job_queue === 'redis');
+    badge.classList.toggle('text-emerald-600', v.job_queue === 'redis');
+    badge.classList.toggle('bg-amber-500/10', v.job_queue !== 'redis');
+    badge.classList.toggle('text-amber-600', v.job_queue !== 'redis');
+  }
+}).catch(() => {});
 
 // Tabs
 document.querySelectorAll('.tab-link').forEach(link => {

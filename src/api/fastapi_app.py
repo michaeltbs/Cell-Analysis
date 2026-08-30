@@ -98,7 +98,11 @@ def health() -> Dict[str, str]:
 
 @app.get("/version")
 def version() -> Dict[str, str]:
-    return {"version": "0.1.0", "backend": "fastapi"}
+    return {
+        "version": "0.1.0",
+        "backend": "fastapi",
+        "job_queue": "redis" if manager._redis is not None else "in-memory",
+    }
 
 
 @app.get("/")
